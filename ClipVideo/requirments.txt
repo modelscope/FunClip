@@ -1,0 +1,6 @@
+librosa
+soundfile
+funasr>=0.5.5
+moviepy
+numpy
+gradio

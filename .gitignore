@@ -1,0 +1,5 @@
+*.pyc
+.DS_Store
+*.DS_Store
+ClipVideo/clipvideo/output
+*__pycache__
