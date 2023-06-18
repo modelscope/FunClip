@@ -31,7 +31,7 @@ cur_dir=`pwd`
 
 # Make sure root user
 rootNess(){
-    echo "${BOLD}[0/9]" 
+    echo "${BOLD}[0/10]"
     echo "Check root ness"
 
     if [[ $EUID -ne 0 ]]; then
@@ -46,7 +46,7 @@ rootNess(){
 
 # Install docker
 installDocker(){
-    echo "${BOLD}[1/9]" 
+    echo "${BOLD}[1/10]"
 
     if [ $DOCKERINFOLEN -gt 30 ]; then
         echo "Docker has installed."
@@ -81,12 +81,6 @@ installDocker(){
             $DOCKER_INSTALL_RUN_CMD
         fi
 
-        # DOCKER_TMP = ${DOCKER_INSTALL_RUN_CMD} | wc -L
-        # DOCKER_TMP = $(expr $DOCKER_TMP)
-        # if [ $DOCKER_TMP -gt 5]; then
-        #   $DOCKER_INSTALL_RUN_CMD
-        # fi
-
         DOCKERINFO=$(sudo docker info | wc -l)
         DOCKERINFOLEN=$(expr $DOCKERINFO)
         if [ $DOCKERINFOLEN -gt 30 ]; then
@@ -104,7 +98,7 @@ installDocker(){
 
 # Download docker image
 downloadDockerImage(){
-    echo "${BOLD}[2/9]" 
+    echo "${BOLD}[2/10]"
     echo "Pull docker image ..."
 
     sudo docker pull funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0
@@ -115,16 +109,15 @@ downloadDockerImage(){
 
 # Set model path for FunASR server
 setupAsrModelId(){
-    echo "${BOLD}[3/9]" 
+    echo "${BOLD}[3/10]"
 
     default_model_id="speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
 
     echo "${GREEN}Please input model path in local host for FunASR server:${PLAIN}"
     echo "default model path: ${PARAMS_LOCAL_MODEL_ID}"
     echo "will download model if use this default model."
-    echo ":"
-    read PARAMS_LOCAL_MODEL_ID
-    echo "read model path: ${PARAMS_LOCAL_MODEL_ID}" 
+    echo "-> "
+    read -p "read model path: " PARAMS_LOCAL_MODEL_ID
 
     if [ -z "$PARAMS_LOCAL_MODEL_ID" ]; then
         PARAMS_LOCAL_MODEL_ID=${cur_dir}/${default_model_id}
@@ -143,20 +136,17 @@ setupAsrModelId(){
     MODEL_ID=$(basename "$PARAMS_LOCAL_MODEL_ID")
     PARAMS_DOCKER_MODEL_DIR="/tests"
     PARAMS_DOCKER_MODEL_ID=${PARAMS_DOCKER_MODEL_DIR}/${MODEL_ID}
-
-    sleep 3
-    clear
+    echo
 }
 
 # Set server exec for FunASR
 setupServerExec(){
-    echo "${BOLD}[4/9]" 
+    echo "${BOLD}[4/10]"
 
     echo "${GREEN}Please input exec path in local host for FunASR server:${PLAIN}"
     echo "will use default exec in docker(${PARAMS_DOCKER_EXEC}) if donnot set this parameter."
-    echo ":"
-    read PARAMS_LOCAL_EXEC
-    echo "read exec path in local host: ${PARAMS_LOCAL_EXEC}" 
+    echo "-> "
+    read -p "read exec path in local host: " PARAMS_LOCAL_EXEC
 
     if [ -z $PARAMS_LOCAL_EXEC ]; then
         PARAMS_LOCAL_EXEC_DIR=""
@@ -172,32 +162,26 @@ setupServerExec(){
             PARAMS_DOCKER_EXEC=${PARAMS_DOCKER_EXEC_DIR}/${EXEC_ID}
         fi
     fi
-
-    sleep 3
-    clear
+    echo
 }
 
 # Configure FunASR server host port setting
 setupHostPort(){
-    echo "${BOLD}[5/9]" 
+    echo "${BOLD}[5/10]"
 
     while true
     do
     echo "${GREEN}Please input port for docker mapped [1-65535]:${PLAIN}"
     echo "default: 8889"
-    echo ":"
-    read PARAMS_HOST_PORT
-    echo "read host port: ${PARAMS_HOST_PORT}" 
+    echo "-> "
+    read -p "read host port: " PARAMS_HOST_PORT
 
-    [ -z "$PARAMS_HOST_PORT" ] && PARAMS_HOST_PORT="8889"
-    expr ${PARAMS_HOST_PORT} + 0 &>/dev/null
+    if [ -z "$PARAMS_HOST_PORT" ]; then
+        PARAMS_HOST_PORT="8889"
+    fi
+    expr ${PARAMS_HOST_PORT} + 0
     if [ $? -eq 0 ]; then
         if [ ${PARAMS_HOST_PORT} -ge 1 ] && [ ${PARAMS_HOST_PORT} -le 65535 ]; then
-            echo
-            echo "---------------------------"
-            echo "port = ${PARAMS_HOST_PORT}" 
-            echo "---------------------------"
-            echo
             break
         else
             echo "Input error, please input correct number!"
@@ -206,32 +190,26 @@ setupHostPort(){
         echo "Input error, please input correct number!"
     fi
     done
-
-    sleep 1
-    clear
+    echo
 }
 
 # Configure FunASR server docker port setting
 setupDockerPort(){
-    echo "${BOLD}[6/9]" 
+    echo "${BOLD}[6/10]"
 
     while true
     do
     echo "${GREEN}Please input port for docker mapped [1-65535]:${PLAIN}"
     echo "default: 8889, the opened port of current host is ${PARAMS_HOST_PORT}"
-    echo ":"
-    read PARAMS_DOCKER_PORT
-    echo "read docker port: ${PARAMS_DOCKER_PORT}" 
+    echo "-> "
+    read -p "read docker port: " PARAMS_DOCKER_PORT
 
-    [ -z "$PARAMS_DOCKER_PORT" ] && PARAMS_DOCKER_PORT="8889"
-    expr ${PARAMS_DOCKER_PORT} + 0 &>/dev/null
+    if [ -z "$PARAMS_DOCKER_PORT" ]; then
+        PARAMS_DOCKER_PORT="8889"
+    fi
+    expr ${PARAMS_DOCKER_PORT} + 0
     if [ $? -eq 0 ]; then
         if [ ${PARAMS_DOCKER_PORT} -ge 1 ] && [ ${PARAMS_DOCKER_PORT} -le 65535 ]; then
-            echo
-            echo "---------------------------"
-            echo "port = ${PARAMS_DOCKER_PORT}" 
-            echo "---------------------------"
-            echo
             break
         else
             echo "Input error, please input correct number!"
@@ -240,31 +218,25 @@ setupDockerPort(){
         echo "Input error, please input correct number!"
     fi
     done
-
-    sleep 1
-    clear
+    echo
 }
 
 setupDecoderThreadNum(){
-    echo "${BOLD}[7/9]" 
+    echo "${BOLD}[7/10]"
 
     while true
     do
     echo "${GREEN}Please input thread number for FunASR decoder:${PLAIN}"
     echo "default: 32"
-    echo ":"
-    read PARAMS_DECODER_THREAD_NUM
-    echo "read decoder thread number: ${PARAMS_DECODER_THREAD_NUM}" 
+    echo "-> "
+    read -p "read decoder thread number: " PARAMS_DECODER_THREAD_NUM
 
-    [ -z "$PARAMS_DECODER_THREAD_NUM" ] && PARAMS_DECODER_THREAD_NUM="32"
-    expr ${PARAMS_DECODER_THREAD_NUM} + 0 &>/dev/null
+    if [ -z "$PARAMS_DECODER_THREAD_NUM" ]; then
+        PARAMS_DECODER_THREAD_NUM="32"
+    fi
+    expr ${PARAMS_DECODER_THREAD_NUM} + 0
     if [ $? -eq 0 ]; then
         if [ ${PARAMS_DECODER_THREAD_NUM} -ge 1 ] && [ ${PARAMS_DECODER_THREAD_NUM} -le 65535 ]; then
-            echo
-            echo "---------------------------"
-            echo "decoder thread number = ${PARAMS_DECODER_THREAD_NUM}" 
-            echo "---------------------------"
-            echo
             break
         else
             echo "Input error, please input correct number!"
@@ -273,32 +245,26 @@ setupDecoderThreadNum(){
         echo "Input error, please input correct number!"
     fi
     done
-
-    sleep 1
-    clear
+    echo
 }
 
 
 setupIoThreadNum(){
-    echo "${BOLD}[8/9]" 
+    echo "${BOLD}[8/10]"
 
     while true
     do
     echo "${GREEN}Please input thread number for server IO:${PLAIN}"
     echo "default: 8"
-    echo ":"
-    read PARAMS_IO_THREAD_NUM
-    echo "read io thread number ${PARAMS_IO_THREAD_NUM}" 
+    echo "-> "
+    read -p "read io thread number: " PARAMS_IO_THREAD_NUM
 
-    [ -z "$PARAMS_IO_THREAD_NUM" ] && PARAMS_IO_THREAD_NUM="32"
-    expr ${PARAMS_IO_THREAD_NUM} + 0 &>/dev/null
+    if [ -z "$PARAMS_IO_THREAD_NUM" ]; then
+        PARAMS_IO_THREAD_NUM="8"
+    fi
+    expr ${PARAMS_IO_THREAD_NUM} + 0
     if [ $? -eq 0 ]; then
         if [ ${PARAMS_IO_THREAD_NUM} -ge 1 ] && [ ${PARAMS_IO_THREAD_NUM} -le 65535 ]; then
-            echo
-            echo "---------------------------"
-            echo "io thread number = ${PARAMS_IO_THREAD_NUM}" 
-            echo "---------------------------"
-            echo
             break
         else
             echo "Input error, please input correct number!"
@@ -307,13 +273,60 @@ setupIoThreadNum(){
         echo "Input error, please input correct number!"
     fi
     done
+    echo
+}
 
-    sleep 1
+showAllParams(){
+    echo "${BOLD}[9/10]"
+    echo "Show parameters of FunASR server setting and confirm to run ..."
+    echo
+    echo "The path to the local model directory for the load:${YELLOW} ${PARAMS_LOCAL_MODEL_ID} ${PLAIN}"
+    echo "The model directory corresponds to the directory in Docker:${YELLOW} ${PARAMS_DOCKER_MODEL_ID} ${PLAIN}"
+
+    echo
+    echo "The local path of the FunASR service executor:${YELLOW} ${PARAMS_LOCAL_EXEC} ${PLAIN}"
+    echo "The path in the docker of the FunASR service executor:${YELLOW} ${PARAMS_DOCKER_EXEC} ${PLAIN}"
+
+    echo
+    echo "Set the host port used for use by the FunASR service:${YELLOW} ${PARAMS_HOST_PORT} ${PLAIN}"
+    echo "Set the docker port used by the FunASR service:${YELLOW} ${PARAMS_DOCKER_PORT} ${PLAIN}"
+
+    echo
+    echo "Set the number of threads used for decoding the FunASR service:${YELLOW} ${PARAMS_DECODER_THREAD_NUM} ${PLAIN}"
+    echo "Set the number of threads used for IO the FunASR service:${YELLOW} ${PARAMS_IO_THREAD_NUM} ${PLAIN}"   
+
+    echo
+    while true
+    do
+    PARAMS_CONFIRM="y"
+    echo "${GREEN}Please input [y/n] to confirm the parameters.${PLAIN}"
+    echo "[y] Verify that these parameters are correct and that the service will run."
+    echo "[n] The parameters set are incorrect, it will be rolled out, please rerun."
+    echo "-> "
+    read -p "read confirmation[y/n] " PARAMS_CONFIRM
+
+    if [ -z "$PARAMS_CONFIRM" ]; then
+        PARAMS_CONFIRM="y"
+    fi
+    YES="y"
+    NO="n"
+    echo "confirm: $PARAMS_CONFIRM"
+    if [ "$PARAMS_CONFIRM" = "$YES" ]; then
+        echo "Will run FunASR server later ..."
+        break
+    elif [ "$PARAMS_CONFIRM" = "$NO" ]; then
+        echo "The parameters set are incorrect, please rerun ..."
+        exit 1
+    else
+        echo "again ..."
+    fi
+    done
+    sleep 3
     clear
 }
 
 dockerRun(){
-    echo "${BOLD}[9/9]" 
+    echo "${BOLD}[10/10]" 
     echo "Construct command and run docker ..."
 
     RUN_CMD="sudo docker run"
@@ -394,8 +407,8 @@ PARAMS_DOCKER_MODEL_DIR=""
 PARAMS_DOCKER_MODEL_ID=""
 PARAMS_HOST_PORT="8889"
 PARAMS_DOCKER_PORT="8889"
-PARAMS_DECODER_THREAD_NUM=32
-PARAMS_IO_THREAD_NUM=8
+PARAMS_DECODER_THREAD_NUM="32"
+PARAMS_IO_THREAD_NUM="8"
 
 
 echo -e "#############################################################"
@@ -411,6 +424,7 @@ case "$1" in
     install|-i|--install)
         rootNess
         installFunasrDocker
+        showAllParams
         dockerRun
         ;;
     *)
