@@ -218,7 +218,7 @@ setupHostPort(){
     checkConfigFileAndTouch
     params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_host_port" ]; then
-        PARAMS_HOST_PORT="8889"
+        PARAMS_HOST_PORT="10095"
     else
         PARAMS_HOST_PORT=${params_host_port}
     fi
@@ -232,7 +232,7 @@ setupHostPort(){
     if [ -z "$PARAMS_HOST_PORT" ]; then
         params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
         if [ -z "$params_host_port" ]; then
-            PARAMS_HOST_PORT="8889"
+            PARAMS_HOST_PORT="10095"
         else
             PARAMS_HOST_PORT=${params_host_port}
         fi
@@ -257,7 +257,7 @@ setupDockerPort(){
     checkConfigFileAndTouch
     params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_docker_port" ]; then
-        PARAMS_DOCKER_PORT="8889"
+        PARAMS_DOCKER_PORT="10095"
     else
         PARAMS_DOCKER_PORT=${params_docker_port}
     fi
@@ -271,7 +271,7 @@ setupDockerPort(){
     if [ -z "$PARAMS_DOCKER_PORT" ]; then
         params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
         if [ -z "$params_docker_port" ]; then
-            PARAMS_DOCKER_PORT="8889"
+            PARAMS_DOCKER_PORT="10095"
         else
             PARAMS_DOCKER_PORT=${params_docker_port}
         fi
@@ -518,8 +518,8 @@ PARAMS_LOCAL_MODEL_DIR=""
 PARAMS_LOCAL_MODEL_ID=""
 PARAMS_DOCKER_MODEL_DIR=""
 PARAMS_DOCKER_MODEL_ID=""
-PARAMS_HOST_PORT="8889"
-PARAMS_DOCKER_PORT="8889"
+PARAMS_HOST_PORT="10095"
+PARAMS_DOCKER_PORT="10095"
 PARAMS_DECODER_THREAD_NUM="32"
 PARAMS_IO_THREAD_NUM="8"
 
