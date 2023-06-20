@@ -44,67 +44,6 @@ rootNess(){
     cd ${cur_dir}
 }
 
-# Install docker
-installDocker(){
-    echo "${BOLD}[1/10]"
-
-    if [ $DOCKERINFOLEN -gt 30 ]; then
-        echo "Docker has installed."
-    else
-        lowercase_osid=$(echo $OSID | tr '[A-Z]' '[a-z]')
-        echo "Start install docker for $lowercase_osid"
-        DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
-        DOCKER_INSTALL_RUN_CMD=""
-
-        case "$lowercase_osid" in
-            ubuntu)
-                DOCKER_INSTALL_CMD="curl -fsSL https://test.docker.com -o test-docker.sh"
-                DOCKER_INSTALL_RUN_CMD="sudo sh test-docker.sh"
-                ;;
-            centos)
-                DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
-                ;;
-            debian)
-                DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com -o get-docker.sh"
-                DOCKER_INSTALL_RUN_CMD="sudo sh get-docker.sh"
-                ;;
-            *)
-                echo "$lowercase_osid is not supported."
-                ;;
-        esac
-
-        echo "get docker installer: $DOCKER_INSTALL_CMD"
-        echo "get docker run: $DOCKER_INSTALL_RUN_CMD"
-
-        $DOCKER_INSTALL_CMD
-        if [ ! -z "$DOCKER_INSTALL_RUN_CMD" ]; then
-            $DOCKER_INSTALL_RUN_CMD
-        fi
-
-        DOCKERINFO=$(sudo docker info | wc -l)
-        DOCKERINFOLEN=$(expr $DOCKERINFO)
-        if [ $DOCKERINFOLEN -gt 30 ]; then
-            echo "Docker install success, start docker server."
-            sudo systemctl start docker
-        else
-            echo -e "Docker install failed!"
-            exit 1
-        fi
-    fi
-
-    sleep 1
-}
-
-# Download docker image
-downloadDockerImage(){
-    echo "${BOLD}[2/10]"
-    echo "${BOLD}Pull docker image ..."
-
-    sudo docker pull funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0
-
-    sleep 1
-}
-
 checkConfigFileAndTouch(){
     if [ ! -f $FUNASR_CONFIG_FILE ]; then
         touch $FUNASR_CONFIG_FILE
@@ -113,9 +52,9 @@ checkConfigFileAndTouch(){
 
 # Set model path for FunASR server
 setupAsrModelId(){
-    echo "${BOLD}[3/10]"
+    echo "${BOLD}[1/10]"
     default_model_id="speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
-    echo "${GREEN}Please input model path in local host for FunASR server:${PLAIN}"
+    echo "${GREEN}Please input model path in local or model id for FunASR server:${PLAIN}"
 
     checkConfigFileAndTouch
     params_local_model_id=`sed '/^PARAMS_LOCAL_MODEL_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
@@ -136,20 +75,9 @@ setupAsrModelId(){
         else
             PARAMS_LOCAL_MODEL_ID=${params_local_model_id}
         fi
-
-        echo "local model_id ${PARAMS_LOCAL_MODEL_ID}"
-        if [ ! -e $PARAMS_LOCAL_MODEL_ID ]; then
-            echo "use default model_id ${default_model_id}, downloading ..."
-            wget --no-check-certificate https://swap.oss-cn-hangzhou.aliyuncs.com/shichen.fsc/MaaS/asr/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch.tar.gz
-            echo "decompressing ..."
-            tar -zxf ${default_model_id}.tar.gz
-        else
-            echo "${PARAMS_LOCAL_MODEL_ID} is existing."
-        fi
-    else
-        echo "local model_id ${PARAMS_LOCAL_MODEL_ID}"
     fi
 
+    echo "local model_id ${PARAMS_LOCAL_MODEL_ID}"
     PARAMS_LOCAL_MODEL_DIR=$(dirname "$PARAMS_LOCAL_MODEL_ID")
     MODEL_ID=$(basename "$PARAMS_LOCAL_MODEL_ID")
     PARAMS_DOCKER_MODEL_DIR="/tests"
@@ -159,7 +87,7 @@ setupAsrModelId(){
 
 # Set server exec for FunASR
 setupServerExec(){
-    echo "${BOLD}[4/10]"
+    echo "${BOLD}[2/10]"
     echo "${GREEN}Please input exec path in local host for FunASR server:${PLAIN}"
 
     checkConfigFileAndTouch
@@ -214,7 +142,7 @@ setupServerExec(){
 
 # Configure FunASR server host port setting
 setupHostPort(){
-    echo "${BOLD}[5/10]"
+    echo "${BOLD}[3/10]"
     checkConfigFileAndTouch
     params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_host_port" ]; then
@@ -253,7 +181,7 @@ setupHostPort(){
 
 # Configure FunASR server docker port setting
 setupDockerPort(){
-    echo "${BOLD}[6/10]"
+    echo "${BOLD}[4/10]"
     checkConfigFileAndTouch
     params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_docker_port" ]; then
@@ -291,7 +219,7 @@ setupDockerPort(){
 }
 
 setupDecoderThreadNum(){
-    echo "${BOLD}[7/10]"
+    echo "${BOLD}[5/10]"
     checkConfigFileAndTouch
     params_decoder_thread_num=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_decoder_thread_num" ]; then
@@ -330,7 +258,7 @@ setupDecoderThreadNum(){
 
 
 setupIoThreadNum(){
-    echo "${BOLD}[8/10]"
+    echo "${BOLD}[6/10]"
     checkConfigFileAndTouch
     params_io_thread_num=`sed '/^PARAMS_IO_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_io_thread_num" ]; then
@@ -368,7 +296,7 @@ setupIoThreadNum(){
 }
 
 showAllParams(){
-    echo "${BOLD}[9/10]"
+    echo "${BOLD}[7/10]"
     echo "${BOLD}Show parameters of FunASR server setting and confirm to run ..."
 
     echo "The path to the local model directory for the load:${YELLOW} ${PARAMS_LOCAL_MODEL_ID} ${PLAIN}"
@@ -428,9 +356,103 @@ showAllParams(){
     sleep 1
 }
 
+# Install docker
+installDocker(){
+    echo "${BOLD}[8/10]"
+
+    if [ $DOCKERINFOLEN -gt 30 ]; then
+        echo "Docker has installed."
+    else
+        lowercase_osid=$(echo $OSID | tr '[A-Z]' '[a-z]')
+        echo "Start install docker for $lowercase_osid"
+        DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
+        DOCKER_INSTALL_RUN_CMD=""
+
+        case "$lowercase_osid" in
+            ubuntu)
+                DOCKER_INSTALL_CMD="curl -fsSL https://test.docker.com -o test-docker.sh"
+                DOCKER_INSTALL_RUN_CMD="sudo sh test-docker.sh"
+                ;;
+            centos)
+                DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
+                ;;
+            debian)
+                DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com -o get-docker.sh"
+                DOCKER_INSTALL_RUN_CMD="sudo sh get-docker.sh"
+                ;;
+            *)
+                echo "$lowercase_osid is not supported."
+                ;;
+        esac
+
+        echo "get docker installer: $DOCKER_INSTALL_CMD"
+        echo "get docker run: $DOCKER_INSTALL_RUN_CMD"
+
+        $DOCKER_INSTALL_CMD
+        if [ ! -z "$DOCKER_INSTALL_RUN_CMD" ]; then
+            $DOCKER_INSTALL_RUN_CMD
+        fi
+
+        DOCKERINFO=$(sudo docker info | wc -l)
+        DOCKERINFOLEN=$(expr $DOCKERINFO)
+        if [ $DOCKERINFOLEN -gt 30 ]; then
+            echo "Docker install success, start docker server."
+            sudo systemctl start docker
+        else
+            echo -e "Docker install failed!"
+            exit 1
+        fi
+    fi
+
+    echo
+    sleep 1
+}
+
+# Download docker image
+downloadDockerImage(){
+    echo "${BOLD}[9/10]"
+    echo "${BOLD}Pull docker image ..."
+
+    sudo docker pull ${DOCKERIMAGE}
+
+    echo
+    sleep 1
+}
+
+# Download model
+downloadModel(){
+    if [ ! -e $PARAMS_LOCAL_MODEL_ID ]; then
+        echo "use default model_id ${default_model_id}, downloading ..."
+        wget --no-check-certificate https://swap.oss-cn-hangzhou.aliyuncs.com/shichen.fsc/MaaS/asr/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch.tar.gz
+        echo "decompressing ..."
+        tar -zxf ${default_model_id}.tar.gz
+    else
+        echo "${PARAMS_LOCAL_MODEL_ID} is existing."
+    fi
+
+    sleep 1
+}
+
+# Install main function
+installFunasrDocker(){
+    installDocker
+    downloadDockerImage
+}
+
+ParamsConfigure(){
+    setupAsrModelId
+    setupServerExec
+    setupHostPort
+    setupDockerPort
+    setupDecoderThreadNum
+    setupIoThreadNum
+}
+
 dockerRun(){
     echo "${BOLD}[10/10]" 
     echo "${BOLD}Construct command and run docker ..."
+
+    downloadModel
 
     RUN_CMD="sudo docker run"
     PORT_MAP=" -p ${PARAMS_HOST_PORT}:${PARAMS_DOCKER_PORT}"
@@ -456,7 +478,7 @@ dockerRun(){
     ENV_PARAMS=" --env DAEMON_SERVER_CONFIG={\\\"server\\\":[{${EXEC_PARAMS},${MODEL_PARAMS},${DECODER_PARAMS},${IO_PARAMS},${PORT_PARAMS}}]}"
 
     RUN_CMD="${RUN_CMD}${PORT_MAP}${DIR_MAP_PARAMS}${ENV_PARAMS}"
-    RUN_CMD="${RUN_CMD} funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0"
+    RUN_CMD="${RUN_CMD} ${DOCKERIMAGE}"
 
     sleep 3
     ${RUN_CMD}
@@ -464,7 +486,7 @@ dockerRun(){
 
 dockerExit(){
     echo "${BOLD}Stop docker server ..."
-    sudo docker stop `docker ps -a| grep funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0 | awk '{print $1}' `
+    sudo docker stop `docker ps -a| grep ${DOCKERIMAGE} | awk '{print $1}' `
 }
 
 # Display Help info
@@ -478,27 +500,12 @@ displayHelp(){
     echo -e "   ${BOLD}-i, --install${PLAIN}      Install and run FunASR docker."
     echo -e "   ${BOLD}-s, --start${PLAIN}        Run FunASR docker."
     echo -e "   ${BOLD}-p, --stop${PLAIN}         Stop FunASR docker."
-    echo -e "   ${BOLD}-r, --restart${PLAIN}      Rerun FunASR docker."
+    echo -e "   ${BOLD}-r, --restart${PLAIN}      Restart FunASR docker."
     echo -e "   ${BOLD}-v, --version${PLAIN}      Display current script version."
     echo -e "   ${BOLD}-h, --help${PLAIN}         Display this help."
     echo
     echo -e "${UNDERLINE}funasr.sh${PLAIN} - Version ${scriptVersion} "
     echo -e "Modify Date ${scriptDate}"
-}
-
-# Install main function
-installFunasrDocker(){
-    installDocker
-    downloadDockerImage
-}
-
-ParamsConfigure(){
-    setupAsrModelId
-    setupServerExec
-    setupHostPort
-    setupDockerPort
-    setupDecoderThreadNum
-    setupIoThreadNum
 }
 
 # OS
@@ -507,6 +514,7 @@ OSVER=$(lsb_release -cs)
 OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
 DOCKERINFO=$(sudo docker info | wc -l)
 DOCKERINFOLEN=$(expr $DOCKERINFO)
+DOCKERIMAGE="funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0"
 
 # PARAMS
 FUNASR_CONFIG_FILE="/var/funasr/config"
@@ -536,9 +544,9 @@ echo
 case "$1" in
     install|-i|--install)
         rootNess
-        installFunasrDocker
         ParamsConfigure
         showAllParams
+        installFunasrDocker
         dockerRun
         ;;
     start|-s|--start)
