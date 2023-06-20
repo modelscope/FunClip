@@ -93,7 +93,7 @@ setupServerExec(){
     checkConfigFileAndTouch
     params_docker_exec=`sed '/^PARAMS_DOCKER_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_docker_exec" ]; then
-        PARAMS_DOCKER_EXEC=""
+        PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
     else
         PARAMS_DOCKER_EXEC=${params_docker_exec}
     fi
@@ -105,6 +105,7 @@ setupServerExec(){
         params_local_exec=`sed '/^PARAMS_LOCAL_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
         if [ -z "$params_local_exec" ]; then
             PARAMS_LOCAL_EXEC=""
+            PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
         else
             PARAMS_LOCAL_EXEC=${params_local_exec}
         fi
@@ -112,6 +113,7 @@ setupServerExec(){
         params_local_exec_dir=`sed '/^PARAMS_LOCAL_EXEC_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
         if [ -z "$params_local_exec_dir" ]; then
             PARAMS_LOCAL_EXEC_DIR=""
+            PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
         else
             PARAMS_LOCAL_EXEC_DIR=${params_local_exec_dir}
         fi
@@ -120,6 +122,7 @@ setupServerExec(){
             params_local_exec=`sed '/^PARAMS_LOCAL_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
             if [ -z "$params_local_exec" ]; then
                 PARAMS_LOCAL_EXEC=""
+                PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
             else
                 PARAMS_LOCAL_EXEC=${params_local_exec}
             fi
@@ -127,10 +130,12 @@ setupServerExec(){
             params_local_exec_dir=`sed '/^PARAMS_LOCAL_EXEC_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
             if [ -z "$params_local_exec_dir" ]; then
                 PARAMS_LOCAL_EXEC_DIR=""
+                PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
             else
                 PARAMS_LOCAL_EXEC_DIR=${params_local_exec_dir}
             fi
         else
+            # find valid server executor
             PARAMS_LOCAL_EXEC_DIR=$(dirname "$PARAMS_LOCAL_EXEC")
             EXEC_ID=$(basename "$PARAMS_LOCAL_EXEC")
             PARAMS_DOCKER_EXEC_DIR="/tests"
