@@ -24,8 +24,12 @@ class VideoClipper():
     def recog(self, audio_input, state=None):
         if state is None:
             state = {}
-        state['audio_input'] = audio_input
-        _, data = audio_input
+        sr, data = audio_input
+        assert sr == 16000, "16kHz sample rate required, {} given.".format(sr)
+        if len(data.shape) == 2:  # multi-channel wav input
+            logging.warning("Input wav shape: {}, only first channel reserved.").format(data.shape)
+            data = data[:,0]
+        state['audio_input'] = (sr, data)
         data = data.astype(np.float64)
         rec_result = self.asr_pipeline(audio_in=data)
         state['recog_res_raw'] = rec_result['text_postprocessed']
@@ -72,6 +76,7 @@ class VideoClipper():
             message = "{} periods found in the speech: ".format(len(ts)) + start_end_info
         else:
             message = "No period found in the speech, return raw speech. You may check the recognition result and try other destination text."
+            res_audio = data
         return (sr, res_audio), message, clip_srt
 
     def video_recog(self, vedio_filename):
