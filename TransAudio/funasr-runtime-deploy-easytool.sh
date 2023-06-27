@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-scriptVersion="0.1.1"
+scriptVersion="0.1.2"
 scriptDate="20230627"
 
 clear
@@ -839,6 +839,10 @@ showAllParams(){
     echo -e "  ${YELLOW}Show parameters of FunASR server setting and confirm to run ...${PLAIN}"
     echo
 
+    if [ ! -z "$PARAMS_DOCKER_IMAGE" ]; then
+        echo -e "  The current Docker image is                                    : ${GREEN}${PARAMS_DOCKER_IMAGE}${PLAIN}"
+    fi
+
     if [ ! -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         echo -e "  The model will be automatically downloaded to the directory    : ${GREEN}${PARAMS_DOWNLOAD_MODEL_DIR}${PLAIN}"
     fi
@@ -909,7 +913,7 @@ showAllParams(){
     echo -e "  ${GREEN}Parameters are stored in the file ${FUNASR_CONFIG_FILE}${PLAIN}"
 
     echo "PARAMS_DOCKER_IMAGE=${PARAMS_DOCKER_IMAGE}" > $FUNASR_CONFIG_FILE
-    echo "PARAMS_DOWNLOAD_MODEL_DIR=${PARAMS_DOWNLOAD_MODEL_DIR}" > $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOWNLOAD_MODEL_DIR=${PARAMS_DOWNLOAD_MODEL_DIR}" >> $FUNASR_CONFIG_FILE
 
     echo "PARAMS_LOCAL_EXEC_PATH=${PARAMS_LOCAL_EXEC_PATH}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_LOCAL_EXEC_DIR=${PARAMS_LOCAL_EXEC_DIR}" >> $FUNASR_CONFIG_FILE
@@ -1076,6 +1080,11 @@ dockerRun(){
 
     RUN_CMD="${RUN_CMD}${PORT_MAP}${DIR_MAP_PARAMS}${ENV_PARAMS}"
     RUN_CMD="${RUN_CMD} -it -d ${PARAMS_DOCKER_IMAGE}"
+
+    progress_txt="/var/funasr/progress.txt"
+    server_log="/var/funasr/server_console.log"
+    rm -f ${progress_txt}
+    rm -f ${server_log}
 
     ${RUN_CMD}
 
