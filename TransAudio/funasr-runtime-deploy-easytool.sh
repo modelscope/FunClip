@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-scriptVersion="0.0.3"
-scriptDate="20230619"
+scriptVersion="0.1.1"
+scriptDate="20230627"
 
 clear
 
@@ -28,127 +28,653 @@ UNDERLINE="\033[4m"
 
 # Current folder
 cur_dir=`pwd`
+slice_result=""
 
-# Make sure root user
-rootNess(){
-    echo -e "${BOLD}[0/10]${PLAIN}"
-    echo -e "${BOLD}Check root ness${PLAIN}"
-
-    echo -e "${WARNING} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
-    if [[ $EUID -ne 0 ]]; then
-        echo -e "${ERROR} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
-    fi
-
-    mkdir -p /var/funasr
-
-    cd ${cur_dir}
-}
 
 checkConfigFileAndTouch(){
+    mkdir -p /var/funasr
     if [ ! -f $FUNASR_CONFIG_FILE ]; then
         touch $FUNASR_CONFIG_FILE
     fi
 }
 
-# Set model path for FunASR server
-setupAsrModelId(){
-    echo -e "${BOLD}[1/10]${PLAIN}"
-    default_model_id="speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
-    echo -e "${GREEN}Please input model path in local or model id for FunASR server:${PLAIN}"
+ASR_MODELS=( \
+"damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch" \
+"damo/speech_paraformer_asr_nat-zh-cn-16k-common-vocab8358-tensorflow1" \
+"others" \
+)
+VAD_MODELS=( \
+"damo/speech_fsmn_vad_zh-cn-16k-common-pytorch" \
+"others" \
+)
+PUNC_MODELS=( \
+"damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch" \
+"others" \
+)
+DOCKER_IMAGES=( \
+"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-cpu-0.0.1" \
+"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:latest" \
+)
+menuSelection(){
+    local menu
+    menu=($(echo "$@"))
+    result=1
+    show_no=1
+    menu_no=0
+    len=${#menu[@]}
+
+    while true
+    do
+        echo -e "    ${BOLD}${show_no})${PLAIN} ${menu[menu_no]}"
+
+        let show_no++
+        let menu_no++
+        if [ ${menu_no} -ge ${len} ]; then
+            break
+        fi
+    done
+
+    while true
+    do
+        read -p "  Enter your choice: " result
+
+        expr ${result} + 0 &>/dev/null
+        if [ $? -eq 0 ]; then
+            if [ ${result} -ge 1 ] && [ ${result} -le ${len} ]; then
+                break
+            else
+                echo -e "    ${RED}Input error, please input correct number!${PLAIN}"
+            fi
+        else
+            echo -e "    ${RED}Input error, please input correct number!${PLAIN}"
+        fi
+    done
+    
+    return $result
+}
+
+DrawProgress(){
+    model=$1
+    title=$2
+    percent_str=$3
+    speed=$4
+    revision=$5
+
+    progress=0
+    if [ ! -z "$percent_str" ]; then
+        progress=`expr $percent_str + 0`
+    fi
+
+    printf "\e[?25l" 
+
+    i=0;
+    str=""
+    while [ $i -le $progress ]
+    do
+        let color=36
+        if [ -z "$speed" ]; then
+            printf "\r    \e[0;$color;1m[%s][%-11s][%-100s][%d%%][%s]\e[0m" "$model" "$title" "$str" "$i" "$revision"
+        else
+            printf "\r    \e[0;$color;1m[%s][%-11s][%-100s][%3d%%][%9s][%s]\e[0m" "$model" "$title" "$str" "$i" "$speed" "$revision"
+        fi
+        let i++
+        str+='='
+    done
+
+    printf "\e[?25h""\n"
+}
+
+ServerProgress(){
+    progress_log="/var/funasr/progress.txt"
+    status_flag="STATUS:"
+    stage=0
+    wait=0
+    server_status=""
+    asr_title="Downloading"
+    asr_percent="0"
+    asr_speed="0KB/s"
+    asr_revision=""
+    vad_title="Downloading"
+    vad_percent="0"
+    vad_speed="0KB/s"
+    vad_revision=""
+    punc_title="Downloading"
+    punc_percent="0"
+    punc_speed="0KB/s"
+    punc_revision=""
+
+    while true
+    do
+        if [ -f "$progress_log" ]; then
+            break
+        else
+            sleep 1
+            let wait=wait+1
+            if [ ${wait} -ge 10 ]; then
+                break
+            fi
+        fi
+    done
+
+    if [ ! -f "$progress_log" ]; then
+        echo -e "   ${RED} The note of progress does not exist.(${progress_log}) ${PLAIN}"
+        return $stage
+    fi
+
+    stage=1
+    while read line
+    do
+        if [ $stage -eq 1 ]; then
+            result=$(echo $line | grep "STATUS:")
+            if [[ "$result" != "" ]]
+            then
+                stage=2
+                server_status=${line#*:}
+                continue
+            fi
+        elif [ $stage -eq 2 ]; then
+            result=$(echo $line | grep "ASR")
+            if [[ "$result" != "" ]]
+            then
+                stage=3
+                continue
+            fi
+        elif [ $stage -eq 3 ]; then
+            result=$(echo $line | grep "VAD")
+            if [[ "$result" != "" ]]
+            then
+                stage=4
+                continue
+            fi
+            result=$(echo $line | grep "title:")
+            if [[ "$result" != "" ]]
+            then
+                asr_title=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "percent:")
+            if [[ "$result" != "" ]]
+            then
+                asr_percent=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "speed:")
+            if [[ "$result" != "" ]]
+            then
+                asr_speed=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "revision:")
+            if [[ "$result" != "" ]]
+            then
+                asr_revision=${line#*:}
+                continue
+            fi
+        elif [ $stage -eq 4 ]; then
+            result=$(echo $line | grep "PUNC")
+            if [[ "$result" != "" ]]
+            then
+                stage=5
+                continue
+            fi
+            result=$(echo $line | grep "title:")
+            if [[ "$result" != "" ]]
+            then
+                vad_title=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "percent:")
+            if [[ "$result" != "" ]]
+            then
+                vad_percent=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "speed:")
+            if [[ "$result" != "" ]]
+            then
+                vad_speed=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "revision:")
+            if [[ "$result" != "" ]]
+            then
+                vad_revision=${line#*:}
+                continue
+            fi
+        elif [ $stage -eq 5 ]; then
+            result=$(echo $line | grep "DONE")
+            if [[ "$result" != "" ]]
+            then
+                stage=6
+                break
+            fi
+            result=$(echo $line | grep "title:")
+            if [[ "$result" != "" ]]
+            then
+                punc_title=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "percent:")
+            if [[ "$result" != "" ]]
+            then
+                punc_percent=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "speed:")
+            if [[ "$result" != "" ]]
+            then
+                punc_speed=${line#*:}
+                continue
+            fi
+            result=$(echo $line | grep "revision:")
+            if [[ "$result" != "" ]]
+            then
+                punc_revision=${line#*:}
+                continue
+            fi
+        fi
+    done  < $progress_log
+
+    DrawProgress "ASR " $asr_title $asr_percent $asr_speed $asr_revision
+    DrawProgress "VAD " $vad_title $vad_percent $vad_speed $vad_revision 
+    DrawProgress "PUNC" $punc_title $punc_percent $punc_speed $punc_revision 
+
+    return $stage
+}
+
+# Make sure root user
+rootNess(){
+    echo -e "${UNDERLINE}${BOLD}[0/10]${PLAIN}"
+    echo -e "  ${YELLOW}Please check root access.${PLAIN}"
+    echo
+
+    echo -e "  ${WARNING} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
+    if [[ $EUID -ne 0 ]]; then
+        echo -e "  ${ERROR} MUST RUN AS ${RED}ROOT${PLAIN} USER!"
+    fi
 
     checkConfigFileAndTouch
-    params_local_model_id=`sed '/^PARAMS_LOCAL_MODEL_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_local_model_id" ]; then
-        PARAMS_LOCAL_MODEL_ID=${cur_dir}/${default_model_id}
-    else
-        PARAMS_LOCAL_MODEL_ID=${params_local_model_id}
-    fi
+    cd ${cur_dir}
+    echo
+}
 
-    echo -e "default model path: ${CYAN}${PARAMS_LOCAL_MODEL_ID}${PLAIN}"
-    echo "will download model if use this default model."
-    read -p "read model path: " PARAMS_LOCAL_MODEL_ID
+selectDockerImages(){
+    echo -e "${UNDERLINE}${BOLD}[1/10]${PLAIN}"
+    echo -e "  ${YELLOW}Please choose the Docker image.${PLAIN}"
 
-    if [ -z "$PARAMS_LOCAL_MODEL_ID" ]; then
-        params_local_model_id=`sed '/^PARAMS_LOCAL_MODEL_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-        if [ -z "$params_local_model_id" ]; then
-            PARAMS_LOCAL_MODEL_ID=${cur_dir}/${default_model_id}
-        else
-            PARAMS_LOCAL_MODEL_ID=${params_local_model_id}
+    menuSelection ${DOCKER_IMAGES[*]}
+    result=$?
+    index=`expr $result - 1`
+
+    PARAMS_DOCKER_IMAGE=${DOCKER_IMAGES[${index}]}
+    echo -e "  ${UNDERLINE}You have chosen the Docker image:${PLAIN} ${GREEN}${PARAMS_DOCKER_IMAGE}${PLAIN}"
+
+    echo
+}
+
+setupModelType(){
+    echo -e "${UNDERLINE}${BOLD}[2/10]${PLAIN}"
+    echo -e "  ${YELLOW}Please input [y/n] to confirm whether to use a local model or automatically download model_id in ModelScope.${PLAIN}"
+    echo "  [y] Use the models on the localhost, the directory where the model is located will be mapped to Docker."
+    echo -e "  [n] With the model in ModelScope, the model will be automatically downloaded to Docker(${CYAN}/workspace/models${PLAIN})."
+
+    while true
+    do
+        read -p "  Setting confirmation[y/n]: " local_model_flag
+
+        if [ -z "$local_model_flag" ]; then
+            local_model_flag="y"
         fi
+        YES="y"
+        NO="n"
+        if [ "$local_model_flag" = "$YES" ]; then
+            # download_model_dir is empty, will use models in localhost.
+            PARAMS_DOWNLOAD_MODEL_DIR=""
+            echo -e "  ${UNDERLINE}You have chosen to use models from the localhost, set the path to each model in the localhost in the next steps.${PLAIN}"
+            break
+        elif [ "$local_model_flag" = "$NO" ]; then
+            # please set model_id later.
+            PARAMS_DOWNLOAD_MODEL_DIR="/workspace/models"
+            echo -e "  ${UNDERLINE}You have chosen to use the model in ModelScope, please set the model ID in the next steps, and the model will be automatically downloaded during the run.${PLAIN}"
+            break
+        fi
+    done
+
+    echo
+}
+
+# Set asr model for FunASR server
+setupAsrModelId(){
+    echo -e "  ${UNDERLINE}${BOLD}[2.1/10]${PLAIN}"
+
+    if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
+        # download_model_dir is empty, will use models in localhost.
+        params_local_asr_path=`sed '/^PARAMS_LOCAL_ASR_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+        if [ -z "$params_local_asr_path" ]; then
+            PARAMS_LOCAL_ASR_PATH=""
+        else
+            PARAMS_LOCAL_ASR_PATH=${params_local_asr_path}
+        fi
+
+        echo -e "    ${YELLOW}Please input ASR model path in local for FunASR server.${PLAIN}"
+        echo -e "    Default: ${CYAN}${PARAMS_LOCAL_ASR_PATH}${PLAIN}"
+
+        while true
+        do
+            read -p "    Setting ASR model path in localhost: " PARAMS_LOCAL_ASR_PATH
+
+            if [ -z "$PARAMS_LOCAL_ASR_PATH" ]; then
+                PARAMS_LOCAL_ASR_PATH=${params_local_asr_path}
+            fi
+            if [ -z "$PARAMS_LOCAL_ASR_PATH" ]; then
+                # use default asr model in Docker
+                PARAMS_LOCAL_ASR_DIR=""
+                PARAMS_DOCKER_ASR_DIR=""
+                PARAMS_DOCKER_ASR_PATH="/workspace/models/asr"
+                echo -e "    ${RED}Donnot set the local ASR model path, will use ASR model(${CYAN}/workspace/models/asr${PLAIN}${RED}) in Docker.${PLAIN}"
+
+                echo -e "    ${UNDERLINE}You have chosen the default model dir in localhost:${PLAIN} ${GREEN}${PARAMS_LOCAL_ASR_PATH}${PLAIN}"
+                echo -e "    ${UNDERLINE}The defalut model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_ASR_PATH}${PLAIN}"
+                break
+            else
+                if [ ! -d "$PARAMS_LOCAL_ASR_PATH" ]; then
+                    echo -e "    ${RED}The ASR model path set does not exist, please setup again.${PLAIN}"
+                else
+                    # use asr model in localhost
+                    PARAMS_LOCAL_ASR_DIR=$(dirname "$PARAMS_LOCAL_ASR_PATH")
+                    asr_name=$(basename "$PARAMS_LOCAL_ASR_PATH")
+                    PARAMS_DOCKER_ASR_DIR="/workspace/user_asr"
+                    PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${asr_name}
+
+                    echo -e "    ${UNDERLINE}You have chosen the model dir in localhost:${PLAIN} ${GREEN}${PARAMS_LOCAL_ASR_PATH}${PLAIN}"
+                    echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_ASR_PATH}${PLAIN}"
+                    break
+                fi
+            fi
+        done
+
+        PARAMS_ASR_ID=""
+    else
+        # please set model_id later.
+        echo -e "    ${YELLOW}Please select ASR model_id in ModelScope from the list below.${PLAIN}"
+
+        menuSelection ${ASR_MODELS[*]}
+        result=$?
+        index=`expr $result - 1`
+        PARAMS_ASR_ID=${ASR_MODELS[${index}]}
+
+        OTHERS="others"
+        if [ "$PARAMS_ASR_ID" = "$OTHERS" ]; then
+            params_asr_id=`sed '/^PARAMS_ASR_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_asr_id" ]; then
+                PARAMS_ASR_ID=""
+            else
+                PARAMS_ASR_ID=${params_asr_id}
+            fi
+
+            echo -e "    Default: ${CYAN}${PARAMS_ASR_ID}${PLAIN}"
+
+            while true
+            do
+                read -p "    Setting ASR model_id in ModelScope: " PARAMS_ASR_ID
+
+                PARAMS_LOCAL_ASR_DIR=""
+                PARAMS_LOCAL_ASR_PATH=""
+                PARAMS_DOCKER_ASR_DIR=""
+                if [ -z "$PARAMS_ASR_ID" ]; then
+                    echo -e "    ${RED}The ASR model ID is empty, please setup again.${PLAIN}"
+                else
+                    break
+                fi
+            done        
+        fi
+
+        PARAMS_DOCKER_ASR_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
+        model_id=$(basename "$PARAMS_ASR_ID")
+        PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${model_id}
+
+        echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_ASR_ID}${PLAIN}"
+        echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_ASR_PATH}${PLAIN}"
     fi
 
-    echo "local model_id ${PARAMS_LOCAL_MODEL_ID}"
-    PARAMS_LOCAL_MODEL_DIR=$(dirname "$PARAMS_LOCAL_MODEL_ID")
-    MODEL_ID=$(basename "$PARAMS_LOCAL_MODEL_ID")
-    PARAMS_DOCKER_MODEL_DIR="/tests"
-    PARAMS_DOCKER_MODEL_ID=${PARAMS_DOCKER_MODEL_DIR}/${MODEL_ID}
+    echo
+}
+
+# Set vad model for FunASR server
+setupVadModelId(){
+    echo -e "  ${UNDERLINE}${BOLD}[2.2/10]${PLAIN}"
+
+    if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
+        # download_model_dir is empty, will use models in localhost.
+        params_local_vad_path=`sed '/^PARAMS_LOCAL_VAD_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+        if [ -z "$params_local_vad_path" ]; then
+            PARAMS_LOCAL_VAD_PATH=""
+        else
+            PARAMS_LOCAL_VAD_PATH=${params_local_vad_path}
+        fi
+
+        echo -e "    ${YELLOW}Please input VAD model path in local for FunASR server.${PLAIN}"
+        echo -e "    Default: ${CYAN}${PARAMS_LOCAL_VAD_PATH}${PLAIN}"
+
+        while true
+        do
+            read -p "    Setting VAD model path in localhost: " PARAMS_LOCAL_VAD_PATH
+
+            if [ -z "$PARAMS_LOCAL_VAD_PATH" ]; then
+                PARAMS_LOCAL_VAD_PATH=${params_local_vad_path}
+            fi
+            if [ -z "$PARAMS_LOCAL_VAD_PATH" ]; then
+                # use default vad model in Docker
+                PARAMS_LOCAL_VAD_DIR=""
+                PARAMS_DOCKER_VAD_DIR=""
+                PARAMS_DOCKER_VAD_PATH="/workspace/models/vad"
+                echo -e "    ${RED}Donnot set the local VAD model path, will use VAD model(${CYAN}/workspace/models/vad${PLAIN}${RED}) in Docker.${PLAIN}"
+
+                echo -e "    ${UNDERLINE}You have chosen the default model dir in localhost${PLAIN}: ${GREEN}${PARAMS_LOCAL_VAD_PATH}${PLAIN}"
+                echo -e "    ${UNDERLINE}The defalut model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_VAD_PATH}${PLAIN}"
+                break
+            else
+                if [ ! -d "$PARAMS_LOCAL_VAD_PATH" ]; then
+                    echo -e "    ${RED}The VAD model path set does not exist, please setup again.${PLAIN}"
+                else
+                    # use vad model in localhost
+                    PARAMS_LOCAL_VAD_DIR=$(dirname "$PARAMS_LOCAL_VAD_PATH")
+                    vad_name=$(basename "$PARAMS_LOCAL_VAD_PATH")
+                    PARAMS_DOCKER_VAD_DIR="/workspace/user_vad"
+                    PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${vad_name}
+
+                    echo -e "    ${UNDERLINE}You have chosen the model dir in localhost:${PLAIN} ${GREEN}${PARAMS_LOCAL_VAD_PATH}${PLAIN}"
+                    echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_VAD_PATH}${PLAIN}"
+                    break
+                fi
+            fi
+        done
+
+        PARAMS_VAD_ID=""
+    else
+        # please set model_id later.
+        echo -e "    ${YELLOW}Please select VAD model_id in ModelScope from the list below.${PLAIN}"
+
+        menuSelection ${VAD_MODELS[*]}
+        result=$?
+        index=`expr $result - 1`
+        PARAMS_VAD_ID=${VAD_MODELS[${index}]}
+
+        OTHERS="others"
+        if [ "$PARAMS_VAD_ID" = "$OTHERS" ]; then
+            params_vad_id=`sed '/^PARAMS_VAD_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_vad_id" ]; then
+                PARAMS_VAD_ID=""
+            else
+                PARAMS_VAD_ID=${params_vad_id}
+            fi
+
+            echo -e "    Default: ${CYAN}${PARAMS_VAD_ID}${PLAIN}"
+
+            while true
+            do
+                read -p "    Setting VAD model_id in ModelScope: " PARAMS_VAD_ID
+
+                PARAMS_LOCAL_VAD_DIR=""
+                PARAMS_LOCAL_VAD_PATH=""
+                PARAMS_DOCKER_VAD_DIR=""
+                if [ -z "$PARAMS_VAD_ID" ]; then
+                    echo -e "    ${RED}The VAD model ID is empty, please setup again.${PLAIN}"
+                else
+                    break
+                fi
+            done        
+        fi
+
+        PARAMS_DOCKER_VAD_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
+        model_id=$(basename "$PARAMS_VAD_ID")
+        PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${model_id}
+
+        echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_VAD_ID}${PLAIN}"
+        echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_VAD_PATH}${PLAIN}"
+    fi
+
+    echo
+}
+
+# Set punc model for FunASR server
+setupPuncModelId(){
+    echo -e "  ${UNDERLINE}${BOLD}[2.3/10]${PLAIN}"
+
+    if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
+        # download_model_dir is empty, will use models in localhost.
+        params_local_punc_path=`sed '/^PARAMS_LOCAL_PUNC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+        if [ -z "$params_local_punc_path" ]; then
+            PARAMS_LOCAL_PUNC_PATH=""
+        else
+            PARAMS_LOCAL_PUNC_PATH=${params_local_punc_path}
+        fi
+
+        echo -e "    ${YELLOW}Please input PUNC model path in local for FunASR server.${PLAIN}"
+        echo -e "    Default: ${CYAN}${PARAMS_LOCAL_PUNC_PATH}${PLAIN}"
+
+        while true
+        do
+            read -p "    Setting PUNC model path in localhost: " PARAMS_LOCAL_PUNC_PATH
+
+            if [ -z "$PARAMS_LOCAL_PUNC_PATH" ]; then
+                PARAMS_LOCAL_PUNC_PATH=${params_local_punc_path}
+            fi
+            if [ -z "$PARAMS_LOCAL_PUNC_PATH" ]; then
+                # use default punc model in Docker
+                PARAMS_LOCAL_PUNC_DIR=""
+                PARAMS_DOCKER_PUNC_DIR=""
+                PARAMS_DOCKER_PUNC_PATH="/workspace/models/punc"
+                echo -e "    ${RED}Donnot set the local PUNC model path, will use PUNC model(${CYAN}/workspace/models/punc${PLAIN}${RED}) in Docker.${PLAIN}"
+
+                echo -e "    ${UNDERLINE}You have chosen the default model dir in localhost: ${GREEN}${PARAMS_LOCAL_PUNC_PATH}${PLAIN}"
+                echo -e "    ${UNDERLINE}The defalut model dir in Docker is ${GREEN}${PARAMS_DOCKER_PUNC_PATH}${PLAIN}"
+                break
+            else
+                if [ ! -d "$PARAMS_LOCAL_PUNC_PATH" ]; then
+                    echo -e "    ${RED}The PUNC model path set does not exist, please setup again.${PLAIN}"
+                else
+                    # use punc model in localhost
+                    PARAMS_LOCAL_PUNC_DIR=$(dirname "$PARAMS_LOCAL_PUNC_PATH")
+                    punc_name=$(basename "$PARAMS_LOCAL_PUNC_PATH")
+                    PARAMS_DOCKER_PUNC_DIR="/workspace/user_punc"
+                    PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${punc_name}
+
+                    echo -e "    ${UNDERLINE}You have chosen the model dir in localhost:${PLAIN} ${GREEN}${PARAMS_LOCAL_PUNC_PATH}${PLAIN}"
+                    echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_PUNC_PATH}${PLAIN}"
+                    break
+                fi
+            fi
+        done
+
+        PARAMS_PUNC_ID=""
+    else
+        # please set model_id later.
+        echo -e "    ${YELLOW}Please select PUNC model_id in ModelScope from the list below.${PLAIN}"
+
+        menuSelection ${PUNC_MODELS[*]}
+        result=$?
+        index=`expr $result - 1`
+        PARAMS_PUNC_ID=${PUNC_MODELS[${index}]}
+
+        OTHERS="others"
+        if [ "$PARAMS_PUNC_ID" = "$OTHERS" ]; then
+            params_punc_id=`sed '/^PARAMS_PUNC_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_punc_id" ]; then
+                PARAMS_PUNC_ID=""
+            else
+                PARAMS_PUNC_ID=${params_punc_id}
+            fi
+
+            echo -e "    Default: ${CYAN}${PARAMS_PUNC_ID}${PLAIN}"
+
+            while true
+            do
+                read -p "    Setting PUNC model_id in ModelScope: " PARAMS_PUNC_ID
+
+                PARAMS_LOCAL_PUNC_DIR=""
+                PARAMS_LOCAL_PUNC_PATH=""
+                PARAMS_DOCKER_PUNC_DIR=""
+                if [ -z "$PARAMS_PUNC_ID" ]; then
+                    echo -e "    ${RED}The PUNC model ID is empty, please setup again.${PLAIN}"
+                else
+                    break
+                fi
+            done        
+        fi
+
+        PARAMS_DOCKER_PUNC_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
+        model_id=$(basename "$PARAMS_PUNC_ID")
+        PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${model_id}
+
+        echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_PUNC_ID}${PLAIN}"
+        echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_PUNC_PATH}${PLAIN}"
+    fi
+
     echo
 }
 
 # Set server exec for FunASR
 setupServerExec(){
-    echo -e "${BOLD}[2/10]${PLAIN}"
-    echo -e "${GREEN}Please input exec path in local host for FunASR server:${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[3/10]${PLAIN}"
 
-    checkConfigFileAndTouch
-    params_docker_exec=`sed '/^PARAMS_DOCKER_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_docker_exec" ]; then
-        PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
+    params_docker_exec_path=`sed '/^PARAMS_DOCKER_EXEC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    if [ -z "$params_docker_exec_path" ]; then
+        PARAMS_DOCKER_EXEC_PATH="/workspace/FunASR/funasr/runtime/websocket/build/bin/funasr-wss-server"
     else
-        PARAMS_DOCKER_EXEC=${params_docker_exec}
+        PARAMS_DOCKER_EXEC_PATH=${params_docker_exec_path}
     fi
 
-    echo -e "will use default exec in docker(${CYAN}${PARAMS_DOCKER_EXEC}${PLAIN}) if donnot set this parameter."
-    read -p "read exec path in local host: " PARAMS_LOCAL_EXEC
+    echo -e "  ${YELLOW}Please enter the path to the excutor of the FunASR service on the localhost.${PLAIN}"
+    echo -e "  If not set, the default ${CYAN}/workspace/FunASR/funasr/runtime/websocket/build/bin/funasr-wss-server${PLAIN} in Docker is used."
+    read -p "  Setting the path to the excutor of the FunASR service on the localhost: " PARAMS_LOCAL_EXEC_PATH
 
-    if [ -z $PARAMS_LOCAL_EXEC ]; then
-        params_local_exec=`sed '/^PARAMS_LOCAL_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-        if [ -z "$params_local_exec" ]; then
-            PARAMS_LOCAL_EXEC=""
-            PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
-        else
-            PARAMS_LOCAL_EXEC=${params_local_exec}
-        fi
-
-        params_local_exec_dir=`sed '/^PARAMS_LOCAL_EXEC_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-        if [ -z "$params_local_exec_dir" ]; then
+    if [ -z "$PARAMS_LOCAL_EXEC_PATH" ]; then
+        PARAMS_DOCKER_EXEC_PATH="/workspace/FunASR/funasr/runtime/websocket/build/bin/funasr-wss-server"
+    else
+        if [ ! -d "$PARAMS_LOCAL_EXEC_PATH" ]; then
+            echo -e "  ${RED}The FunASR server path set does not exist, will use default.${PLAIN}"
+            PARAMS_LOCAL_EXEC_PATH=""
             PARAMS_LOCAL_EXEC_DIR=""
-            PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
+            PARAMS_DOCKER_EXEC_PATH="/workspace/FunASR/funasr/runtime/websocket/build/bin/funasr-wss-server"
+            PARAMS_DOCKER_EXEC_DIR="/workspace/FunASR/funasr/runtime/websocket/build/bin"
         else
-            PARAMS_LOCAL_EXEC_DIR=${params_local_exec_dir}
-        fi
-    else
-        if [ ! -f $PARAMS_LOCAL_EXEC ]; then
-            params_local_exec=`sed '/^PARAMS_LOCAL_EXEC=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-            if [ -z "$params_local_exec" ]; then
-                PARAMS_LOCAL_EXEC=""
-                PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
-            else
-                PARAMS_LOCAL_EXEC=${params_local_exec}
-            fi
-
-            params_local_exec_dir=`sed '/^PARAMS_LOCAL_EXEC_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-            if [ -z "$params_local_exec_dir" ]; then
-                PARAMS_LOCAL_EXEC_DIR=""
-                PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
-            else
-                PARAMS_LOCAL_EXEC_DIR=${params_local_exec_dir}
-            fi
-        else
-            # find valid server executor
-            PARAMS_LOCAL_EXEC_DIR=$(dirname "$PARAMS_LOCAL_EXEC")
-            EXEC_ID=$(basename "$PARAMS_LOCAL_EXEC")
-            PARAMS_DOCKER_EXEC_DIR="/tests"
-            PARAMS_DOCKER_EXEC=${PARAMS_DOCKER_EXEC_DIR}/${EXEC_ID}
+            PARAMS_LOCAL_EXEC_DIR=$(dirname "$PARAMS_LOCAL_EXEC_PATH")
+            exec=$(basename "$PARAMS_LOCAL_EXEC_PATH")
+            PARAMS_DOCKER_EXEC_DIR="/server"
+            PARAMS_DOCKER_EXEC_PATH=${PARAMS_DOCKER_EXEC_DIR}/${exec}
+            echo -e "  ${UNDERLINE}The path of FunASR in localhost is${PLAIN} ${GREEN}${PARAMS_LOCAL_EXEC_PATH}${PLAIN}"
         fi
     fi
+    echo -e "  ${UNDERLINE}Corresponding, the path of FunASR in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_EXEC_PATH}${PLAIN}"
+
     echo
 }
 
 # Configure FunASR server host port setting
 setupHostPort(){
-    echo -e "${BOLD}[3/10]${PLAIN}"
-    checkConfigFileAndTouch
+    echo -e "${UNDERLINE}${BOLD}[4/10]${PLAIN}"
+
     params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_host_port" ]; then
         PARAMS_HOST_PORT="10095"
@@ -158,9 +684,36 @@ setupHostPort(){
 
     while true
     do
-    echo -e "${GREEN}Please input port for docker mapped [1-65535]:${PLAIN}"
-    echo -e "default: ${CYAN}${PARAMS_HOST_PORT}${PLAIN}"
-    read -p "read host port: " PARAMS_HOST_PORT
+        echo -e "  ${YELLOW}Please input the opened port in the host used for FunASR server.${PLAIN}"
+        echo -e "  Default: ${CYAN}${PARAMS_HOST_PORT}${PLAIN}"
+        read -p "  Setting the opened host port [1-65535]: " PARAMS_HOST_PORT
+
+        if [ -z "$PARAMS_HOST_PORT" ]; then
+            params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_host_port" ]; then
+                PARAMS_HOST_PORT="10095"
+            else
+                PARAMS_HOST_PORT=${params_host_port}
+            fi
+        fi
+        expr ${PARAMS_HOST_PORT} + 0 &>/dev/null
+        if [ $? -eq 0 ]; then
+            if [ ${PARAMS_HOST_PORT} -ge 1 ] && [ ${PARAMS_HOST_PORT} -le 65535 ]; then
+                echo -e "  ${UNDERLINE}The port of the host is${PLAIN} ${GREEN}${PARAMS_HOST_PORT}${PLAIN}"
+                break
+            else
+                echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
+            fi
+        else
+            echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
+        fi
+    done
+    echo
+}
+
+# Configure FunASR server docker port setting
+setupDockerPort(){
+    echo -e "${UNDERLINE}${BOLD}[5/10]${PLAIN}"
 
     if [ -z "$PARAMS_HOST_PORT" ]; then
         params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
@@ -170,36 +723,6 @@ setupHostPort(){
             PARAMS_HOST_PORT=${params_host_port}
         fi
     fi
-    expr ${PARAMS_HOST_PORT} + 0
-    if [ $? -eq 0 ]; then
-        if [ ${PARAMS_HOST_PORT} -ge 1 ] && [ ${PARAMS_HOST_PORT} -le 65535 ]; then
-            break
-        else
-            echo "Input error, please input correct number!"
-        fi
-    else
-        echo "Input error, please input correct number!"
-    fi
-    done
-    echo
-}
-
-# Configure FunASR server docker port setting
-setupDockerPort(){
-    echo -e "${BOLD}[4/10]${PLAIN}"
-    checkConfigFileAndTouch
-    params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_docker_port" ]; then
-        PARAMS_DOCKER_PORT="10095"
-    else
-        PARAMS_DOCKER_PORT=${params_docker_port}
-    fi
-
-    while true
-    do
-    echo -e "${GREEN}Please input port for docker mapped [1-65535]:${PLAIN}"
-    echo -e "default: ${CYAN}${PARAMS_DOCKER_PORT}${PLAIN}, the opened port of current host is ${CYAN}${PARAMS_HOST_PORT}${PLAIN}"
-    read -p "read docker port: " PARAMS_DOCKER_PORT
 
     if [ -z "$PARAMS_DOCKER_PORT" ]; then
         params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
@@ -209,149 +732,208 @@ setupDockerPort(){
             PARAMS_DOCKER_PORT=${params_docker_port}
         fi
     fi
-    expr ${PARAMS_DOCKER_PORT} + 0
-    if [ $? -eq 0 ]; then
-        if [ ${PARAMS_DOCKER_PORT} -ge 1 ] && [ ${PARAMS_DOCKER_PORT} -le 65535 ]; then
-            break
-        else
-            echo "Input error, please input correct number!"
+
+    while true
+    do
+        echo -e "  ${YELLOW}Please input port for docker mapped.${PLAIN}"
+        echo -e "  Default: ${CYAN}${PARAMS_DOCKER_PORT}${PLAIN}, the opened port of current host is ${CYAN}${PARAMS_HOST_PORT}${PLAIN}"
+        read -p "  Setting the port in Docker for FunASR server [1-65535]: " PARAMS_DOCKER_PORT
+
+        if [ -z "$PARAMS_DOCKER_PORT" ]; then
+            params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_docker_port" ]; then
+                PARAMS_DOCKER_PORT="10095"
+            else
+                PARAMS_DOCKER_PORT=${params_docker_port}
+            fi
         fi
-    else
-        echo "Input error, please input correct number!"
-    fi
+        expr ${PARAMS_DOCKER_PORT} + 0 &>/dev/null
+        if [ $? -eq 0 ]; then
+            if [ ${PARAMS_DOCKER_PORT} -ge 1 ] && [ ${PARAMS_DOCKER_PORT} -le 65535 ]; then
+                echo -e "  ${UNDERLINE}The port in Docker for FunASR server is${PLAIN} ${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
+                break
+            else
+                echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
+            fi
+        else
+            echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
+        fi
     done
     echo
 }
 
-setupDecoderThreadNum(){
-    echo -e "${BOLD}[5/10]${PLAIN}"
-    checkConfigFileAndTouch
+setupThreadNum(){
+    echo -e "${UNDERLINE}${BOLD}[6/10]${PLAIN}"
+
     params_decoder_thread_num=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_decoder_thread_num" ]; then
-        PARAMS_DECODER_THREAD_NUM="32"
+        PARAMS_DECODER_THREAD_NUM=$CPUNUM
     else
         PARAMS_DECODER_THREAD_NUM=${params_decoder_thread_num}
     fi
 
     while true
     do
-    echo -e "${GREEN}Please input thread number for FunASR decoder:${PLAIN}"
-    echo -e "default: ${CYAN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
-    read -p "read decoder thread number: " PARAMS_DECODER_THREAD_NUM
+        echo -e "  ${YELLOW}Please input thread number for FunASR decoder.${PLAIN}"
+        echo -e "  Default: ${CYAN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
+        read -p "  Setting the number of decoder thread: " PARAMS_DECODER_THREAD_NUM
 
-    if [ -z "$PARAMS_DECODER_THREAD_NUM" ]; then
-        params_decoder_thread_num=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-        if [ -z "$params_decoder_thread_num" ]; then
-            PARAMS_DECODER_THREAD_NUM="32"
-        else
-            PARAMS_DECODER_THREAD_NUM=${params_decoder_thread_num}
+        if [ -z "$PARAMS_DECODER_THREAD_NUM" ]; then
+            params_decoder_thread_num=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_decoder_thread_num" ]; then
+                PARAMS_DECODER_THREAD_NUM=$CPUNUM
+            else
+                PARAMS_DECODER_THREAD_NUM=${params_decoder_thread_num}
+            fi
         fi
-    fi
-    expr ${PARAMS_DECODER_THREAD_NUM} + 0
-    if [ $? -eq 0 ]; then
-        if [ ${PARAMS_DECODER_THREAD_NUM} -ge 1 ] && [ ${PARAMS_DECODER_THREAD_NUM} -le 65535 ]; then
-            break
+        expr ${PARAMS_DECODER_THREAD_NUM} + 0 &>/dev/null
+        if [ $? -eq 0 ]; then
+            if [ ${PARAMS_DECODER_THREAD_NUM} -ge 1 ] && [ ${PARAMS_DECODER_THREAD_NUM} -le 65535 ]; then
+                break
+            else
+                echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
+            fi
         else
-            echo "Input error, please input correct number!"
+            echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
         fi
-    else
-        echo "Input error, please input correct number!"
+        done
+    echo
+
+    multiple_io=4
+    PARAMS_DECODER_THREAD_NUM=`expr $PARAMS_DECODER_THREAD_NUM + 0`
+    PARAMS_IO_THREAD_NUM=`expr $PARAMS_DECODER_THREAD_NUM / $multiple_io`
+    if [ $PARAMS_IO_THREAD_NUM -eq 0 ]; then
+        PARAMS_IO_THREAD_NUM=1
     fi
-    done
+
+    echo -e "  ${UNDERLINE}The number of decoder threads is${PLAIN} ${GREEN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
+    echo -e "  ${UNDERLINE}The number of IO threads is${PLAIN} ${GREEN}${PARAMS_IO_THREAD_NUM}${PLAIN}"
     echo
 }
 
-
-setupIoThreadNum(){
-    echo -e "${BOLD}[6/10]${PLAIN}"
-    checkConfigFileAndTouch
-    params_io_thread_num=`sed '/^PARAMS_IO_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_io_thread_num" ]; then
-        PARAMS_IO_THREAD_NUM="8"
-    else
-        PARAMS_IO_THREAD_NUM=${params_io_thread_num}
-    fi
-
-    while true
-    do
-    echo -e "${GREEN}Please input thread number for server IO:${PLAIN}"
-    echo -e "default: ${CYAN}${PARAMS_IO_THREAD_NUM}${PLAIN}"
-    read -p "read io thread number: " PARAMS_IO_THREAD_NUM
-
-    if [ -z "$PARAMS_IO_THREAD_NUM" ]; then
-        params_io_thread_num=`sed '/^PARAMS_IO_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-        if [ -z "$params_io_thread_num" ]; then
-            PARAMS_IO_THREAD_NUM="8"
-        else
-            PARAMS_IO_THREAD_NUM=${params_io_thread_num}
-        fi
-    fi
-    expr ${PARAMS_IO_THREAD_NUM} + 0
-    if [ $? -eq 0 ]; then
-        if [ ${PARAMS_IO_THREAD_NUM} -ge 1 ] && [ ${PARAMS_IO_THREAD_NUM} -le 65535 ]; then
-            break
-        else
-            echo "Input error, please input correct number!"
-        fi
-    else
-        echo "Input error, please input correct number!"
-    fi
-    done
+ParamsFromDefault(){
+    echo -e "${UNDERLINE}${BOLD}[2-6/10]${PLAIN}"
+    echo -e "  ${YELLOW}Load parameters from ${FUNASR_CONFIG_FILE}${PLAIN}"
     echo
+
+    PARAMS_DOCKER_IMAGE=`sed '/^PARAMS_DOCKER_IMAGE=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOWNLOAD_MODEL_DIR=`sed '/^PARAMS_DOWNLOAD_MODEL_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_LOCAL_ASR_PATH=`sed '/^PARAMS_LOCAL_ASR_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOCKER_ASR_PATH=`sed '/^PARAMS_DOCKER_ASR_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_ASR_ID=`sed '/^PARAMS_ASR_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_LOCAL_VAD_PATH=`sed '/^PARAMS_LOCAL_VAD_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOCKER_VAD_PATH=`sed '/^PARAMS_DOCKER_VAD_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_VAD_ID=`sed '/^PARAMS_VAD_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_LOCAL_PUNC_PATH=`sed '/^PARAMS_LOCAL_PUNC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOCKER_PUNC_PATH=`sed '/^PARAMS_DOCKER_PUNC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_PUNC_ID=`sed '/^PARAMS_PUNC_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOCKER_EXEC_PATH=`sed '/^PARAMS_DOCKER_EXEC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_HOST_PORT=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DOCKER_PORT=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_DECODER_THREAD_NUM=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_IO_THREAD_NUM=`sed '/^PARAMS_IO_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
 }
 
 showAllParams(){
-    echo -e "${BOLD}[7/10]${PLAIN}"
-    echo -e "${BOLD}Show parameters of FunASR server setting and confirm to run ...${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[7/10]${PLAIN}"
+    echo -e "  ${YELLOW}Show parameters of FunASR server setting and confirm to run ...${PLAIN}"
+    echo
 
-    echo -e "The path to the local model directory for the load:${YELLOW} ${PARAMS_LOCAL_MODEL_ID} ${PLAIN}"
-    echo -e "The model directory corresponds to the directory in Docker:${YELLOW} ${PARAMS_DOCKER_MODEL_ID} ${PLAIN}"
+    if [ ! -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
+        echo -e "  The model will be automatically downloaded to the directory    : ${GREEN}${PARAMS_DOWNLOAD_MODEL_DIR}${PLAIN}"
+    fi
 
-    echo -e "The local path of the FunASR service executor:${YELLOW} ${PARAMS_LOCAL_EXEC} ${PLAIN}"
-    echo -e "The path in the docker of the FunASR service executor:${YELLOW} ${PARAMS_DOCKER_EXEC} ${PLAIN}"
+    if [ ! -z "$PARAMS_ASR_ID" ]; then
+        echo -e "  The ASR model_id used                                          : ${GREEN}${PARAMS_ASR_ID}${PLAIN}"
+    fi
+    if [ ! -z "$PARAMS_LOCAL_ASR_PATH" ]; then
+        echo -e "  The path to the local ASR model directory for the load         : ${GREEN}${PARAMS_LOCAL_ASR_PATH}${PLAIN}"
+    fi
+    echo -e "  The ASR model directory corresponds to the directory in Docker : ${GREEN}${PARAMS_DOCKER_ASR_PATH}${PLAIN}"
 
-    echo -e "Set the host port used for use by the FunASR service:${YELLOW} ${PARAMS_HOST_PORT} ${PLAIN}"
-    echo -e "Set the docker port used by the FunASR service:${YELLOW} ${PARAMS_DOCKER_PORT} ${PLAIN}"
+    if [ ! -z "$PARAMS_VAD_ID" ]; then
+        echo -e "  The VAD model_id used                                          : ${GREEN}${PARAMS_VAD_ID}${PLAIN}"
+    fi
+    if [ ! -z "$PARAMS_LOCAL_VAD_PATH" ]; then
+        echo -e "  The path to the local VAD model directory for the load         : ${GREEN}${PARAMS_LOCAL_VAD_PATH}${PLAIN}"
+    fi
+    echo -e "  The VAD model directory corresponds to the directory in Docker : ${GREEN}${PARAMS_DOCKER_VAD_PATH}${PLAIN}"
 
-    echo -e "Set the number of threads used for decoding the FunASR service:${YELLOW} ${PARAMS_DECODER_THREAD_NUM} ${PLAIN}"
-    echo -e "Set the number of threads used for IO the FunASR service:${YELLOW} ${PARAMS_IO_THREAD_NUM} ${PLAIN}"   
+    if [ ! -z "$PARAMS_PUNC_ID" ]; then
+        echo -e "  The PUNC model_id used                                         : ${GREEN}${PARAMS_PUNC_ID}${PLAIN}"
+    fi
+    if [ ! -z "$PARAMS_LOCAL_PUNC_PATH" ]; then
+        echo -e "  The path to the local PUNC model directory for the load        : ${GREEN}${PARAMS_LOCAL_PUNC_PATH}${PLAIN}"
+    fi
+    echo -e "  The PUNC model directory corresponds to the directory in Docker: ${GREEN}${PARAMS_DOCKER_PUNC_PATH}${PLAIN}"
+    echo
+
+    if [ ! -z "$PARAMS_LOCAL_EXEC_PATH" ]; then
+        echo -e "  The local path of the FunASR service executor                 : ${GREEN}${PARAMS_LOCAL_EXEC_PATH}${PLAIN}"
+    fi
+    echo -e "  The path in the docker of the FunASR service executor         : ${GREEN}${PARAMS_DOCKER_EXEC_PATH}${PLAIN}"
+
+    echo -e "  Set the host port used for use by the FunASR service          : ${GREEN}${PARAMS_HOST_PORT}${PLAIN}"
+    echo -e "  Set the docker port used by the FunASR service                : ${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
+
+    echo -e "  Set the number of threads used for decoding the FunASR service: ${GREEN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
+    echo -e "  Set the number of threads used for IO the FunASR service      : ${GREEN}${PARAMS_IO_THREAD_NUM}${PLAIN}"   
 
     echo
     while true
     do
-    PARAMS_CONFIRM="y"
-    echo -e "${GREEN}Please input [y/n] to confirm the parameters.${PLAIN}"
-    echo "[y] Verify that these parameters are correct and that the service will run."
-    echo "[n] The parameters set are incorrect, it will be rolled out, please rerun."
-    read -p "read confirmation[y/n] " PARAMS_CONFIRM
-
-    if [ -z "$PARAMS_CONFIRM" ]; then
         PARAMS_CONFIRM="y"
-    fi
-    YES="y"
-    NO="n"
-    echo
-    if [ "$PARAMS_CONFIRM" = "$YES" ]; then
-        echo "Will run FunASR server later ..."
-        break
-    elif [ "$PARAMS_CONFIRM" = "$NO" ]; then
-        echo "The parameters set are incorrect, please rerun ..."
-        exit 1
-    else
-        echo "again ..."
-    fi
+        echo -e "  ${YELLOW}Please input [y/n] to confirm the parameters.${PLAIN}"
+        echo -e "  [y] Verify that these parameters are correct and that the service will run."
+        echo -e "  [n] The parameters set are incorrect, it will be rolled out, please rerun."
+        read -p "  read confirmation[y/n]: " PARAMS_CONFIRM
+
+        if [ -z "$PARAMS_CONFIRM" ]; then
+            PARAMS_CONFIRM="y"
+        fi
+        YES="y"
+        NO="n"
+        echo
+        if [ "$PARAMS_CONFIRM" = "$YES" ]; then
+            echo -e "  ${GREEN}Will run FunASR server later ...${PLAIN}"
+            break
+        elif [ "$PARAMS_CONFIRM" = "$NO" ]; then
+            echo -e "  ${RED}The parameters set are incorrect, please rerun ...${PLAIN}"
+            exit 1
+        else
+            echo "again ..."
+        fi
     done
 
-    echo "$i" > /var/funasr/config
-    echo -e "${GREEN}Parameters are stored in the file /var/funasr/config ${PLAIN}"
-    echo "PARAMS_LOCAL_EXEC=${PARAMS_LOCAL_EXEC}" > $FUNASR_CONFIG_FILE
+    echo "$i" > $FUNASR_CONFIG_FILE
+    echo -e "  ${GREEN}Parameters are stored in the file ${FUNASR_CONFIG_FILE}${PLAIN}"
+
+    echo "PARAMS_DOCKER_IMAGE=${PARAMS_DOCKER_IMAGE}" > $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOWNLOAD_MODEL_DIR=${PARAMS_DOWNLOAD_MODEL_DIR}" > $FUNASR_CONFIG_FILE
+
+    echo "PARAMS_LOCAL_EXEC_PATH=${PARAMS_LOCAL_EXEC_PATH}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_LOCAL_EXEC_DIR=${PARAMS_LOCAL_EXEC_DIR}" >> $FUNASR_CONFIG_FILE
-    echo "PARAMS_DOCKER_EXEC=${PARAMS_DOCKER_EXEC}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_EXEC_PATH=${PARAMS_DOCKER_EXEC_PATH}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_DOCKER_EXEC_DIR=${PARAMS_DOCKER_EXEC_DIR}" >> $FUNASR_CONFIG_FILE
-    echo "PARAMS_LOCAL_MODEL_DIR=${PARAMS_LOCAL_MODEL_DIR}" >> $FUNASR_CONFIG_FILE
-    echo "PARAMS_LOCAL_MODEL_ID=${PARAMS_LOCAL_MODEL_ID}" >> $FUNASR_CONFIG_FILE
-    echo "PARAMS_DOCKER_MODEL_DIR=${PARAMS_DOCKER_MODEL_DIR}" >> $FUNASR_CONFIG_FILE
-    echo "PARAMS_DOCKER_MODEL_ID=${PARAMS_DOCKER_MODEL_ID}" >> $FUNASR_CONFIG_FILE
+
+    echo "PARAMS_LOCAL_ASR_PATH=${PARAMS_LOCAL_ASR_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_LOCAL_ASR_DIR=${PARAMS_LOCAL_ASR_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_ASR_DIR=${PARAMS_DOCKER_ASR_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_ASR_ID=${PARAMS_ASR_ID}" >> $FUNASR_CONFIG_FILE
+
+    echo "PARAMS_LOCAL_PUNC_PATH=${PARAMS_LOCAL_PUNC_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_LOCAL_PUNC_DIR=${PARAMS_LOCAL_PUNC_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_PUNC_DIR=${PARAMS_DOCKER_PUNC_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_PUNC_ID=${PARAMS_PUNC_ID}" >> $FUNASR_CONFIG_FILE
+
+    echo "PARAMS_LOCAL_VAD_PATH=${PARAMS_LOCAL_VAD_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_LOCAL_VAD_DIR=${PARAMS_LOCAL_VAD_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_PATH}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_DOCKER_VAD_DIR=${PARAMS_DOCKER_VAD_DIR}" >> $FUNASR_CONFIG_FILE
+    echo "PARAMS_VAD_ID=${PARAMS_VAD_ID}" >> $FUNASR_CONFIG_FILE
+
     echo "PARAMS_HOST_PORT=${PARAMS_HOST_PORT}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_DOCKER_PORT=${PARAMS_DOCKER_PORT}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_DECODER_THREAD_NUM=${PARAMS_DECODER_THREAD_NUM}" >> $FUNASR_CONFIG_FILE
@@ -363,13 +945,13 @@ showAllParams(){
 
 # Install docker
 installDocker(){
-    echo -e "${BOLD}[8/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[8/10]${PLAIN}"
 
     if [ $DOCKERINFOLEN -gt 30 ]; then
-        echo -e "${BOLD}Docker has installed.${PLAIN}"
+        echo -e "  ${YELLOW}Docker has installed.${PLAIN}"
     else
         lowercase_osid=$(echo $OSID | tr '[A-Z]' '[a-z]')
-        echo -e "${BOLD}Start install docker for $lowercase_osid ${PLAIN}"
+        echo -e "  ${YELLOW}Start install docker for $lowercase_osid ${PLAIN}"
         DOCKER_INSTALL_CMD="curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun"
         DOCKER_INSTALL_RUN_CMD=""
 
@@ -390,8 +972,8 @@ installDocker(){
                 ;;
         esac
 
-        echo "get docker installer: $DOCKER_INSTALL_CMD"
-        echo "get docker run: $DOCKER_INSTALL_RUN_CMD"
+        echo -e "  Get docker installer: ${GREEN}$DOCKER_INSTALL_CMD${PLAIN}"
+        echo -e "  Get docker run: ${GREEN}$DOCKER_INSTALL_RUN_CMD${PLAIN}"
 
         $DOCKER_INSTALL_CMD
         if [ ! -z "$DOCKER_INSTALL_RUN_CMD" ]; then
@@ -401,10 +983,10 @@ installDocker(){
         DOCKERINFO=$(sudo docker info | wc -l)
         DOCKERINFOLEN=$(expr $DOCKERINFO)
         if [ $DOCKERINFOLEN -gt 30 ]; then
-            echo "Docker install success, start docker server."
+            echo -e "  ${GREEN}Docker install success, start docker server.${PLAIN}"
             sudo systemctl start docker
         else
-            echo -e "Docker install failed!"
+            echo -e "  ${RED}Docker install failed!${PLAIN}"
             exit 1
         fi
     fi
@@ -415,56 +997,43 @@ installDocker(){
 
 # Download docker image
 downloadDockerImage(){
-    echo -e "${BOLD}[9/10]${PLAIN}"
-    echo -e "${BOLD}Pull docker image ...${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[9/10]${PLAIN}"
+    echo -e "  ${YELLOW}Pull docker image(${PARAMS_DOCKER_IMAGE})...${PLAIN}"
 
-    sudo docker pull ${DOCKERIMAGE}
+    sudo docker pull ${PARAMS_DOCKER_IMAGE}
 
     echo
     sleep 1
 }
 
-# Download model
-downloadModel(){
-    if [ ! -e $PARAMS_LOCAL_MODEL_ID ]; then
-        echo "use default model_id ${default_model_id}, downloading ..."
-        wget --no-check-certificate https://swap.oss-cn-hangzhou.aliyuncs.com/shichen.fsc/MaaS/asr/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch.tar.gz
-        echo "decompressing ..."
-        tar -zxf ${default_model_id}.tar.gz
-    else
-        echo "${PARAMS_LOCAL_MODEL_ID} is existing."
-    fi
-
-    sleep 1
-}
-
-# Install main function
-installFunasrDocker(){
-    installDocker
-    downloadDockerImage
-}
-
-ParamsConfigure(){
-    setupAsrModelId
-    setupServerExec
-    setupHostPort
-    setupDockerPort
-    setupDecoderThreadNum
-    setupIoThreadNum
-}
-
 dockerRun(){
-    echo -e "${BOLD}[10/10]${PLAIN}" 
-    echo -e "${BOLD}Construct command and run docker ...${PLAIN}"
-
-    downloadModel
+    echo -e "${UNDERLINE}${BOLD}[10/10]${PLAIN}"
+    echo -e "  ${YELLOW}Construct command and run docker ...${PLAIN}"
 
     RUN_CMD="sudo docker run"
     PORT_MAP=" -p ${PARAMS_HOST_PORT}:${PARAMS_DOCKER_PORT}"
-    DIR_PARAMS=" -it --privileged=true"
+    DIR_PARAMS=" --privileged=true"
     DIR_MAP_PARAMS=""
-    if [ ! -z ${PARAMS_LOCAL_MODEL_DIR} ]; then
-        DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_MODEL_DIR}:${PARAMS_DOCKER_MODEL_DIR}"
+    if [ ! -z ${PARAMS_LOCAL_ASR_DIR} ]; then
+        if [ -z ${DIR_MAP_PARAMS} ]; then
+            DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_ASR_DIR}:${PARAMS_DOCKER_ASR_DIR}"
+        else
+            DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_ASR_DIR}:${PARAMS_DOCKER_ASR_DIR}"
+        fi
+    fi
+    if [ ! -z ${PARAMS_LOCAL_VAD_DIR} ]; then
+        if [ -z ${DIR_MAP_PARAMS} ]; then
+            DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
+        else
+            DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
+        fi
+    fi
+    if [ ! -z ${PARAMS_LOCAL_PUNC_DIR} ]; then
+        if [ -z ${DIR_MAP_PARAMS} ]; then
+            DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_PUNC_DIR}:${PARAMS_DOCKER_PUNC_DIR}"
+        else
+            DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
+        fi
     fi
     if [ ! -z ${PARAMS_LOCAL_EXEC_DIR} ]; then
         if [ -z ${DIR_MAP_PARAMS} ]; then
@@ -474,24 +1043,84 @@ dockerRun(){
         fi
     fi
 
-    EXEC_PARAMS="\\\"exec\\\":\\\"${PARAMS_DOCKER_EXEC}\\\""
-    MODEL_PARAMS="\\\"--model-dir\\\":\\\"${PARAMS_DOCKER_MODEL_ID}\\\""
-    DECODER_PARAMS="\\\"--decoder_thread_num\\\":\\\"${PARAMS_DECODER_THREAD_NUM}\\\""
-    IO_PARAMS="\\\"--io_thread_num\\\":\\\"${PARAMS_IO_THREAD_NUM}\\\""
-    PORT_PARAMS="\\\"--port\\\":\\\"${PARAMS_DOCKER_PORT}\\\""
+    EXEC_PARAMS="\"exec\":\"${PARAMS_DOCKER_EXEC_PATH}\""
+    if [ ! -z ${PARAMS_ASR_ID} ]; then
+        ASR_PARAMS="\"--model-dir\":\"${PARAMS_ASR_ID}\""
+    else
+        ASR_PARAMS="\"--model-dir\":\"${PARAMS_DOCKER_ASR_PATH}\""
+    fi
+    if [ ! -z ${PARAMS_VAD_ID} ]; then
+        VAD_PARAMS="\"--vad-dir\":\"${PARAMS_VAD_ID}\""
+    else
+        VAD_PARAMS="\"--vad-dir\":\"${PARAMS_DOCKER_VAD_PATH}\""
+    fi
+    if [ ! -z ${PARAMS_PUNC_ID} ]; then
+        PUNC_PARAMS="\"--punc-dir\":\"${PARAMS_PUNC_ID}\""
+    else
+        PUNC_PARAMS="\"--punc-dir\":\"${PARAMS_DOCKER_PUNC_PATH}\""
+    fi
+    DOWNLOAD_PARARMS="\"--download-model-dir\":\"${PARAMS_DOWNLOAD_MODEL_DIR}\""
+    if [ -z $PARAMS_DOWNLOAD_MODEL_DIR ]; then
+        MODEL_PARAMS="${ASR_PARAMS},${VAD_PARAMS},${PUNC_PARAMS}"
+    else
+        MODEL_PARAMS="${ASR_PARAMS},${VAD_PARAMS},${PUNC_PARAMS},${DOWNLOAD_PARARMS}"
+    fi
 
-    ENV_PARAMS=" --env DAEMON_SERVER_CONFIG={\\\"server\\\":[{${EXEC_PARAMS},${MODEL_PARAMS},${DECODER_PARAMS},${IO_PARAMS},${PORT_PARAMS}}]}"
+    DECODER_PARAMS="\"--decoder-thread-num\":\"${PARAMS_DECODER_THREAD_NUM}\""
+    IO_PARAMS="\"--io-thread-num\":\"${PARAMS_IO_THREAD_NUM}\""
+    THREAD_PARAMS=${DECODER_PARAMS},${IO_PARAMS}
+    PORT_PARAMS="\"--port\":\"${PARAMS_DOCKER_PORT}\""
+
+    ENV_PARAMS=" -v /var/funasr:/workspace/.config"
+    ENV_PARAMS=" ${ENV_PARAMS} --env DAEMON_SERVER_CONFIG={\"server\":[{${EXEC_PARAMS},${MODEL_PARAMS},${THREAD_PARAMS},${PORT_PARAMS}}]}"
 
     RUN_CMD="${RUN_CMD}${PORT_MAP}${DIR_MAP_PARAMS}${ENV_PARAMS}"
-    RUN_CMD="${RUN_CMD} ${DOCKERIMAGE}"
+    RUN_CMD="${RUN_CMD} -it -d ${PARAMS_DOCKER_IMAGE}"
 
-    sleep 3
     ${RUN_CMD}
+
+    echo
+    echo -e "  ${YELLOW}Loading models:${PLAIN}"
+    while true
+    do
+        ServerProgress
+        result=$?
+        stage=`expr $result + 0`
+        if [ ${stage} -eq 0 ]; then
+            break
+        elif [ ${stage} -gt 0 ] && [ ${stage} -lt 6 ]; then
+            sleep 1
+            printf "\033[3A"
+        elif [ ${stage} -eq 6 ]; then
+            break
+        fi
+    done
+
+    echo -e "  ${GREEN}The service has been started.${PLAIN}"
+    echo
 }
 
 dockerExit(){
-    echo -e "${BOLD}Stop docker server ...${PLAIN}"
-    sudo docker stop `docker ps -a| grep ${DOCKERIMAGE} | awk '{print $1}' `
+    echo "${UNDERLINE}${BOLD}Stop docker server ...${PLAIN}"
+    sudo docker stop `docker ps -a| grep ${PARAMS_DOCKER_IMAGE} | awk '{print $1}' `
+}
+
+# Install main function
+installFunasrDocker(){
+    installDocker
+    downloadDockerImage
+}
+
+ParamsConfigure(){
+    selectDockerImages
+    setupModelType
+    setupAsrModelId
+    setupVadModelId
+    setupPuncModelId
+    setupServerExec
+    setupHostPort
+    setupDockerPort
+    setupThreadNum
 }
 
 # Display Help info
@@ -517,20 +1146,59 @@ displayHelp(){
 OSID=$(grep ^ID= /etc/os-release | cut -d= -f2)
 OSVER=$(lsb_release -cs)
 OSNUM=$(grep -oE  "[0-9.]+" /etc/issue)
+CPUNUM=$(cat /proc/cpuinfo |grep "processor"|wc -l)
 DOCKERINFO=$(sudo docker info | wc -l)
 DOCKERINFOLEN=$(expr $DOCKERINFO)
-DOCKERIMAGE="funasr/funasr:0.5.4-torch1.11.0-cuda113-py3.7-ubuntu20.04-modelscope1.5.0"
 
 # PARAMS
 FUNASR_CONFIG_FILE="/var/funasr/config"
-PARAMS_LOCAL_EXEC=""
+#  The path of server executor in local
+PARAMS_LOCAL_EXEC_PATH=""
+#  The dir stored server excutor in local
 PARAMS_LOCAL_EXEC_DIR=""
-PARAMS_DOCKER_EXEC="/mnt/FunASR/funasr/runtime/websocket/build/bin/websocketmain"
-PARAMS_DOCKER_EXEC_DIR=""
-PARAMS_LOCAL_MODEL_DIR=""
-PARAMS_LOCAL_MODEL_ID=""
-PARAMS_DOCKER_MODEL_DIR=""
-PARAMS_DOCKER_MODEL_ID=""
+#  The server excutor in local
+PARAMS_DOCKER_EXEC_PATH="/workspace/FunASR/funasr/runtime/websocket/build/bin/funasr-wss-server"
+#  The dir stored server excutor in docker
+PARAMS_DOCKER_EXEC_DIR="/workspace/FunASR/funasr/runtime/websocket/build/bin"
+
+#  The dir for downloading model in docker
+PARAMS_DOWNLOAD_MODEL_DIR=""
+#  The Docker image name
+PARAMS_DOCKER_IMAGE=""
+
+#  The dir stored punc model in local
+PARAMS_LOCAL_PUNC_DIR=""
+#  The path of punc model in local
+PARAMS_LOCAL_PUNC_PATH=""
+#  The dir stored punc model in docker
+PARAMS_DOCKER_PUNC_DIR=""
+#  The path of punc model in docker
+PARAMS_DOCKER_PUNC_PATH=""
+#  The punc model ID in ModelScope
+PARAMS_PUNC_ID=""
+
+#  The dir stored vad model in local
+PARAMS_LOCAL_VAD_DIR=""
+#  The path of vad model in local
+PARAMS_LOCAL_VAD_PATH=""
+#  The dir stored vad model in docker
+PARAMS_DOCKER_VAD_DIR=""
+#  The path of vad model in docker
+PARAMS_DOCKER_VAD_PATH=""
+#  The vad model ID in ModelScope
+PARAMS_VAD_ID=""
+
+#  The dir stored asr model in local
+PARAMS_LOCAL_ASR_DIR=""
+#  The path of asr model in local
+PARAMS_LOCAL_ASR_PATH=""
+#  The dir stored asr model in docker
+PARAMS_DOCKER_ASR_DIR=""
+#  The path of asr model in docker
+PARAMS_DOCKER_ASR_PATH=""
+#  The asr model ID in ModelScope
+PARAMS_ASR_ID=""
+
 PARAMS_HOST_PORT="10095"
 PARAMS_DOCKER_PORT="10095"
 PARAMS_DECODER_THREAD_NUM="32"
@@ -541,6 +1209,7 @@ echo -e "#############################################################"
 echo -e "#       ${RED}OS${PLAIN}: $OSID $OSNUM $OSVER "
 echo -e "#   ${RED}Kernel${PLAIN}: $(uname -m) Linux $(uname -r)"
 echo -e "#      ${RED}CPU${PLAIN}: $(grep 'model name' /proc/cpuinfo | uniq | awk -F : '{print $2}' | sed 's/^[ \t]*//g' | sed 's/ \+/ /g') "
+echo -e "#  ${RED}CPU NUM${PLAIN}: $CPUNUM"
 echo -e "#      ${RED}RAM${PLAIN}: $(cat /proc/meminfo | grep 'MemTotal' | awk -F : '{print $2}' | sed 's/^[ \t]*//g') "
 echo -e "#############################################################"
 echo
@@ -556,14 +1225,14 @@ case "$1" in
         ;;
     start|-s|--start)
         rootNess
-        ParamsConfigure
+        ParamsFromDefault
         showAllParams
         dockerRun
         ;;
     restart|-r|--restart)
         rootNess
         dockerExit
-        ParamsConfigure
+        ParamsFromDefault
         showAllParams
         dockerRun
         ;;
