@@ -39,23 +39,23 @@ checkConfigFileAndTouch(){
 }
 
 SAMPLE_CLIENTS=( \
-"Linux_Cpp" \
 "Python" \
+"Linux_Cpp" \
 )
 ASR_MODELS=( \
 "damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-onnx" \
-"others" \
-"local" \
+"model_name" \
+"model_path" \
 )
 VAD_MODELS=( \
 "damo/speech_fsmn_vad_zh-cn-16k-common-onnx" \
-"others" \
-"local" \
+"model_name" \
+"model_path" \
 )
 PUNC_MODELS=( \
 "damo/punc_ct-transformer_zh-cn-common-vocab272727-onnx" \
-"others" \
-"local" \
+"model_name" \
+"model_path" \
 )
 DOCKER_IMAGES=( \
 "registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-cpu-0.0.1" \
@@ -434,8 +434,8 @@ setupAsrModelId(){
         index=`expr $result - 1`
         PARAMS_ASR_ID=${ASR_MODELS[${index}]}
 
-        OTHERS="others"
-        LOCAL_MODEL="local"
+        OTHERS="model_name"
+        LOCAL_MODEL="model_path"
         if [ "$PARAMS_ASR_ID" = "$OTHERS" ]; then
             params_asr_id=`sed '/^PARAMS_ASR_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
             if [ -z "$params_asr_id" ]; then
@@ -559,8 +559,8 @@ setupVadModelId(){
         index=`expr $result - 1`
         PARAMS_VAD_ID=${VAD_MODELS[${index}]}
 
-        OTHERS="others"
-        LOCAL_MODEL="local"
+        OTHERS="model_name"
+        LOCAL_MODEL="model_path"
         if [ "$PARAMS_VAD_ID" = "$OTHERS" ]; then
             params_vad_id=`sed '/^PARAMS_VAD_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
             if [ -z "$params_vad_id" ]; then
@@ -684,8 +684,8 @@ setupPuncModelId(){
         index=`expr $result - 1`
         PARAMS_PUNC_ID=${PUNC_MODELS[${index}]}
 
-        OTHERS="others"
-        LOCAL_MODEL="local"
+        OTHERS="model_name"
+        LOCAL_MODEL="model_path"
         if [ "$PARAMS_PUNC_ID" = "$OTHERS" ]; then
             params_punc_id=`sed '/^PARAMS_PUNC_ID=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
             if [ -z "$params_punc_id" ]; then
@@ -1269,8 +1269,8 @@ modelChange(){
 sampleClientRun(){
     echo -e "${YELLOW}Will download sample tools for the client to show how speech recognition works.${PLAIN}"
 
-    sample_name="funasr_client_sample"
-    sample_tar="funasr_client_sample.tar.gz"
+    sample_name="funasr_samples"
+    sample_tar="funasr_samples.tar.gz"
     sample_url="https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ASR/sample/${sample_tar}"
     DOWNLOAD_SAMPLE="curl -O ${sample_url}"
     UNTAR_CMD="tar -zxf ${sample_tar}"
@@ -1308,31 +1308,31 @@ sampleClientRun(){
             fi
         fi
 
-        WAV_PATH="./funasr_client_sample/long.wav"
+        WAV_PATH="./funasr_samples/audio/asr_example.wav"
         read -p "  Please enter the audio path, default(${WAV_PATH}): " WAV_PATH
         if [ -z "$WAV_PATH" ]; then
-            WAV_PATH="./funasr_client_sample/long.wav"
+            WAV_PATH="./funasr_samples/audio/asr_example.wav"
         fi
 
         echo
         PRE_CMD=”“
         case "$lang" in
             Linux_Cpp)
-                PRE_CMD="export LD_LIBRARY_PATH=./funasr_client_sample/libs:\$LD_LIBRARY_PATH"
-                CLIENT_EXEC="./funasr_client_sample/funasr-wss-client"
+                PRE_CMD="export LD_LIBRARY_PATH=./funasr_samples/cpp:\$LD_LIBRARY_PATH"
+                CLIENT_EXEC="./funasr_samples/cpp/funasr-wss-client"
                 RUN_CMD="${CLIENT_EXEC} --server-ip ${SERVER_IP} --port ${HOST_PORT} --wav-path ${WAV_PATH}"
                 echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
                 ${PRE_CMD}
                 echo
                 ;;
             Python)
-                CLIENT_EXEC="./funasr_client_sample/wss_client_asr.py"
+                CLIENT_EXEC="./funasr_samples/python/wss_client_asr.py"
                 RUN_CMD="python3 ${CLIENT_EXEC} --host ${SERVER_IP} --port ${HOST_PORT} --mode offline --audio_in ${WAV_PATH} --send_without_sleep"
-                PRE_CMD="pip3 install websockets"
+                PRE_CMD="pip3 install click>=8.0.4"
                 echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
                 ${PRE_CMD}
                 echo
-                PRE_CMD="pip3 install funasr"
+                PRE_CMD="pip3 install -r ./funasr_samples/python/requirements_client.txt"
                 echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
                 ${PRE_CMD}
                 echo
@@ -1344,6 +1344,7 @@ sampleClientRun(){
 
         echo -e "  Run ${BLUE}${RUN_CMD}${PLAIN}"
         ${RUN_CMD}
+        echo -e "  If failed, you can try (${BLUE}${RUN_CMD}${PLAIN}) in your Shell."
     fi
 }
 
