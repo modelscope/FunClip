@@ -1327,15 +1327,24 @@ sampleClientRun(){
         PRE_CMD=”“
         case "$lang" in
             Linux_Cpp)
-                PRE_CMD="export LD_LIBRARY_PATH=./funasr_client_sample/libs:$LD_LIBRARY_PATH"
+                PRE_CMD="export LD_LIBRARY_PATH=./funasr_client_sample/libs:\$LD_LIBRARY_PATH"
                 CLIENT_EXEC="./funasr_client_sample/funasr-wss-client"
                 RUN_CMD="${CLIENT_EXEC} --server-ip ${SERVER_IP} --port ${HOST_PORT} --wav-path ${WAV_PATH}"
                 echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
                 ${PRE_CMD}
+                echo
                 ;;
             Python)
                 CLIENT_EXEC="./funasr_client_sample/wss_client_asr.py"
                 RUN_CMD="python3 ${CLIENT_EXEC} --host ${SERVER_IP} --port ${HOST_PORT} --mode offline --audio_in ${WAV_PATH} --send_without_sleep"
+                PRE_CMD="pip3 install websockets"
+                echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
+                ${PRE_CMD}
+                echo
+                PRE_CMD="pip3 install funasr"
+                echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
+                ${PRE_CMD}
+                echo
                 ;;
             *)
                 echo "$lang is not supported."
