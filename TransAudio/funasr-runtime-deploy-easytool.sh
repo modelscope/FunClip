@@ -1327,7 +1327,7 @@ sampleClientRun(){
                 ;;
             Python)
                 CLIENT_EXEC="./funasr_samples/python/wss_client_asr.py"
-                RUN_CMD="python3 ${CLIENT_EXEC} --host ${SERVER_IP} --port ${HOST_PORT} --mode offline --audio_in ${WAV_PATH} --send_without_sleep"
+                RUN_CMD="python3 ${CLIENT_EXEC} --host ${SERVER_IP} --port ${HOST_PORT} --mode offline --audio_in ${WAV_PATH} --send_without_sleep --output_dir ./funasr_samples/python"
                 PRE_CMD="pip3 install click>=8.0.4"
                 echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
                 ${PRE_CMD}
