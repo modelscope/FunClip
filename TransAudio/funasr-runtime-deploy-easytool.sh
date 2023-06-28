@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-scriptVersion="0.1.4"
+scriptVersion="0.1.5"
 scriptDate="20230627"
 
 clear
@@ -38,6 +38,10 @@ checkConfigFileAndTouch(){
     fi
 }
 
+SAMPLE_CLIENTS=( \
+"Linux_Cpp" \
+"Python" \
+)
 ASR_MODELS=( \
 "damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch" \
 "damo/speech_paraformer_asr_nat-zh-cn-16k-common-vocab8358-tensorflow1" \
@@ -1211,6 +1215,7 @@ dockerRun(){
     done
 
     echo -e "  ${GREEN}The service has been started.${PLAIN}"
+    echo -e "  ${BOLD}If you want to see an example of how to use the client, you can run ${PLAIN}${GREEN}sudo bash funasr-runtime-deploy-easytool.sh -c${PLAIN} ."
     echo
 }
 
@@ -1246,6 +1251,78 @@ modelChange(){
         punc_id=$(basename "$PARAMS_PUNC_ID")
         PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${asr_id}
         retun 0
+    fi
+}
+
+sampleClientRun(){
+    echo -e "${YELLOW}Will download sample tools for the client to show how speech recognition works.${PLAIN}"
+
+    sample_name="funasr_client_sample"
+    sample_tar="funasr_client_sample.tar.gz"
+    sample_url="https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ASR/sample/${sample_tar}"
+    DOWNLOAD_SAMPLE="curl -O ${sample_url}"
+    UNTAR_CMD="tar -zxf ${sample_tar}"
+
+    if [ ! -f "${sample_tar}" ]; then
+        ${DOWNLOAD_SAMPLE}
+    fi
+    if [ -f "${sample_tar}" ]; then
+        ${UNTAR_CMD}
+    fi
+    if [ -d "${sample_name}" ]; then
+
+        echo -e "  Please select the client you want to run."
+        menuSelection ${SAMPLE_CLIENTS[*]}
+        result=$?
+        index=`expr $result - 1`
+        lang=${SAMPLE_CLIENTS[${index}]}
+        echo
+
+        SERVER_IP="127.0.0.1"
+        read -p "  Please enter the IP of server, default(${SERVER_IP}): " SERVER_IP
+        if [ -z "$SERVER_IP" ]; then
+            SERVER_IP="127.0.0.1"
+        fi
+
+        HOST_PORT=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+        if [ -z "$HOST_PORT" ]; then
+            HOST_PORT="10095"
+        fi
+        read -p "  Please enter the port of server, default(${HOST_PORT}): " HOST_PORT
+        if [ -z "$HOST_PORT" ]; then
+            HOST_PORT=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$HOST_PORT" ]; then
+                HOST_PORT="10095"
+            fi
+        fi
+
+        WAV_PATH="./funasr_client_sample/long.wav"
+        read -p "  Please enter the audio path, default(${WAV_PATH}): " WAV_PATH
+        if [ -z "$WAV_PATH" ]; then
+            WAV_PATH="./funasr_client_sample/long.wav"
+        fi
+
+        echo
+        PRE_CMD=”“
+        case "$lang" in
+            Linux_Cpp)
+                PRE_CMD="export LD_LIBRARY_PATH=./funasr_client_sample/libs:$LD_LIBRARY_PATH"
+                CLIENT_EXEC="./funasr_client_sample/funasr-wss-client"
+                RUN_CMD="${CLIENT_EXEC} --server-ip ${SERVER_IP} --port ${HOST_PORT} --wav-path ${WAV_PATH}"
+                echo -e "  Run ${BLUE}${PRE_CMD}${PLAIN}"
+                ${PRE_CMD}
+                ;;
+            Python)
+                CLIENT_EXEC="./funasr_client_sample/wss_client_asr.py"
+                RUN_CMD="python3 ${CLIENT_EXEC} --host ${SERVER_IP} --port ${HOST_PORT} --mode offline --audio_in ${WAV_PATH} --send_without_sleep"
+                ;;
+            *)
+                echo "$lang is not supported."
+                ;;
+        esac
+
+        echo -e "  Run ${BLUE}${RUN_CMD}${PLAIN}"
+        ${RUN_CMD}
     fi
 }
 
@@ -1416,6 +1493,10 @@ case "$1" in
         saveParams
         dockerExit
         dockerRun
+        ;;
+    client|-c|--client)
+        rootNess
+        sampleClientRun
         ;;
     *)
         clear
