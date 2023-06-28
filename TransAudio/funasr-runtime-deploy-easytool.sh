@@ -58,8 +58,8 @@ PUNC_MODELS=( \
 "model_path" \
 )
 DOCKER_IMAGES=( \
-"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-cpu-0.0.1" \
 "registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:latest" \
+"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-cpu-0.0.1" \
 )
 menuSelection(){
     local menu
