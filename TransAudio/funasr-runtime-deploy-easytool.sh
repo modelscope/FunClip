@@ -830,13 +830,6 @@ setupHostPort(){
 setupDockerPort(){
     echo -e "${UNDERLINE}${BOLD}[5/10]${PLAIN}"
 
-    params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_host_port" ]; then
-        PARAMS_HOST_PORT="10095"
-    else
-        PARAMS_HOST_PORT=${params_host_port}
-    fi
-
     params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_docker_port" ]; then
         PARAMS_DOCKER_PORT="10095"
