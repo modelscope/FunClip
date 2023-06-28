@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-scriptVersion="0.1.5"
-scriptDate="20230627"
+scriptVersion="0.0.1"
+scriptDate="20230628"
 
 clear
 
@@ -43,18 +43,17 @@ SAMPLE_CLIENTS=( \
 "Python" \
 )
 ASR_MODELS=( \
-"damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch" \
-"damo/speech_paraformer_asr_nat-zh-cn-16k-common-vocab8358-tensorflow1" \
+"damo/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-onnx" \
 "others" \
 "local" \
 )
 VAD_MODELS=( \
-"damo/speech_fsmn_vad_zh-cn-16k-common-pytorch" \
+"damo/speech_fsmn_vad_zh-cn-16k-common-onnx" \
 "others" \
 "local" \
 )
 PUNC_MODELS=( \
-"damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch" \
+"damo/punc_ct-transformer_zh-cn-common-vocab272727-onnx" \
 "others" \
 "local" \
 )
@@ -106,33 +105,45 @@ DrawProgress(){
     percent_str=$3
     speed=$4
     revision=$5
+    latest_percent=$6
 
     progress=0
     if [ ! -z "$percent_str" ]; then
         progress=`expr $percent_str + 0`
+        latest_percent=`expr $latest_percent + 0`
+        if [ $progress -ne 0 ] && [ $progress -lt $latest_percent ]; then
+            progress=$latest_percent
+        fi
     fi
 
-    printf "\e[?25l" 
+    LOADING_FLAG="Loading"
+    if [ "$title" = "$LOADING_FLAG" ]; then
+        progress=100
+    fi
 
     i=0;
     str=""
     let max=progress/2
-    while [ $i -le $max ]
+    while [ $i -lt $max ]
     do
-        let color=36
-        let index=i*2
-        if [ -z "$speed" ]; then
-            printf "\r    \e[0;$color;1m[%s][%-11s][%-50s][%d%%][%s]\e[0m" "$model" "$title" "$str" "$$index" "$revision"
-        else
-            printf "\r    \e[0;$color;1m[%s][%-11s][%-50s][%3d%%][%9s][%s]\e[0m" "$model" "$title" "$str" "$index" "$speed" "$revision"
-        fi
         let i++
         str+='='
     done
+    let color=36
+    let index=i*2
+    if [ -z "$speed" ]; then
+        printf "\r    \e[0;$color;1m[%s][%-11s][%-50s][%d%%][%s]\e[0m" "$model" "$title" "$str" "$$index" "$revision"
+    else
+        printf "\r    \e[0;$color;1m[%s][%-11s][%-50s][%3d%%][%8s][%s]\e[0m" "$model" "$title" "$str" "$index" "$speed" "$revision"
+    fi
+    printf "\n"
 
-    printf "\e[?25h""\n"
+    return $progress
 }
 
+ASR_PERCENT=0
+VAD_PERCENT=0
+PUNC_PERCENT=0
 ServerProgress(){
     progress_log="/var/funasr/progress.txt"
     status_flag="STATUS:"
@@ -159,7 +170,7 @@ ServerProgress(){
         else
             sleep 1
             let wait=wait+1
-            if [ ${wait} -ge 10 ]; then
+            if [ ${wait} -ge 15 ]; then
                 break
             fi
         fi
@@ -291,9 +302,12 @@ ServerProgress(){
     done  < $progress_log
 
     if [ $stage -ne 99 ]; then
-        DrawProgress "ASR " $asr_title $asr_percent $asr_speed $asr_revision
-        DrawProgress "VAD " $vad_title $vad_percent $vad_speed $vad_revision
-        DrawProgress "PUNC" $punc_title $punc_percent $punc_speed $punc_revision
+        DrawProgress "ASR " $asr_title $asr_percent $asr_speed $asr_revision $ASR_PERCENT_INT
+        ASR_PERCENT_INT=$?
+        DrawProgress "VAD " $vad_title $vad_percent $vad_speed $vad_revision $VAD_PERCENT_INT
+        VAD_PERCENT_INT=$?
+        DrawProgress "PUNC" $punc_title $punc_percent $punc_speed $punc_revision $PUNC_PERCENT_INT
+        PUNC_PERCENT_INT=$?
     fi
 
     return $stage
@@ -1012,13 +1026,13 @@ showAllParams(){
     if [ ! -z "$PARAMS_LOCAL_EXEC_PATH" ]; then
         echo -e "  The local path of the FunASR service executor                 : ${GREEN}${PARAMS_LOCAL_EXEC_PATH}${PLAIN}"
     fi
-    echo -e "  The path in the docker of the FunASR service executor         : ${GREEN}${PARAMS_DOCKER_EXEC_PATH}${PLAIN}"
+    echo -e "  The path in the docker of the FunASR service executor          : ${GREEN}${PARAMS_DOCKER_EXEC_PATH}${PLAIN}"
 
-    echo -e "  Set the host port used for use by the FunASR service          : ${GREEN}${PARAMS_HOST_PORT}${PLAIN}"
-    echo -e "  Set the docker port used by the FunASR service                : ${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
+    echo -e "  Set the host port used for use by the FunASR service           : ${GREEN}${PARAMS_HOST_PORT}${PLAIN}"
+    echo -e "  Set the docker port used by the FunASR service                 : ${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
 
-    echo -e "  Set the number of threads used for decoding the FunASR service: ${GREEN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
-    echo -e "  Set the number of threads used for IO the FunASR service      : ${GREEN}${PARAMS_IO_THREAD_NUM}${PLAIN}"   
+    echo -e "  Set the number of threads used for decoding the FunASR service : ${GREEN}${PARAMS_DECODER_THREAD_NUM}${PLAIN}"
+    echo -e "  Set the number of threads used for IO the FunASR service       : ${GREEN}${PARAMS_IO_THREAD_NUM}${PLAIN}"
 
     echo
     while true
@@ -1048,7 +1062,6 @@ showAllParams(){
 
     saveParams
     echo
-
     sleep 1
 }
 
@@ -1195,6 +1208,9 @@ dockerRun(){
 
     echo
     echo -e "  ${YELLOW}Loading models:${PLAIN}"
+
+    # Hide the cursor, start draw progress.
+    printf "\e[?25l"
     while true
     do
         ServerProgress
@@ -1203,16 +1219,20 @@ dockerRun(){
         if [ ${stage} -eq 0 ]; then
             break
         elif [ ${stage} -gt 0 ] && [ ${stage} -lt 6 ]; then
-            sleep 1
+            sleep 0.1
             printf "\033[3A"
         elif [ ${stage} -eq 6 ]; then
             break
         else
             echo -e "  ${RED}Starting FunASR server failed.${PLAIN}"
             echo
+            # Display the cursor
+            printf "\e[?25h"
             return 0
         fi
     done
+    # Display the cursor
+    printf "\e[?25h"
 
     echo -e "  ${GREEN}The service has been started.${PLAIN}"
     echo -e "  ${BOLD}If you want to see an example of how to use the client, you can run ${PLAIN}${GREEN}sudo bash funasr-runtime-deploy-easytool.sh -c${PLAIN} ."
@@ -1223,6 +1243,7 @@ dockerExit(){
     echo -e "  ${YELLOW}Stop docker(${PARAMS_DOCKER_IMAGE}) server ...${PLAIN}"
     sudo docker stop `sudo docker ps -a| grep ${PARAMS_DOCKER_IMAGE} | awk '{print $1}' `
     echo
+    sleep 1
 }
 
 modelChange(){
@@ -1356,17 +1377,19 @@ displayHelp(){
     echo -e "${UNDERLINE}Usage${PLAIN}:"
     echo -e "  $0 [OPTIONAL FLAGS]"
     echo
-    echo -e "funasr.sh - a Bash script to install&run FunASR docker."
+    echo -e "funasr-runtime-deploy-easytool.sh - a Bash script to install&run FunASR docker."
     echo
     echo -e "${UNDERLINE}Options${PLAIN}:"
     echo -e "   ${BOLD}-i, --install${PLAIN}      Install and run FunASR docker."
-    echo -e "   ${BOLD}-s, --start${PLAIN}        Run FunASR docker."
+    echo -e "   ${BOLD}-s, --start${PLAIN}        Run FunASR docker with configuration that has already been set."
     echo -e "   ${BOLD}-p, --stop${PLAIN}         Stop FunASR docker."
     echo -e "   ${BOLD}-r, --restart${PLAIN}      Restart FunASR docker."
+    echo -e "   ${BOLD}-u, --update${PLAIN}       Update the model ID that has already been set, e.g: --update model XXXX."
+    echo -e "   ${BOLD}-c, --client${PLAIN}       Get a client example to show how to initiate speech recognition."
     echo -e "   ${BOLD}-v, --version${PLAIN}      Display current script version."
     echo -e "   ${BOLD}-h, --help${PLAIN}         Display this help."
     echo
-    echo -e "${UNDERLINE}funasr.sh${PLAIN} - Version ${scriptVersion} "
+    echo -e "${UNDERLINE}funasr-runtime-deploy-easytool.sh${PLAIN} - Version ${scriptVersion} "
     echo -e "Modify Date ${scriptDate}"
 }
 
