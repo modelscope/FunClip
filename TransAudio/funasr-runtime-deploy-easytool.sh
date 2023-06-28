@@ -1188,9 +1188,11 @@ dockerRun(){
     IO_PARAMS="\"--io-thread-num\":\"${PARAMS_IO_THREAD_NUM}\""
     THREAD_PARAMS=${DECODER_PARAMS},${IO_PARAMS}
     PORT_PARAMS="\"--port\":\"${PARAMS_DOCKER_PORT}\""
+    CRT_PATH="\"--certfile\":\"/workspace/FunASR/funasr/runtime/ssl_key/server.crt\""
+    KEY_PATH="\"--keyfile\":\"/workspace/FunASR/funasr/runtime/ssl_key/server.key\""
 
     ENV_PARAMS=" -v /var/funasr:/workspace/.config"
-    ENV_PARAMS=" ${ENV_PARAMS} --env DAEMON_SERVER_CONFIG={\"server\":[{${EXEC_PARAMS},${MODEL_PARAMS},${THREAD_PARAMS},${PORT_PARAMS}}]}"
+    ENV_PARAMS=" ${ENV_PARAMS} --env DAEMON_SERVER_CONFIG={\"server\":[{${EXEC_PARAMS},${MODEL_PARAMS},${THREAD_PARAMS},${PORT_PARAMS},${CRT_PATH},${KEY_PATH}}]}"
 
     RUN_CMD="${RUN_CMD}${PORT_MAP}${DIR_MAP_PARAMS}${ENV_PARAMS}"
     RUN_CMD="${RUN_CMD} -it -d ${PARAMS_DOCKER_IMAGE}"
