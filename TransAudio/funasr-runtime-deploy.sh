@@ -1402,7 +1402,6 @@ paramsConfigure(){
     setupPuncModelId
     setupServerExec
     setupHostPort
-    setupDockerPort
     setupThreadNum
 }
 
