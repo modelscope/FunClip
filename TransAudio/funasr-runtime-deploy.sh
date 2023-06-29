@@ -54,7 +54,7 @@ PUNC_MODELS=( \
 )
 DOCKER_IMAGES=( \
 "registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-sdk-cpu-latest" \
-"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-sdk-cpu-0.0.1" \
+"registry.cn-hangzhou.aliyuncs.com/funasr_repo/funasr:funasr-runtime-sdk-cpu-0.1.0" \
 )
 menuSelection(){
     local menu
@@ -1125,36 +1125,36 @@ dockerRun(){
     PORT_MAP=" -p ${PARAMS_HOST_PORT}:${PARAMS_DOCKER_PORT}"
     DIR_PARAMS=" --privileged=true"
     DIR_MAP_PARAMS=""
-    if [ ! -z ${PARAMS_LOCAL_ASR_DIR} ]; then
-        if [ -z ${DIR_MAP_PARAMS} ]; then
+    if [ ! -z "$PARAMS_LOCAL_ASR_DIR" ]; then
+        if [ -z "$DIR_MAP_PARAMS" ]; then
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_ASR_DIR}:${PARAMS_DOCKER_ASR_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_ASR_DIR}:${PARAMS_DOCKER_ASR_DIR}"
         fi
     fi
-    if [ ! -z ${PARAMS_LOCAL_VAD_DIR} ]; then
-        if [ -z ${DIR_MAP_PARAMS} ]; then
+    if [ ! -z "$PARAMS_LOCAL_VAD_DIR" ]; then
+        if [ -z "$DIR_MAP_PARAMS" ]; then
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
         fi
     fi
-    if [ ! -z ${PARAMS_LOCAL_PUNC_DIR} ]; then
-        if [ -z ${DIR_MAP_PARAMS} ]; then
+    if [ ! -z "$PARAMS_LOCAL_PUNC_DIR" ]; then
+        if [ -z "$DIR_MAP_PARAMS" ]; then
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_PUNC_DIR}:${PARAMS_DOCKER_PUNC_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_VAD_DIR}:${PARAMS_DOCKER_VAD_DIR}"
         fi
     fi
-    if [ ! -z ${PARAMS_LOCAL_EXEC_DIR} ]; then
-        if [ -z ${DIR_MAP_PARAMS} ]; then
+    if [ ! -z "$PARAMS_LOCAL_EXEC_DIR" ]; then
+        if [ -z "$DIR_MAP_PARAMS" ]; then
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_EXEC_DIR}:${PARAMS_DOCKER_EXEC_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_EXEC_DIR}:${PARAMS_DOCKER_EXEC_DIR}"
         fi
     fi
-    if [ ! -z ${PARAMS_LOCAL_MODELS_DIR} ]; then
-        if [ -z ${DIR_MAP_PARAMS} ]; then
+    if [ ! -z "$PARAMS_LOCAL_MODELS_DIR" ]; then
+        if [ -z "$DIR_MAP_PARAMS" ]; then
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_MODELS_DIR}:${PARAMS_DOWNLOAD_MODEL_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_MODELS_DIR}:${PARAMS_DOWNLOAD_MODEL_DIR}"
@@ -1162,23 +1162,23 @@ dockerRun(){
     fi
 
     EXEC_PARAMS="\"exec\":\"${PARAMS_DOCKER_EXEC_PATH}\""
-    if [ ! -z ${PARAMS_ASR_ID} ]; then
+    if [ ! -z "$PARAMS_ASR_ID" ]; then
         ASR_PARAMS="\"--model-dir\":\"${PARAMS_ASR_ID}\""
     else
         ASR_PARAMS="\"--model-dir\":\"${PARAMS_DOCKER_ASR_PATH}\""
     fi
-    if [ ! -z ${PARAMS_VAD_ID} ]; then
+    if [ ! -z "$PARAMS_VAD_ID" ]; then
         VAD_PARAMS="\"--vad-dir\":\"${PARAMS_VAD_ID}\""
     else
         VAD_PARAMS="\"--vad-dir\":\"${PARAMS_DOCKER_VAD_PATH}\""
     fi
-    if [ ! -z ${PARAMS_PUNC_ID} ]; then
+    if [ ! -z "$PARAMS_PUNC_ID" ]; then
         PUNC_PARAMS="\"--punc-dir\":\"${PARAMS_PUNC_ID}\""
     else
         PUNC_PARAMS="\"--punc-dir\":\"${PARAMS_DOCKER_PUNC_PATH}\""
     fi
     DOWNLOAD_PARARMS="\"--download-model-dir\":\"${PARAMS_DOWNLOAD_MODEL_DIR}\""
-    if [ -z $PARAMS_DOWNLOAD_MODEL_DIR ]; then
+    if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         MODEL_PARAMS="${ASR_PARAMS},${VAD_PARAMS},${PUNC_PARAMS}"
     else
         MODEL_PARAMS="${ASR_PARAMS},${VAD_PARAMS},${PUNC_PARAMS},${DOWNLOAD_PARARMS}"
