@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-scriptVersion="0.0.2"
+scriptVersion="0.0.3"
 scriptDate="20230629"
 
 clear
@@ -116,7 +116,7 @@ DrawProgress(){
         progress=100
     fi
 
-    i=0;
+    i=0
     str=""
     let max=progress/2
     while [ $i -lt $max ]
@@ -125,7 +125,7 @@ DrawProgress(){
         str+='='
     done
     let color=36
-    let index=i*2
+    let index=max*2
     if [ -z "$speed" ]; then
         printf "\r    \e[0;$color;1m[%s][%-11s][%-50s][%d%%][%s]\e[0m" "$model" "$title" "$str" "$$index" "$revision"
     else
@@ -136,31 +136,31 @@ DrawProgress(){
     return $progress
 }
 
+PROGRESS_TXT="/var/funasr/progress.txt"
 ASR_PERCENT_INT=0
 VAD_PERCENT_INT=0
 PUNC_PERCENT_INT=0
+ASR_TITLE="Downloading"
+ASR_PERCENT="0"
+ASR_SPEED="0KB/s"
+ASR_REVISION=""
+VAD_TITLE="Downloading"
+VAD_PERCENT="0"
+VAD_SPEED="0KB/s"
+VAD_REVISION=""
+PUNC_TITLE="Downloading"
+PUNC_PERCENT="0"
+PUNC_SPEED="0KB/s"
+PUNC_REVISION=""
 ServerProgress(){
-    progress_log="/var/funasr/progress.txt"
     status_flag="STATUS:"
     stage=0
     wait=0
     server_status=""
-    asr_title="Downloading"
-    asr_percent="0"
-    asr_speed="0KB/s"
-    asr_revision=""
-    vad_title="Downloading"
-    vad_percent="0"
-    vad_speed="0KB/s"
-    vad_revision=""
-    punc_title="Downloading"
-    punc_percent="0"
-    punc_speed="0KB/s"
-    punc_revision=""
 
     while true
     do
-        if [ -f "$progress_log" ]; then
+        if [ -f "$PROGRESS_TXT" ]; then
             break
         else
             sleep 1
@@ -171,8 +171,8 @@ ServerProgress(){
         fi
     done
 
-    if [ ! -f "$progress_log" ]; then
-        echo -e "    ${RED}The note of progress does not exist.(${progress_log}) ${PLAIN}"
+    if [ ! -f "$PROGRESS_TXT" ]; then
+        echo -e "    ${RED}The note of progress does not exist.(${PROGRESS_TXT}) ${PLAIN}"
         return 98
     fi
 
@@ -208,25 +208,25 @@ ServerProgress(){
             result=$(echo $line | grep "title:")
             if [[ "$result" != "" ]]
             then
-                asr_title=${line#*:}
+                ASR_TITLE=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "percent:")
             if [[ "$result" != "" ]]
             then
-                asr_percent=${line#*:}
+                ASR_PERCENT=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "speed:")
             if [[ "$result" != "" ]]
             then
-                asr_speed=${line#*:}
+                ASR_SPEED=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "revision:")
             if [[ "$result" != "" ]]
             then
-                asr_revision=${line#*:}
+                ASR_REVISION=${line#*:}
                 continue
             fi
         elif [ $stage -eq 4 ]; then
@@ -239,69 +239,70 @@ ServerProgress(){
             result=$(echo $line | grep "title:")
             if [[ "$result" != "" ]]
             then
-                vad_title=${line#*:}
+                VAD_TITLE=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "percent:")
             if [[ "$result" != "" ]]
             then
-                vad_percent=${line#*:}
+                VAD_PERCENT=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "speed:")
             if [[ "$result" != "" ]]
             then
-                vad_speed=${line#*:}
+                VAD_SPEED=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "revision:")
             if [[ "$result" != "" ]]
             then
-                vad_revision=${line#*:}
+                VAD_REVISION=${line#*:}
                 continue
             fi
         elif [ $stage -eq 5 ]; then
             result=$(echo $line | grep "DONE")
             if [[ "$result" != "" ]]
             then
+                # Done and break.
                 stage=6
                 break
             fi
             result=$(echo $line | grep "title:")
             if [[ "$result" != "" ]]
             then
-                punc_title=${line#*:}
+                PUNC_TITLE=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "percent:")
             if [[ "$result" != "" ]]
             then
-                punc_percent=${line#*:}
+                PUNC_PERCENT=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "speed:")
             if [[ "$result" != "" ]]
             then
-                punc_speed=${line#*:}
+                PUNC_SPEED=${line#*:}
                 continue
             fi
             result=$(echo $line | grep "revision:")
             if [[ "$result" != "" ]]
             then
-                punc_revision=${line#*:}
+                PUNC_REVISION=${line#*:}
                 continue
             fi
         elif [ $stage -eq 99 ]; then
             echo -e "    ${RED}ERROR: $line${PLAIN}"
         fi
-    done  < $progress_log
+    done  < $PROGRESS_TXT
 
     if [ $stage -ne 99 ]; then
-        DrawProgress "ASR " $asr_title $asr_percent $asr_speed $asr_revision $ASR_PERCENT_INT
+        DrawProgress "ASR " $ASR_TITLE $ASR_PERCENT $ASR_SPEED $ASR_REVISION $ASR_PERCENT_INT
         ASR_PERCENT_INT=$?
-        DrawProgress "VAD " $vad_title $vad_percent $vad_speed $vad_revision $VAD_PERCENT_INT
+        DrawProgress "VAD " $VAD_TITLE $VAD_PERCENT $VAD_SPEED $VAD_REVISION $VAD_PERCENT_INT
         VAD_PERCENT_INT=$?
-        DrawProgress "PUNC" $punc_title $punc_percent $punc_speed $punc_revision $PUNC_PERCENT_INT
+        DrawProgress "PUNC" $PUNC_TITLE $PUNC_PERCENT $PUNC_SPEED $PUNC_REVISION $PUNC_PERCENT_INT
         PUNC_PERCENT_INT=$?
     fi
 
@@ -310,7 +311,7 @@ ServerProgress(){
 
 # Make sure root user
 rootNess(){
-    echo -e "${UNDERLINE}${BOLD}[0/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[0/9]${PLAIN}"
     echo -e "  ${YELLOW}Please check root access.${PLAIN}"
     echo
 
@@ -325,7 +326,7 @@ rootNess(){
 }
 
 selectDockerImages(){
-    echo -e "${UNDERLINE}${BOLD}[1/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[1/9]${PLAIN}"
     echo -e "  ${YELLOW}Please choose the Docker image.${PLAIN}"
 
     menuSelection ${DOCKER_IMAGES[*]}
@@ -346,29 +347,61 @@ selectDockerImages(){
 }
 
 setupModelType(){
-    echo -e "${UNDERLINE}${BOLD}[2/10]${PLAIN}"
-    echo -e "  ${YELLOW}Please input [y/n] to confirm whether to automatically download model_id in ModelScope or use a local model.${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[2/9]${PLAIN}"
+    echo -e "  ${YELLOW}Please input [Y/n] to confirm whether to automatically download model_id in ModelScope or use a local model.${PLAIN}"
     echo -e "  [y] With the model in ModelScope, the model will be automatically downloaded to Docker(${CYAN}/workspace/models${PLAIN})."
+    echo -e "      If you select both the local model and the model in ModelScope, select [y]."
     echo "  [n] Use the models on the localhost, the directory where the model is located will be mapped to Docker."
 
     while true
     do
-        read -p "  Setting confirmation[y/n]: " model_id_flag
+        read -p "  Setting confirmation[Y/n]: " model_id_flag
 
         if [ -z "$model_id_flag" ]; then
             model_id_flag="y"
         fi
-        YES="y"
-        NO="n"
-        if [ "$model_id_flag" = "$NO" ]; then
-            # download_model_dir is empty, will use models in localhost.
-            PARAMS_DOWNLOAD_MODEL_DIR=""
-            echo -e "  ${UNDERLINE}You have chosen to use models from the localhost, set the path to each model in the localhost in the next steps.${PLAIN}"
-            break
-        elif [ "$model_id_flag" = "$YES" ]; then
+        YES="Y"
+        yes="y"
+        NO="N"
+        no="n"
+        if [ "$model_id_flag" = "$YES" ] || [ "$model_id_flag" = "$yes" ]; then
             # please set model_id later.
             PARAMS_DOWNLOAD_MODEL_DIR="/workspace/models"
-            echo -e "  ${UNDERLINE}You have chosen to use the model in ModelScope, please set the model ID in the next steps, and the model will be automatically downloaded during the run.${PLAIN}"
+            echo -e "  ${UNDERLINE}You have chosen to use the model in ModelScope, please set the model ID in the next steps, and the model will be automatically downloaded in (${PARAMS_DOWNLOAD_MODEL_DIR}) during the run.${PLAIN}"
+
+            params_local_models_dir=`sed '/^PARAMS_LOCAL_MODELS_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+            if [ -z "$params_local_models_dir" ]; then
+                params_local_models_dir="${cur_dir}/models"
+                mkdir -p ${params_local_models_dir}
+            fi
+            while true
+            do
+                echo
+                echo -e "  ${YELLOW}Please enter the local path to download models, the corresponding path in Docker is ${PARAMS_DOWNLOAD_MODEL_DIR}.${PLAIN}"
+                read -p "  Setting the local path to download models, default(${params_local_models_dir}): " PARAMS_LOCAL_MODELS_DIR
+                if [ -z "$PARAMS_LOCAL_MODELS_DIR" ]; then
+                    if [ -z "$params_local_models_dir" ]; then
+                        echo -e "    ${RED}The local path set is empty, please setup again.${PLAIN}"
+                        continue
+                    else
+                        PARAMS_LOCAL_MODELS_DIR=$params_local_models_dir
+                    fi
+                fi
+                if [ ! -d "$PARAMS_LOCAL_MODELS_DIR" ]; then
+                    echo -e "    ${RED}The local model path(${PARAMS_LOCAL_MODELS_DIR}) set does not exist, please setup again.${PLAIN}"
+                else
+                    echo -e "  The local path(${GREEN}${PARAMS_LOCAL_MODELS_DIR}${PLAIN}) set will store models during the run."
+                    break
+                fi
+            done
+
+            break
+        elif [ "$model_id_flag" = "$NO" ] || [ "$model_id_flag" = "$no" ]; then
+            # download_model_dir is empty, will use models in localhost.
+            PARAMS_DOWNLOAD_MODEL_DIR=""
+            PARAMS_LOCAL_MODELS_DIR=""
+            echo -e "  ${UNDERLINE}You have chosen to use models from the localhost, set the path to each model in the localhost in the next steps.${PLAIN}"
+            echo
             break
         fi
     done
@@ -378,7 +411,7 @@ setupModelType(){
 
 # Set asr model for FunASR server
 setupAsrModelId(){
-    echo -e "  ${UNDERLINE}${BOLD}[2.1/10]${PLAIN}"
+    echo -e "  ${UNDERLINE}${BOLD}[2.1/9]${PLAIN}"
 
     if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         # download_model_dir is empty, will use models in localhost.
@@ -502,7 +535,7 @@ setupAsrModelId(){
 
 # Set vad model for FunASR server
 setupVadModelId(){
-    echo -e "  ${UNDERLINE}${BOLD}[2.2/10]${PLAIN}"
+    echo -e "  ${UNDERLINE}${BOLD}[2.2/9]${PLAIN}"
 
     if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         # download_model_dir is empty, will use models in localhost.
@@ -626,7 +659,7 @@ setupVadModelId(){
 
 # Set punc model for FunASR server
 setupPuncModelId(){
-    echo -e "  ${UNDERLINE}${BOLD}[2.3/10]${PLAIN}"
+    echo -e "  ${UNDERLINE}${BOLD}[2.3/9]${PLAIN}"
 
     if [ -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         # download_model_dir is empty, will use models in localhost.
@@ -750,7 +783,7 @@ setupPuncModelId(){
 
 # Set server exec for FunASR
 setupServerExec(){
-    echo -e "${UNDERLINE}${BOLD}[3/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[3/9]${PLAIN}"
 
     params_docker_exec_path=`sed '/^PARAMS_DOCKER_EXEC_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_docker_exec_path" ]; then
@@ -787,7 +820,7 @@ setupServerExec(){
 
 # Configure FunASR server host port setting
 setupHostPort(){
-    echo -e "${UNDERLINE}${BOLD}[4/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[4/9]${PLAIN}"
 
     params_host_port=`sed '/^PARAMS_HOST_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_host_port" ]; then
@@ -814,46 +847,7 @@ setupHostPort(){
         if [ $? -eq 0 ]; then
             if [ ${PARAMS_HOST_PORT} -ge 1 ] && [ ${PARAMS_HOST_PORT} -le 65535 ]; then
                 echo -e "  ${UNDERLINE}The port of the host is${PLAIN} ${GREEN}${PARAMS_HOST_PORT}${PLAIN}"
-                break
-            else
-                echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
-            fi
-        else
-            echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
-        fi
-    done
-    echo
-}
-
-# Configure FunASR server docker port setting
-setupDockerPort(){
-    echo -e "${UNDERLINE}${BOLD}[5/10]${PLAIN}"
-
-    params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-    if [ -z "$params_docker_port" ]; then
-        PARAMS_DOCKER_PORT="10095"
-    else
-        PARAMS_DOCKER_PORT=${params_docker_port}
-    fi
-
-    while true
-    do
-        echo -e "  ${YELLOW}Please input port for docker mapped.${PLAIN}"
-        echo -e "  Default: ${CYAN}${PARAMS_DOCKER_PORT}${PLAIN}, the opened port of current host is ${CYAN}${PARAMS_HOST_PORT}${PLAIN}"
-        read -p "  Setting the port in Docker for FunASR server [1-65535]: " PARAMS_DOCKER_PORT
-
-        if [ -z "$PARAMS_DOCKER_PORT" ]; then
-            params_docker_port=`sed '/^PARAMS_DOCKER_PORT=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
-            if [ -z "$params_docker_port" ]; then
-                PARAMS_DOCKER_PORT="10095"
-            else
-                PARAMS_DOCKER_PORT=${params_docker_port}
-            fi
-        fi
-        expr ${PARAMS_DOCKER_PORT} + 0 &>/dev/null
-        if [ $? -eq 0 ]; then
-            if [ ${PARAMS_DOCKER_PORT} -ge 1 ] && [ ${PARAMS_DOCKER_PORT} -le 65535 ]; then
-                echo -e "  ${UNDERLINE}The port in Docker for FunASR server is${PLAIN} ${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
+                echo -e "  ${UNDERLINE}The port in Docker for FunASR server is ${PLAIN}${GREEN}${PARAMS_DOCKER_PORT}${PLAIN}"
                 break
             else
                 echo -e "  ${RED}Input error, please input correct number!${PLAIN}"
@@ -866,7 +860,7 @@ setupDockerPort(){
 }
 
 setupThreadNum(){
-    echo -e "${UNDERLINE}${BOLD}[6/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[5/9]${PLAIN}"
 
     params_decoder_thread_num=`sed '/^PARAMS_DECODER_THREAD_NUM=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     if [ -z "$params_decoder_thread_num" ]; then
@@ -915,11 +909,12 @@ setupThreadNum(){
 }
 
 paramsFromDefault(){
-    echo -e "${UNDERLINE}${BOLD}[2-6/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[2-5/9]${PLAIN}"
     echo -e "  ${YELLOW}Load parameters from ${FUNASR_CONFIG_FILE}${PLAIN}"
     echo
 
     PARAMS_DOCKER_IMAGE=`sed '/^PARAMS_DOCKER_IMAGE=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
+    PARAMS_LOCAL_MODELS_DIR=`sed '/^PARAMS_LOCAL_MODELS_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     PARAMS_DOWNLOAD_MODEL_DIR=`sed '/^PARAMS_DOWNLOAD_MODEL_DIR=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     PARAMS_LOCAL_ASR_PATH=`sed '/^PARAMS_LOCAL_ASR_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
     PARAMS_DOCKER_ASR_PATH=`sed '/^PARAMS_DOCKER_ASR_PATH=/!d;s/.*=//' ${FUNASR_CONFIG_FILE}`
@@ -942,6 +937,7 @@ saveParams(){
     echo -e "  ${GREEN}Parameters are stored in the file ${FUNASR_CONFIG_FILE}${PLAIN}"
 
     echo "PARAMS_DOCKER_IMAGE=${PARAMS_DOCKER_IMAGE}" > $FUNASR_CONFIG_FILE
+    echo "PARAMS_LOCAL_MODELS_DIR=${PARAMS_LOCAL_MODELS_DIR}" >> $FUNASR_CONFIG_FILE
     echo "PARAMS_DOWNLOAD_MODEL_DIR=${PARAMS_DOWNLOAD_MODEL_DIR}" >> $FUNASR_CONFIG_FILE
 
     echo "PARAMS_LOCAL_EXEC_PATH=${PARAMS_LOCAL_EXEC_PATH}" >> $FUNASR_CONFIG_FILE
@@ -974,7 +970,7 @@ saveParams(){
 }
 
 showAllParams(){
-    echo -e "${UNDERLINE}${BOLD}[7/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[6/9]${PLAIN}"
     echo -e "  ${YELLOW}Show parameters of FunASR server setting and confirm to run ...${PLAIN}"
     echo
 
@@ -982,6 +978,9 @@ showAllParams(){
         echo -e "  The current Docker image is                                    : ${GREEN}${PARAMS_DOCKER_IMAGE}${PLAIN}"
     fi
 
+    if [ ! -z "$PARAMS_LOCAL_MODELS_DIR" ]; then
+        echo -e "  The model is downloaded or stored to this directory in local   : ${GREEN}${PARAMS_LOCAL_MODELS_DIR}${PLAIN}"
+    fi
     if [ ! -z "$PARAMS_DOWNLOAD_MODEL_DIR" ]; then
         echo -e "  The model will be automatically downloaded to the directory    : ${GREEN}${PARAMS_DOWNLOAD_MODEL_DIR}${PLAIN}"
     fi
@@ -1025,22 +1024,24 @@ showAllParams(){
     echo
     while true
     do
-        PARAMS_CONFIRM="y"
-        echo -e "  ${YELLOW}Please input [y/n] to confirm the parameters.${PLAIN}"
+        params_confirm="y"
+        echo -e "  ${YELLOW}Please input [Y/n] to confirm the parameters.${PLAIN}"
         echo -e "  [y] Verify that these parameters are correct and that the service will run."
         echo -e "  [n] The parameters set are incorrect, it will be rolled out, please rerun."
-        read -p "  read confirmation[y/n]: " PARAMS_CONFIRM
+        read -p "  read confirmation[Y/n]: " params_confirm
 
-        if [ -z "$PARAMS_CONFIRM" ]; then
-            PARAMS_CONFIRM="y"
+        if [ -z "$params_confirm" ]; then
+            params_confirm="y"
         fi
-        YES="y"
-        NO="n"
+        YES="Y"
+        yes="y"
+        NO="N"
+        no="n"
         echo
-        if [ "$PARAMS_CONFIRM" = "$YES" ]; then
+        if [ "$params_confirm" = "$YES" ] || [ "$params_confirm" = "$yes" ]; then
             echo -e "  ${GREEN}Will run FunASR server later ...${PLAIN}"
             break
-        elif [ "$PARAMS_CONFIRM" = "$NO" ]; then
+        elif [ "$params_confirm" = "$NO" ] || [ "$params_confirm" = "$no" ]; then
             echo -e "  ${RED}The parameters set are incorrect, please rerun ...${PLAIN}"
             exit 1
         else
@@ -1055,7 +1056,7 @@ showAllParams(){
 
 # Install docker
 installDocker(){
-    echo -e "${UNDERLINE}${BOLD}[8/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[7/9]${PLAIN}"
 
     if [ $DOCKERINFOLEN -gt 30 ]; then
         echo -e "  ${YELLOW}Docker has installed.${PLAIN}"
@@ -1107,7 +1108,7 @@ installDocker(){
 
 # Download docker image
 downloadDockerImage(){
-    echo -e "${UNDERLINE}${BOLD}[9/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[8/9]${PLAIN}"
     echo -e "  ${YELLOW}Pull docker image(${PARAMS_DOCKER_IMAGE})...${PLAIN}"
 
     sudo docker pull ${PARAMS_DOCKER_IMAGE}
@@ -1117,7 +1118,7 @@ downloadDockerImage(){
 }
 
 dockerRun(){
-    echo -e "${UNDERLINE}${BOLD}[10/10]${PLAIN}"
+    echo -e "${UNDERLINE}${BOLD}[9/9]${PLAIN}"
     echo -e "  ${YELLOW}Construct command and run docker ...${PLAIN}"
 
     RUN_CMD="sudo docker run"
@@ -1150,6 +1151,13 @@ dockerRun(){
             DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_EXEC_DIR}:${PARAMS_DOCKER_EXEC_DIR}"
         else
             DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_EXEC_DIR}:${PARAMS_DOCKER_EXEC_DIR}"
+        fi
+    fi
+    if [ ! -z ${PARAMS_LOCAL_MODELS_DIR} ]; then
+        if [ -z ${DIR_MAP_PARAMS} ]; then
+            DIR_MAP_PARAMS="${DIR_PARAMS} -v ${PARAMS_LOCAL_MODELS_DIR}:${PARAMS_DOWNLOAD_MODEL_DIR}"
+        else
+            DIR_MAP_PARAMS="${DIR_MAP_PARAMS} -v ${PARAMS_LOCAL_MODELS_DIR}:${PARAMS_DOWNLOAD_MODEL_DIR}"
         fi
     fi
 
@@ -1197,9 +1205,8 @@ dockerRun(){
         return 50
     fi
 
-    progress_txt="/var/funasr/progress.txt"
     server_log="/var/funasr/server_console.log"
-    rm -f ${progress_txt}
+    rm -f ${PROGRESS_TXT}
     rm -f ${server_log}
 
     ${RUN_CMD}
@@ -1218,6 +1225,7 @@ dockerRun(){
             break
         elif [ ${stage} -gt 0 ] && [ ${stage} -lt 6 ]; then
             sleep 0.1
+            # clear 3 lines
             printf "\033[3A"
         elif [ ${stage} -eq 6 ]; then
             break
@@ -1438,6 +1446,8 @@ PARAMS_DOCKER_EXEC_PATH="/workspace/FunASR/funasr/runtime/websocket/build/bin/fu
 #  The dir stored server excutor in docker
 PARAMS_DOCKER_EXEC_DIR="/workspace/FunASR/funasr/runtime/websocket/build/bin"
 
+#  The dir of model in local
+PARAMS_LOCAL_MODELS_DIR=""
 #  The dir for downloading model in docker
 PARAMS_DOWNLOAD_MODEL_DIR=""
 #  The Docker image name
