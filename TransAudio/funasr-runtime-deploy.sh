@@ -11,16 +11,12 @@ RED="\033[31;1m"
 GREEN="\033[32;1m"
 YELLOW="\033[33;1m"
 BLUE="\033[34;1m"
-PURPLE="\033[35;1m"
 CYAN="\033[36;1m"
 PLAIN="\033[0m"
 
 # Info messages
-FAIL="${RED}[FAIL]${PLAIN}"
-DONE="${GREEN}[DONE]${PLAIN}"
 ERROR="${RED}[ERROR]${PLAIN}"
 WARNING="${YELLOW}[WARNING]${PLAIN}"
-CANCEL="${CYAN}[CANCEL]${PLAIN}"
 
 # Font Format
 BOLD="\033[1m"
@@ -28,7 +24,6 @@ UNDERLINE="\033[4m"
 
 # Current folder
 cur_dir=`pwd`
-slice_result=""
 
 
 checkConfigFileAndTouch(){
@@ -141,9 +136,9 @@ DrawProgress(){
     return $progress
 }
 
-ASR_PERCENT=0
-VAD_PERCENT=0
-PUNC_PERCENT=0
+ASR_PERCENT_INT=0
+VAD_PERCENT_INT=0
+PUNC_PERCENT_INT=0
 ServerProgress(){
     progress_log="/var/funasr/progress.txt"
     status_flag="STATUS:"
@@ -178,7 +173,7 @@ ServerProgress(){
 
     if [ ! -f "$progress_log" ]; then
         echo -e "    ${RED}The note of progress does not exist.(${progress_log}) ${PLAIN}"
-        return 0
+        return 98
     fi
 
     stage=1
@@ -340,6 +335,13 @@ selectDockerImages(){
     PARAMS_DOCKER_IMAGE=${DOCKER_IMAGES[${index}]}
     echo -e "  ${UNDERLINE}You have chosen the Docker image:${PLAIN} ${GREEN}${PARAMS_DOCKER_IMAGE}${PLAIN}"
 
+    checkDockerExist
+    result=$?
+    result=`expr $result + 0`
+    if [ ${result} -eq 50 ]; then
+        return 50
+    fi
+
     echo
 }
 
@@ -489,8 +491,7 @@ setupAsrModelId(){
         fi
 
         PARAMS_DOCKER_ASR_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
-        model_id=$(basename "$PARAMS_ASR_ID")
-        PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${model_id}
+        PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${PARAMS_ASR_ID}
 
         echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_ASR_ID}${PLAIN}"
         echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_ASR_PATH}${PLAIN}"
@@ -614,8 +615,7 @@ setupVadModelId(){
         fi
 
         PARAMS_DOCKER_VAD_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
-        model_id=$(basename "$PARAMS_VAD_ID")
-        PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${model_id}
+        PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${PARAMS_VAD_ID}
 
         echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_VAD_ID}${PLAIN}"
         echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_VAD_PATH}${PLAIN}"
@@ -739,8 +739,7 @@ setupPuncModelId(){
         fi
 
         PARAMS_DOCKER_PUNC_DIR=$PARAMS_DOWNLOAD_MODEL_DIR
-        model_id=$(basename "$PARAMS_PUNC_ID")
-        PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${model_id}
+        PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${PARAMS_PUNC_ID}
 
         echo -e "    ${UNDERLINE}The model ID is${PLAIN} ${GREEN}${PARAMS_PUNC_ID}${PLAIN}"
         echo -e "    ${UNDERLINE}The model dir in Docker is${PLAIN} ${GREEN}${PARAMS_DOCKER_PUNC_PATH}${PLAIN}"
@@ -1190,6 +1189,14 @@ dockerRun(){
     RUN_CMD="${RUN_CMD}${PORT_MAP}${DIR_MAP_PARAMS}${ENV_PARAMS}"
     RUN_CMD="${RUN_CMD} -it -d ${PARAMS_DOCKER_IMAGE}"
 
+    # check Docker
+    checkDockerExist
+    result=$?
+    result=`expr $result + 0`
+    if [ ${result} -eq 50 ]; then
+        return 50
+    fi
+
     progress_txt="/var/funasr/progress.txt"
     server_log="/var/funasr/server_console.log"
     rm -f ${progress_txt}
@@ -1208,12 +1215,14 @@ dockerRun(){
         result=$?
         stage=`expr $result + 0`
         if [ ${stage} -eq 0 ]; then
-            return 0
+            break
         elif [ ${stage} -gt 0 ] && [ ${stage} -lt 6 ]; then
             sleep 0.1
             printf "\033[3A"
         elif [ ${stage} -eq 6 ]; then
             break
+        elif [ ${stage} -eq 98 ]; then
+            return 98
         else
             echo -e "  ${RED}Starting FunASR server failed.${PLAIN}"
             echo
@@ -1226,8 +1235,19 @@ dockerRun(){
     printf "\e[?25h"
 
     echo -e "  ${GREEN}The service has been started.${PLAIN}"
+    echo
     echo -e "  ${BOLD}If you want to see an example of how to use the client, you can run ${PLAIN}${GREEN}sudo bash funasr-runtime-deploy.sh -c${PLAIN} ."
     echo
+}
+
+checkDockerExist(){
+    result=$(sudo docker ps | grep ${PARAMS_DOCKER_IMAGE} | wc -l)
+    result=`expr $result + 0`
+    if [ ${result} -ne 0 ]; then
+        echo
+        echo -e "  ${RED}Docker: ${PARAMS_DOCKER_IMAGE} has been launched, please run (${PLAIN}${GREEN}sudo bash funasr-runtime-deploy.sh -p${PLAIN}${RED}) to stop Docker first.${PLAIN}"
+        return 50
+    fi
 }
 
 dockerExit(){
@@ -1244,24 +1264,21 @@ modelChange(){
     if [[ "$result" != "" ]]
     then
         PARAMS_ASR_ID=$1
-        asr_id=$(basename "$PARAMS_ASR_ID")
-        PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${asr_id}
+        PARAMS_DOCKER_ASR_PATH=${PARAMS_DOCKER_ASR_DIR}/${PARAMS_ASR_ID}
         return 0
     fi
     result=$(echo $1 | grep "vad")
     if [[ "$result" != "" ]]
     then
         PARAMS_VAD_ID=$1
-        vad_id=$(basename "$PARAMS_VAD_ID")
-        PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${vad_id}
+        PARAMS_DOCKER_VAD_PATH=${PARAMS_DOCKER_VAD_DIR}/${PARAMS_VAD_ID}
         retun 0
     fi
     result=$(echo $1 | grep "punc")
     if [[ "$result" != "" ]]
     then
         PARAMS_PUNC_ID=$1
-        punc_id=$(basename "$PARAMS_PUNC_ID")
-        PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${asr_id}
+        PARAMS_DOCKER_PUNC_PATH=${PARAMS_DOCKER_PUNC_DIR}/${PARAMS_PUNC_ID}
         retun 0
     fi
 }
@@ -1365,6 +1382,12 @@ modelsConfigure(){
 
 paramsConfigure(){
     selectDockerImages
+    result=$?
+    result=`expr $result + 0`
+    if [ ${result} -eq 50 ]; then
+        return 50
+    fi
+
     setupModelType
     setupAsrModelId
     setupVadModelId
@@ -1473,14 +1496,18 @@ case "$1" in
     install|-i|--install)
         rootNess
         paramsConfigure
-        showAllParams
-        installFunasrDocker
-        dockerRun
         result=$?
-        stage=`expr $result + 0`
-        if [ ${stage} -eq 0 ]; then
-            dockerExit
+        result=`expr $result + 0`
+        if [ ${result} -ne 50 ]; then
+            showAllParams
+            installFunasrDocker
             dockerRun
+            result=$?
+            stage=`expr $result + 0`
+            if [ ${stage} -eq 98 ]; then
+                dockerExit
+                dockerRun
+            fi
         fi
         ;;
     start|-s|--start)
@@ -1490,7 +1517,7 @@ case "$1" in
         dockerRun
         result=$?
         stage=`expr $result + 0`
-        if [ ${stage} -eq 0 ]; then
+        if [ ${stage} -eq 98 ]; then
             dockerExit
             dockerRun
         fi
@@ -1503,7 +1530,7 @@ case "$1" in
         dockerRun
         result=$?
         stage=`expr $result + 0`
-        if [ ${stage} -eq 0 ]; then
+        if [ ${stage} -eq 98 ]; then
             dockerExit
             dockerRun
         fi
@@ -1539,7 +1566,7 @@ case "$1" in
         dockerRun
         result=$?
         stage=`expr $result + 0`
-        if [ ${stage} -eq 0 ]; then
+        if [ ${stage} -eq 98 ]; then
             dockerExit
             dockerRun
         fi
