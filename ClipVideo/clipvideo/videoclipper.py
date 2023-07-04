@@ -1,4 +1,5 @@
 import sys
+sys.path.append('/Users/wanghui/gitlab/MaaS-lib')
 import copy
 import librosa
 import logging
@@ -8,8 +9,8 @@ import soundfile as sf
 import moviepy.editor as mpy
 # from modelscope.pipelines import pipeline
 # from modelscope.utils.constant import Tasks
-from subtitle_utils import generate_srt, generate_srt_clip
-from trans_utils import pre_proc, proc, write_state, load_state
+from subtitle_utils import generate_srt, generate_srt_clip, distribute_spk
+from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, generate_vad_data
 from argparse_tools import ArgumentParser, get_commandline_args
 
 from moviepy.editor import *
@@ -17,11 +18,12 @@ from moviepy.video.tools.subtitles import SubtitlesClip
 
 
 class VideoClipper():
-    def __init__(self, asr_pipeline):
+    def __init__(self, asr_pipeline, sd_pipeline=None):
         logging.warning("Initializing VideoClipper.")
         self.asr_pipeline = asr_pipeline
+        self.sd_pipeline = sd_pipeline
 
-    def recog(self, audio_input, state=None):
+    def recog(self, audio_input, sd_switch='no', state=None):
         if state is None:
             state = {}
         sr, data = audio_input
@@ -32,14 +34,21 @@ class VideoClipper():
         state['audio_input'] = (sr, data)
         data = data.astype(np.float64)
         rec_result = self.asr_pipeline(audio_in=data)
+        if sd_switch == 'yes':
+            vad_data = generate_vad_data(data.astype(np.float32), rec_result['sentences'], sr)
+            sd_result = self.sd_pipeline(audio=vad_data, batch_size=1)
+            rec_result['sd_sentences'] = distribute_spk(rec_result['sentences'], sd_result['text'])
+            res_srt = generate_srt(rec_result['sd_sentences'])
+            state['sd_sentences'] = rec_result['sd_sentences']
+        else:
+            res_srt = generate_srt(rec_result['sentences'])
         state['recog_res_raw'] = rec_result['text_postprocessed']
         state['timestamp'] = rec_result['time_stamp']
         state['sentences'] = rec_result['sentences']
         res_text = rec_result['text']
-        res_srt = generate_srt(rec_result['sentences'])
         return res_text, res_srt, state
 
-    def clip(self, dest_text, start_ost, end_ost, state):
+    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None):
         # get from state
         audio_input = state['audio_input']
         recog_res_raw = state['recog_res_raw']
@@ -49,11 +58,17 @@ class VideoClipper():
         data = data.astype(np.float64)
 
         all_ts = []
-        for _dest_text in dest_text.split('#'):
-            _dest_text = pre_proc(_dest_text)
-            ts = proc(recog_res_raw, timestamp, _dest_text)
-            for _ts in ts: all_ts.append(_ts)
+        if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
+            for _dest_text in dest_text.split('#'):
+                _dest_text = pre_proc(_dest_text)
+                ts = proc(recog_res_raw, timestamp, _dest_text)
+                for _ts in ts: all_ts.append(_ts)
+        else:
+            for _dest_spk in dest_spk.split('#'):
+                ts = proc_spk(_dest_spk, state['sd_sentences'])
+                for _ts in ts: all_ts.append(_ts)
         ts = all_ts
+        ts.sort()
         srt_index = 0
         clip_srt = ""
         if len(ts):
@@ -79,7 +94,7 @@ class VideoClipper():
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
-    def video_recog(self, vedio_filename):
+    def video_recog(self, vedio_filename, sd_switch='no'):
         vedio_filename = vedio_filename
         clip_video_file = vedio_filename[:-4] + '_clip.mp4'
         video = mpy.VideoFileClip(vedio_filename)
@@ -92,9 +107,9 @@ class VideoClipper():
             'video': video,
         }
         # res_text, res_srt = self.recog((16000, wav), state)
-        return self.recog((16000, wav), state)
+        return self.recog((16000, wav), sd_switch, state)
 
-    def video_clip(self, dest_text, start_ost, end_ost, state, font_size=32, font_color='white', add_sub=False):
+    def video_clip(self, dest_text, start_ost, end_ost, state, font_size=32, font_color='white', add_sub=False, dest_spk=None):
         # get from state
         recog_res_raw = state['recog_res_raw']
         timestamp = state['timestamp']
@@ -105,11 +120,17 @@ class VideoClipper():
         
         all_ts = []
         srt_index = 0
-        for _dest_text in dest_text.split('#'):
-            _dest_text = pre_proc(_dest_text)
-            ts = proc(recog_res_raw, timestamp, _dest_text)
-            for _ts in ts: all_ts.append(_ts)
+        if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
+            for _dest_text in dest_text.split('#'):
+                _dest_text = pre_proc(_dest_text)
+                ts = proc(recog_res_raw, timestamp, _dest_text)
+                for _ts in ts: all_ts.append(_ts)
+        else:
+            for _dest_spk in dest_spk.split('#'):
+                ts = proc_spk(_dest_spk, state['sd_sentences'])
+                for _ts in ts: all_ts.append(_ts)
         ts = all_ts
+        ts.sort()
         clip_srt = ""
         if len(ts):
             start, end = ts[0][0] / 16000, ts[0][1] / 16000
@@ -167,6 +188,13 @@ def get_parser():
         required=True
     )
     parser.add_argument(
+        "--sd_switch",
+        type=str,
+        choices=("no", "yes"),
+        default="no",
+        help="Trun on the speaker diarization or not",
+    )
+    parser.add_argument(
         "--output_dir",
         type=str,
         default='./output',
@@ -177,6 +205,12 @@ def get_parser():
         type=str,
         default=None,
         help="Destination text string for clipping",
+    )
+    parser.add_argument(
+        "--dest_spk",
+        type=str,
+        default=None,
+        help="Destination spk id for clipping",
     )
     parser.add_argument(
         "--start_ost",
@@ -199,7 +233,7 @@ def get_parser():
     return parser
 
 
-def runner(stage, file, output_dir, dest_text, start_ost, end_ost, output_file, config=None):
+def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None):
     audio_suffixs = ['wav']
     video_suffixs = ['mp4']
     if file[-3:] in audio_suffixs:
@@ -222,14 +256,19 @@ def runner(stage, file, output_dir, dest_text, start_ost, end_ost, output_file, 
             punc_model='damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch',
             output_dir=output_dir,
         )
-        audio_clipper = VideoClipper(inference_pipeline)
+        sd_pipeline = pipeline(
+            task='speaker-diarization',
+            model='damo/speech_campplus_speaker-diarization_common',
+            model_revision='v1.0.0'
+        )
+        audio_clipper = VideoClipper(inference_pipeline, sd_pipeline)
         if mode == 'audio':
             logging.warning("Recognizing audio file: {}".format(file))
             wav, sr = librosa.load(file, sr=16000)
-            res_text, res_srt, state = audio_clipper.recog((sr, wav))
+            res_text, res_srt, state = audio_clipper.recog((sr, wav), sd_switch)
         if mode == 'video':
             logging.warning("Recognizing video file: {}".format(file))
-            res_text, res_srt, state = audio_clipper.video_recog(file)
+            res_text, res_srt, state = audio_clipper.video_recog(file, sd_switch)
         total_srt_file = output_dir + '/total.srt'
         with open(total_srt_file, 'w') as fout:
             fout.write(res_srt)
@@ -243,7 +282,7 @@ def runner(stage, file, output_dir, dest_text, start_ost, end_ost, output_file, 
             state = load_state(output_dir)
             wav, sr = librosa.load(file, sr=16000)
             state['audio_input'] = (sr, wav)
-            (sr, audio), message, srt_clip = audio_clipper.clip(dest_text, start_ost, end_ost, state)
+            (sr, audio), message, srt_clip = audio_clipper.clip(dest_text, start_ost, end_ost, state, dest_spk=dest_spk)
             if output_file is None:
                 output_file = output_dir + '/result.wav'
             clip_srt_file = output_file[:-3] + 'srt'
@@ -263,7 +302,7 @@ def runner(stage, file, output_dir, dest_text, start_ost, end_ost, output_file, 
                 state['clip_video_file'] = output_file
             clip_srt_file = state['clip_video_file'][:-3] + 'srt'
             state['video'] = mpy.VideoFileClip(file)
-            clip_video_file, message, srt_clip = audio_clipper.video_clip(dest_text, start_ost, end_ost, state)
+            clip_video_file, message, srt_clip = audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=dest_spk)
             logging.warning("Clipping Log: {}".format(message))
             logging.warning("Save clipped mp4 file to {}".format(clip_video_file))
             with open(clip_srt_file, 'w') as fout:
