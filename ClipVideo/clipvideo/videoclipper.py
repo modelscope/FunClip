@@ -105,36 +105,40 @@ class VideoClipper():
         
         all_ts = []
         srt_index = 0
+        time_acc_ost = 0.0
         for _dest_text in dest_text.split('#'):
             _dest_text = pre_proc(_dest_text)
             ts = proc(recog_res_raw, timestamp, _dest_text)
             for _ts in ts: all_ts.append(_ts)
+        import pdb; pdb.set_trace()
         ts = all_ts
         clip_srt = ""
         if len(ts):
             start, end = ts[0][0] / 16000, ts[0][1] / 16000
+            srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index, time_acc_ost=time_acc_ost)
             start, end = start+start_ost/1000.0, end+end_ost/1000.0
             video_clip = video.subclip(start, end)
             start_end_info = "from {} to {}".format(start, end)
-            srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index)
             clip_srt += srt_clip
             if add_sub:
                 generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
                 subtitles = SubtitlesClip(subs, generator)
                 video_clip = CompositeVideoClip([video_clip, subtitles.set_pos(('center','bottom'))])
             concate_clip = [video_clip]
+            time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
             for _ts in ts[1:]:
                 start, end = _ts[0] / 16000, _ts[1] / 16000
+                srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1, time_acc_ost=time_acc_ost)
                 start, end = start+start_ost/1000.0, end+end_ost/1000.0
                 _video_clip = video.subclip(start, end)
                 start_end_info += ", from {} to {}".format(start, end)
-                srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1)
                 clip_srt += srt_clip
                 if add_sub:
                     generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
                     subtitles = SubtitlesClip(subs, generator)
                     _video_clip = CompositeVideoClip([_video_clip, subtitles.set_pos(('center','bottom'))])
                 concate_clip.append(copy.copy(_video_clip))
+                time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
             message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
             logging.warning("Concating...")
             if len(concate_clip) > 1:

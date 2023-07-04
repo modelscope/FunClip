@@ -34,10 +34,13 @@ class Text2SRT():
         return res
     def len(self):
         return len(self.token_list)
-    def srt(self):
-        return "{} --> {}\n{}\n".format(self.start_time, self.end_time, self.text())
-    def time(self):
-        return (self.start_sec/1000, self.end_sec/1000)
+    def srt(self, acc_ost=0.0):
+        return "{} --> {}\n{}\n".format(
+            time_convert(self.start_sec+acc_ost*1000),
+            time_convert(self.end_sec+acc_ost*1000), 
+            self.text())
+    def time(self, acc_ost=0.0):
+        return (self.start_sec/1000+acc_ost, self.end_sec/1000+acc_ost)
 
 
 def generate_srt(sentence_list):
@@ -47,7 +50,7 @@ def generate_srt(sentence_list):
         srt_total += "{}\n{}".format(i, t2s.srt())
     return srt_total
 
-def generate_srt_clip(sentence_list, start, end, begin_index=0):
+def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0):
     start, end = int(start * 1000), int(end * 1000)
     srt_total = ''
     cc = 1 + begin_index
@@ -58,10 +61,10 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0):
         if d['ts_list'][0][0] >= end:
             break
         # parts in between
-        if (d['ts_list'][-1][1] < end and d['ts_list'][0][0] > start) or (d['ts_list'][-1][1] == end and d['ts_list'][0][0] == start):
+        if (d['ts_list'][-1][1] <= end and d['ts_list'][0][0] > start) or (d['ts_list'][-1][1] == end and d['ts_list'][0][0] == start):
             t2s = Text2SRT(d['text_seg'], d['ts_list'], offset=start)
-            srt_total += "{}\n{}".format(cc, t2s.srt())
-            subs.append((t2s.time(), t2s.text()))
+            srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
+            subs.append((t2s.time(time_acc_ost), t2s.text()))
             cc += 1
             continue
         if d['ts_list'][0][0] <= start:
@@ -84,8 +87,8 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0):
                 _ts = d['ts_list'][_start:_end]
             if len(ts):
                 t2s = Text2SRT(_text, _ts, offset=start)
-                srt_total += "{}\n{}".format(cc, t2s.srt())
-                subs.append((t2s.time(), t2s.text()))
+                srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
+                subs.append((t2s.time(time_acc_ost), t2s.text()))
                 cc += 1
             continue
         if d['ts_list'][-1][1] > end:
@@ -96,9 +99,9 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0):
             _ts = d['ts_list'][:j]
             if len(_ts):
                 t2s = Text2SRT(_text, _ts, offset=start)
-                srt_total += "{}\n{}".format(cc, t2s.srt())
+                srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
                 subs.append(
-                    (t2s.time(), t2s.text())
+                    (t2s.time(time_acc_ost), t2s.text())
                     )
                 cc += 1
             continue
