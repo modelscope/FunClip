@@ -110,7 +110,6 @@ class VideoClipper():
             _dest_text = pre_proc(_dest_text)
             ts = proc(recog_res_raw, timestamp, _dest_text)
             for _ts in ts: all_ts.append(_ts)
-        import pdb; pdb.set_trace()
         ts = all_ts
         clip_srt = ""
         if len(ts):
