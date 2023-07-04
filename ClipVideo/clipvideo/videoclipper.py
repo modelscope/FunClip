@@ -1,5 +1,4 @@
 import sys
-sys.path.append('/Users/wanghui/gitlab/MaaS-lib')
 import copy
 import librosa
 import logging
