@@ -50,7 +50,7 @@ You can establish your own ClipVideo service which is same as [Modelscope Space]
 python clipvideo/gradio_service.py
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use ClipVideo following the steps:
-<img src="ClipVideo/docs/images/show.png"/>
+<img src="ClipVideo/docs/images/show2.0.png"/>
 
 #### Use ClipVideo in command line
 ClipVideo supports you to recognize and clip with commands:
