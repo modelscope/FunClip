@@ -67,7 +67,7 @@ class VideoClipper():
                 ts = proc_spk(_dest_spk, state['sd_sentences'])
                 for _ts in ts: all_ts.append(_ts)
         ts = all_ts
-        ts.sort()
+        # ts.sort()
         srt_index = 0
         clip_srt = ""
         if len(ts):
@@ -130,7 +130,7 @@ class VideoClipper():
                 for _ts in ts: all_ts.append(_ts)
         time_acc_ost = 0.0
         ts = all_ts
-        ts.sort()
+        # ts.sort()
         clip_srt = ""
         if len(ts):
             start, end = ts[0][0] / 16000, ts[0][1] / 16000
@@ -148,14 +148,19 @@ class VideoClipper():
             for _ts in ts[1:]:
                 start, end = _ts[0] / 16000, _ts[1] / 16000
                 srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1, time_acc_ost=time_acc_ost)
+                chi_subs = []
+                sub_starts = subs[0][0][0]
+                for sub in subs:
+                    chi_subs.append(((sub[0][0]-sub_starts, sub[0][1]-sub_starts), sub[1]))
                 start, end = start+start_ost/1000.0, end+end_ost/1000.0
                 _video_clip = video.subclip(start, end)
                 start_end_info += ", from {} to {}".format(start, end)
                 clip_srt += srt_clip
                 if add_sub:
                     generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
-                    subtitles = SubtitlesClip(subs, generator)
+                    subtitles = SubtitlesClip(chi_subs, generator)
                     _video_clip = CompositeVideoClip([_video_clip, subtitles.set_pos(('center','bottom'))])
+                    # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
                 concate_clip.append(copy.copy(_video_clip))
                 time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
             message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
