@@ -42,12 +42,34 @@ class Text2SRT():
     def time(self, acc_ost=0.0):
         return (self.start_sec/1000+acc_ost, self.end_sec/1000+acc_ost)
 
+def distribute_spk(sentence_list, sd_time_list):
+    sd_sentence_list = []
+    for d in sentence_list:
+        sentence_start = d['ts_list'][0][0]
+        sentence_end = d['ts_list'][-1][1]
+        sentence_spk = 0
+        max_overlap = 0
+        for sd_time in sd_time_list:
+            spk_st, spk_ed, spk = sd_time
+            spk_st = spk_st*1000
+            spk_ed = spk_ed*1000
+            overlap = max(
+                min(sentence_end, spk_ed) - max(sentence_start, spk_st), 0)
+            if overlap > max_overlap:
+                max_overlap = overlap
+                sentence_spk = spk
+        d['spk'] = sentence_spk
+        sd_sentence_list.append(d)
+    return sd_sentence_list
 
 def generate_srt(sentence_list):
     srt_total = ''
     for i, d in enumerate(sentence_list):
         t2s = Text2SRT(d['text_seg'], d['ts_list'])
-        srt_total += "{}\n{}".format(i, t2s.srt())
+        if 'spk' in d:
+            srt_total += "{}  spk{}\n{}".format(i, d['spk'], t2s.srt())
+        else:
+            srt_total += "{}\n{}".format(i, t2s.srt())
     return srt_total
 
 def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0):
