@@ -10,6 +10,7 @@ if __name__ == "__main__":
         model='damo/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch',
         vad_model='damo/speech_fsmn_vad_zh-cn-16k-common-pytorch',
         punc_model='damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch',
+        ncpu=16,
     )
     sd_pipeline = pipeline(
         task='speaker-diarization',
