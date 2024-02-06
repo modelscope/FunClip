@@ -20,11 +20,13 @@ Under the help of ClipVideo you can get the video clips easily with the followin
 
 ### Usage
 ```shell
+# install funasr (necessary)
+git clone https://github.com/alibaba-damo-academy/FunASR.git
+cd FunASR
+pip install -e ./
+# python environments
 git clone https://github.com/alibaba-damo-academy/FunASR-APP.git
 cd FunASR-APP
-# install modelscope
-pip install "modelscope[audio_asr]" -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
-# python environments
 pip install -r ClipVideo/requirments.txt
 ```
 (Optional) If you want to clip video file with embedded subtitles

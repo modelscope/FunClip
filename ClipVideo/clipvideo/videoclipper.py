@@ -8,7 +8,7 @@ import soundfile as sf
 import moviepy.editor as mpy
 # from modelscope.pipelines import pipeline
 # from modelscope.utils.constant import Tasks
-from subtitle_utils import generate_srt, generate_srt_clip, distribute_spk
+from subtitle_utils import generate_srt, generate_srt_clip# distribute_spk
 from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, generate_vad_data
 from argparse_tools import ArgumentParser, get_commandline_args
 
@@ -17,10 +17,9 @@ from moviepy.video.tools.subtitles import SubtitlesClip
 
 
 class VideoClipper():
-    def __init__(self, asr_pipeline, sd_pipeline=None):
+    def __init__(self, funasr_model):
         logging.warning("Initializing VideoClipper.")
-        self.asr_pipeline = asr_pipeline
-        self.sd_pipeline = sd_pipeline
+        self.funasr_model = funasr_model
 
     def recog(self, audio_input, sd_switch='no', state=None):
         if state is None:
@@ -32,19 +31,24 @@ class VideoClipper():
             data = data[:,0]
         state['audio_input'] = (sr, data)
         data = data.astype(np.float64)
-        rec_result = self.asr_pipeline(audio_in=data)
         if sd_switch == 'yes':
+            rec_result = self.funasr_model.generate(data)
+            res_srt = generate_srt(rec_result[0]['sentence_info'])
+            state['sd_sentences'] = rec_result[0]['sentence_info']
+            '''
             vad_data = generate_vad_data(data.astype(np.float32), rec_result['sentences'], sr)
             sd_result = self.sd_pipeline(audio=vad_data, batch_size=1)
             rec_result['sd_sentences'] = distribute_spk(rec_result['sentences'], sd_result['text'])
             res_srt = generate_srt(rec_result['sd_sentences'])
             state['sd_sentences'] = rec_result['sd_sentences']
+            '''
         else:
-            res_srt = generate_srt(rec_result['sentences'])
-        state['recog_res_raw'] = rec_result['text_postprocessed']
-        state['timestamp'] = rec_result['time_stamp']
-        state['sentences'] = rec_result['sentences']
-        res_text = rec_result['text']
+            rec_result = self.funasr_model.generate(data, return_spk_res=False, sentence_timestamp=True)
+            res_srt = generate_srt(rec_result[0]['sentence_info'])
+        state['recog_res_raw'] = rec_result[0]['raw_text']
+        state['timestamp'] = rec_result[0]['timestamp']
+        state['sentences'] = rec_result[0]['sentence_info']
+        res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
     def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None):
