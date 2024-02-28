@@ -46,7 +46,7 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ParaClipper/STHeitiM
 
 ### 使用ParaClipper
 
-#### 在本地启动Gradio服务
+#### A.在本地启动Gradio服务
 
 ```shell
 python paraclipper/launch.py
@@ -61,7 +61,7 @@ python paraclipper/launch.py
 
 <img src="docs/images/demo.png"/>
 
-#### 通过命令行调用使用ParaClipper的相关功能（更新中）
+#### B.通过命令行调用使用ParaClipper的相关功能（更新中）
 ```shell
 # 步骤一：识别
 python paraclipper/videoclipper.py --stage 1 \
@@ -78,7 +78,7 @@ python paraclipper/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-#### 通过Modelscope创空间体验ParaClipper
+#### C.通过Modelscope创空间体验ParaClipper
 [ParaClipper创空间](https://modelscope.cn/studios/damo/funasr_app_ParaClipper/summary)（版本较旧，并且受网络影响速度较慢，不推荐）
 
 ### 通过FunASR了解语音识别相关技术
