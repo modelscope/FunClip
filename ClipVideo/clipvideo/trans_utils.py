@@ -39,7 +39,7 @@ def proc_spk(dest_spk, sd_sentences):
     for d in sd_sentences:
         d_start = d['timestamp'][0][0]
         d_end = d['timestamp'][-1][1]
-        spkid=dest_spk
+        spkid=dest_spk[3:]
         # import pdb; pdb.set_trace()
         if str(d['spk']) == spkid and d_end-d_start>999:
             ts.append([d['start']*16, d['end']*16])

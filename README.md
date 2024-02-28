@@ -4,8 +4,9 @@
 
 ## What's New
 
-- 10/17 Bug fix for multiple periods chosen, used to return video with wrong length.
-- 10/10 ClipVideo now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using ClipVideo.
+- 2024/02/28 Update call function of funasr into funasr1.0, use SeACo_Paraformer thus ASR now supports hotword. Also support destination transcription like 'abcd[-100,150]#efgh[200,200]' to adjust offset time for every sub-sentence (TODO: use ClipVideo with command line is not updated currently).
+- 2023/10/17 Bug fix for multiple periods chosen, used to return video with wrong length.
+- 2023/10/10 ClipVideo now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using ClipVideo.
 
 
 ## ClipVideo

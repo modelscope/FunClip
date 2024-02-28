@@ -23,8 +23,8 @@ if __name__ == "__main__":
     def audio_clip(dest_text, audio_spk_input, start_ost, end_ost, state):
         return audio_clipper.clip(dest_text, start_ost, end_ost, state, dest_spk=audio_spk_input)
 
-    def video_recog(video_input, sd_switch):
-        return audio_clipper.video_recog(video_input, sd_switch)
+    def video_recog(video_input, sd_switch, hotwords):
+        return audio_clipper.video_recog(video_input, sd_switch, hotwords)
 
     def video_clip(dest_text, video_spk_input, start_ost, end_ost, state):
         return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=video_spk_input)
@@ -85,6 +85,7 @@ if __name__ == "__main__":
                                 [video_input],
                                 label='说话人切分示例 SD Demo')
                     video_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
+                    hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
                     recog_button2 = gr.Button("👂识别 Recognize")
                     video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                     video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
@@ -134,7 +135,7 @@ if __name__ == "__main__":
                            outputs=[audio_output, audio_mess_output, audio_srt_clip_output])
 
         recog_button2.click(video_recog, 
-                            inputs=[video_input, video_sd_switch], 
+                            inputs=[video_input, video_sd_switch, hotwords_input], 
                             outputs=[video_text_output, video_srt_output, video_state])
         clip_button2.click(video_clip, 
                            inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state], 
