@@ -1,4 +1,4 @@
-# ParaClipper
+# ParaClipper📐
 
 ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频音轨的语音识别。用户可以自由选择识别结果中的片段，点击裁剪按钮即可获取对应片段的视频。
 
@@ -8,7 +8,9 @@ ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义
 - 通过Gradio交互实现上述功能，安装简单使用方便。
 - ParaClipper支持多段自由剪辑，并且会自动返回全视频SRT字幕，目标段落SRT字幕，方便用户使用。
 
-## 近期更新
+欢迎体验使用，提出关于字幕生成或语音识别的需求建议~
+
+## 近期更新🚀
 
 - 2024/02/28 ParaClipper升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
 - 2024/02/28 原FunASR-APP/ClipVideo更名为ParaClipper。
