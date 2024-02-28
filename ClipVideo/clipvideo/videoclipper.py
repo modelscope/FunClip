@@ -1,3 +1,4 @@
+import re
 import sys
 import copy
 import librosa
@@ -6,23 +7,20 @@ import argparse
 import numpy as np
 import soundfile as sf
 import moviepy.editor as mpy
-# from modelscope.pipelines import pipeline
-# from modelscope.utils.constant import Tasks
-from subtitle_utils import generate_srt, generate_srt_clip, distribute_spk
-from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, generate_vad_data
-from argparse_tools import ArgumentParser, get_commandline_args
-
 from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
+from subtitle_utils import generate_srt, generate_srt_clip
+from argparse_tools import ArgumentParser, get_commandline_args
+from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, generate_vad_data
 
 
 class VideoClipper():
-    def __init__(self, asr_pipeline, sd_pipeline=None):
+    def __init__(self, funasr_model):
         logging.warning("Initializing VideoClipper.")
-        self.asr_pipeline = asr_pipeline
-        self.sd_pipeline = sd_pipeline
+        self.funasr_model = funasr_model
+        self.GLOBAL_COUNT = 0
 
-    def recog(self, audio_input, sd_switch='no', state=None):
+    def recog(self, audio_input, sd_switch='no', state=None, hotwords=""):
         if state is None:
             state = {}
         sr, data = audio_input
@@ -32,19 +30,22 @@ class VideoClipper():
             data = data[:,0]
         state['audio_input'] = (sr, data)
         data = data.astype(np.float64)
-        rec_result = self.asr_pipeline(audio_in=data)
         if sd_switch == 'yes':
-            vad_data = generate_vad_data(data.astype(np.float32), rec_result['sentences'], sr)
-            sd_result = self.sd_pipeline(audio=vad_data, batch_size=1)
-            rec_result['sd_sentences'] = distribute_spk(rec_result['sentences'], sd_result['text'])
-            res_srt = generate_srt(rec_result['sd_sentences'])
-            state['sd_sentences'] = rec_result['sd_sentences']
+            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords)
+            res_srt = generate_srt(rec_result[0]['sentence_info'])
+            state['sd_sentences'] = rec_result[0]['sentence_info']
         else:
-            res_srt = generate_srt(rec_result['sentences'])
-        state['recog_res_raw'] = rec_result['text_postprocessed']
-        state['timestamp'] = rec_result['time_stamp']
-        state['sentences'] = rec_result['sentences']
-        res_text = rec_result['text']
+            rec_result = self.funasr_model.generate(data, 
+                                                    return_spk_res=False, 
+                                                    sentence_timestamp=True, 
+                                                    return_raw_text=True, 
+                                                    is_final=True, 
+                                                    hotword=hotwords)
+            res_srt = generate_srt(rec_result[0]['sentence_info'])
+        state['recog_res_raw'] = rec_result[0]['raw_text']
+        state['timestamp'] = rec_result[0]['timestamp']
+        state['sentences'] = rec_result[0]['sentence_info']
+        res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
     def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None):
@@ -59,6 +60,15 @@ class VideoClipper():
         all_ts = []
         if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
             for _dest_text in dest_text.split('#'):
+                if '[' in _dest_text:
+                    match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                    if match:
+                        offset_b, offset_e = map(int, match.groups())
+                        log_append = ""
+                    else:
+                        offset_b, offset_e = 0, 0
+                        log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                    _dest_text = _dest_text[:_dest_text.find('[')]
                 _dest_text = pre_proc(_dest_text)
                 ts = proc(recog_res_raw, timestamp, _dest_text)
                 for _ts in ts: all_ts.append(_ts)
@@ -87,13 +97,13 @@ class VideoClipper():
                 srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index-1)
                 clip_srt += srt_clip
         if len(ts):
-            message = "{} periods found in the speech: ".format(len(ts)) + start_end_info
+            message = "{} periods found in the speech: ".format(len(ts)) + start_end_info + log_append
         else:
             message = "No period found in the speech, return raw speech. You may check the recognition result and try other destination text."
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
-    def video_recog(self, vedio_filename, sd_switch='no'):
+    def video_recog(self, vedio_filename, sd_switch='no', hotwords=""):
         vedio_filename = vedio_filename
         clip_video_file = vedio_filename[:-4] + '_clip.mp4'
         video = mpy.VideoFileClip(vedio_filename)
@@ -106,7 +116,7 @@ class VideoClipper():
             'video': video,
         }
         # res_text, res_srt = self.recog((16000, wav), state)
-        return self.recog((16000, wav), sd_switch, state)
+        return self.recog((16000, wav), sd_switch, state, hotwords)
 
     def video_clip(self, dest_text, start_ost, end_ost, state, font_size=32, font_color='white', add_sub=False, dest_spk=None):
         # get from state
@@ -121,9 +131,24 @@ class VideoClipper():
         srt_index = 0
         if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
             for _dest_text in dest_text.split('#'):
+                if '[' in _dest_text:
+                    match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                    if match:
+                        offset_b, offset_e = map(int, match.groups())
+                        log_append = ""
+                    else:
+                        offset_b, offset_e = 0, 0
+                        log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                    _dest_text = _dest_text[:_dest_text.find('[')]
+                else:
+                    offset_b, offset_e = 0, 0
+                    log_append = ""
                 _dest_text = pre_proc(_dest_text)
                 ts = proc(recog_res_raw, timestamp, _dest_text)
-                for _ts in ts: all_ts.append(_ts)
+                for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
+                if len(ts) > 1 and match:
+                    log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
+                        offsets are applied to all periods)'
         else:
             for _dest_spk in dest_spk.split('#'):
                 ts = proc_spk(_dest_spk, state['sd_sentences'])
@@ -163,11 +188,13 @@ class VideoClipper():
                     # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
                 concate_clip.append(copy.copy(_video_clip))
                 time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
-            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
+            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info + log_append
             logging.warning("Concating...")
             if len(concate_clip) > 1:
                 video_clip = concatenate_videoclips(concate_clip)
-            video_clip.write_videofile(clip_video_file, audio_codec="aac")
+            clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
+            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile="video_no{}.mp4".format(self.GLOBAL_COUNT))
+            self.GLOBAL_COUNT += 1
         else:
             clip_video_file = vedio_filename
             message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text."
@@ -252,23 +279,19 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
     while output_dir.endswith('/'):
         output_dir = output_dir[:-1]
     if stage == 1:
-        from modelscope.pipelines import pipeline
-        from modelscope.utils.constant import Tasks
-        # initialize modelscope asr pipeline
+        from funasr import AutoModel
+        # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
-        inference_pipeline = pipeline(
-            task=Tasks.auto_speech_recognition,
-            model='damo/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch',
-            vad_model='damo/speech_fsmn_vad_zh-cn-16k-common-pytorch',
-            punc_model='damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch',
-            output_dir=output_dir,
-        )
-        sd_pipeline = pipeline(
-            task='speaker-diarization',
-            model='damo/speech_campplus_speaker-diarization_common',
-            model_revision='v1.0.0'
-        )
-        audio_clipper = VideoClipper(inference_pipeline, sd_pipeline)
+        funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+                  model_revision="v2.0.4",
+                  vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                  vad_model_revision="v2.0.4",
+                  punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                  punc_model_revision="v2.0.4",
+                  spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                  spk_model_revision="v2.0.2",
+                  )
+        audio_clipper = VideoClipper(funasr_model)
         if mode == 'audio':
             logging.warning("Recognizing audio file: {}".format(file))
             wav, sr = librosa.load(file, sr=16000)

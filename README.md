@@ -4,8 +4,9 @@
 
 ## What's New
 
-- 10/17 Bug fix for multiple periods chosen, used to return video with wrong length.
-- 10/10 ClipVideo now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using ClipVideo.
+- 2024/02/28 Update call function of funasr into funasr1.0, use SeACo_Paraformer thus ASR now supports hotword. Also support destination transcription like 'abcd[-100,150]#efgh[200,200]' to adjust offset time for every sub-sentence (TODO: use ClipVideo with command line is not updated currently).
+- 2023/10/17 Bug fix for multiple periods chosen, used to return video with wrong length.
+- 2023/10/10 ClipVideo now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using ClipVideo.
 
 
 ## ClipVideo
@@ -20,11 +21,13 @@ Under the help of ClipVideo you can get the video clips easily with the followin
 
 ### Usage
 ```shell
+# install funasr (necessary)
+git clone https://github.com/alibaba-damo-academy/FunASR.git
+cd FunASR
+pip install -e ./
+# python environments
 git clone https://github.com/alibaba-damo-academy/FunASR-APP.git
 cd FunASR-APP
-# install modelscope
-pip install "modelscope[audio_asr]" -f https://modelscope.oss-cn-beijing.aliyuncs.com/releases/repo.html
-# python environments
 pip install -r ClipVideo/requirments.txt
 ```
 (Optional) If you want to clip video file with embedded subtitles

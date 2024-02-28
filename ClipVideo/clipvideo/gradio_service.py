@@ -1,23 +1,20 @@
 import gradio as gr
-from modelscope.pipelines import pipeline
-from modelscope.utils.constant import Tasks
+from funasr import AutoModel
 from videoclipper import VideoClipper
-from video import Video
+# from video import Video
+
 
 if __name__ == "__main__":
-    inference_pipeline = pipeline(
-        task=Tasks.auto_speech_recognition,
-        model='damo/speech_paraformer-large-vad-punc_asr_nat-zh-cn-16k-common-vocab8404-pytorch',
-        vad_model='damo/speech_fsmn_vad_zh-cn-16k-common-pytorch',
-        punc_model='damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch',
-        ncpu=16,
-    )
-    sd_pipeline = pipeline(
-        task='speaker-diarization',
-        model='damo/speech_campplus_speaker-diarization_common',
-        model_revision='v1.0.0'
-    )
-    audio_clipper = VideoClipper(inference_pipeline, sd_pipeline)
+    funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+                  model_revision="v2.0.4",
+                  vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                  vad_model_revision="v2.0.4",
+                  punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                  punc_model_revision="v2.0.4",
+                  spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                  spk_model_revision="v2.0.2",
+                  )
+    audio_clipper = VideoClipper(funasr_model)
 
     def audio_recog(audio_input, sd_switch):
         print(audio_input)
@@ -26,8 +23,8 @@ if __name__ == "__main__":
     def audio_clip(dest_text, audio_spk_input, start_ost, end_ost, state):
         return audio_clipper.clip(dest_text, start_ost, end_ost, state, dest_spk=audio_spk_input)
 
-    def video_recog(video_input, sd_switch):
-        return audio_clipper.video_recog(video_input, sd_switch)
+    def video_recog(video_input, sd_switch, hotwords):
+        return audio_clipper.video_recog(video_input, sd_switch, hotwords)
 
     def video_clip(dest_text, video_spk_input, start_ost, end_ost, state):
         return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=video_spk_input)
@@ -77,7 +74,7 @@ if __name__ == "__main__":
         with gr.Tab("🎥✂️视频裁剪 Video Clipping"):
             with gr.Row():
                 with gr.Column():
-                    video_input = Video(label="🎥视频输入 Video Input")
+                    video_input = gr.Video(label="🎥视频输入 Video Input")
                     gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%9A%E8%AF%BB%E4%B9%A6%EF%BC%9F%E8%BF%99%E6%98%AF%E6%88%91%E5%90%AC%E8%BF%87%E6%9C%80%E5%A5%BD%E7%9A%84%E7%AD%94%E6%A1%88-%E7%89%87%E6%AE%B5.mp4', 
                                  'https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B5.mp4', 
                                  'https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B52.mp4', 
@@ -88,6 +85,7 @@ if __name__ == "__main__":
                                 [video_input],
                                 label='说话人切分示例 SD Demo')
                     video_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
+                    hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
                     recog_button2 = gr.Button("👂识别 Recognize")
                     video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                     video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
@@ -137,7 +135,7 @@ if __name__ == "__main__":
                            outputs=[audio_output, audio_mess_output, audio_srt_clip_output])
 
         recog_button2.click(video_recog, 
-                            inputs=[video_input, video_sd_switch], 
+                            inputs=[video_input, video_sd_switch, hotwords_input], 
                             outputs=[video_text_output, video_srt_output, video_state])
         clip_button2.click(video_clip, 
                            inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state], 
@@ -147,4 +145,4 @@ if __name__ == "__main__":
                            outputs=[video_output, video_mess_output, video_srt_clip_output])
     
     # start gradio service in local
-    demo.queue(concurrency_count=3).launch()
+    demo.launch()
