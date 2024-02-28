@@ -1,7 +1,6 @@
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
-# from video import Video
 
 
 if __name__ == "__main__":
@@ -33,7 +32,7 @@ if __name__ == "__main__":
         return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, font_size, font_color, add_sub=True, dest_spk=video_spk_input)
 
     top_md_1 = ("""
-    基于达摩院自研Paraformer-长音频版的语音识别、端点检测、标点预测、时间戳功能、角色区分功能
+    基于阿里巴巴通义实验室自研SeACo-Paraformer-长音频版的语音识别、端点检测、标点预测、时间戳功能、角色区分、热词定制化功能
 
     准确识别，自由复制所需段落，或者设置说话人标识，一键裁剪、添加字幕
 
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     </div>
     """)
 
-    top_md_3 = ("""访问FunASR项目与论文能够帮助您深入了解ClipVideo中所使用的语音处理相关模型：
+    top_md_3 = ("""访问FunASR项目与论文能够帮助您深入了解ParaClipper中所使用的语音处理相关模型：
     <div align="center">
     <div style="display:flex; gap: 0.25rem;" align="center">
         FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR'><img src='https://img.shields.io/badge/Github-Code-blue'></a> 
