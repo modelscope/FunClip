@@ -23,7 +23,7 @@ ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义
 # 安装FunASR（必须）
 pip install -U funasr
 # 安装ParaClipper的Python依赖（必须）
-pip install -r ParaClipper/requirments.txt
+pip install -r ./requirments.txt
 ```
 
 ### 安装imagemagick（可选）
