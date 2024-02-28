@@ -56,8 +56,7 @@ python paraclipper/launch.py
 5. （可选）配置剪辑参数，偏移量与字幕设置等
 6. 点击“裁剪”或“裁剪并添加字幕”按钮
 
-
-<img src="docs/images/show2.0.png"/>
+<img src="docs/images/demo.png"/>
 
 #### 通过命令行调用使用ParaClipper的相关功能（更新中）
 ```shell
@@ -84,5 +83,7 @@ python paraclipper/videoclipper.py --stage 2 \
 [FunASR](https://github.com/alibaba-damo-academy/FunASR)是阿里巴巴通义实验室开源的端到端语音识别工具包，目前已经成为主流ASR工具包之一。其主要包括Python pipeline，SDK部署与海量开源工业ASR模型等。
 
 📚FunASR论文: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
+
 📚SeACo-Paraformer论文：<a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a> 
-⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
+
+⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR.stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
