@@ -1,21 +1,22 @@
-# ParaClipper📐
+# ParaClipper🎥
 
 ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频音轨的语音识别。用户可以自由选择识别结果中的片段，点击裁剪按钮即可获取对应片段的视频。
 
-在上述基本功能的基础上，ParaClipper有以下特色功能：
-- ParaClipper结合了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
-- ParaClipper结合了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
-- 通过Gradio交互实现上述功能，安装简单使用方便。
-- ParaClipper支持多段自由剪辑，并且会自动返回全视频SRT字幕，目标段落SRT字幕，方便用户使用。
+在上述基本功能的基础上，ParaClipper有以下特色：
+- ParaClipper集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
+- ParaClipper集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
+- ParaClipper集成了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
+- 通过Gradio交互实现上述功能，安装简单使用方便，并且可以在服务端搭建服务通过浏览器使用。
+- ParaClipper支持多段自由剪辑，并且会自动返回全视频SRT字幕、目标段落SRT字幕，使用简单方便。
 
-欢迎体验使用，提出关于字幕生成或语音识别的需求建议~
+欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
 
 ## 近期更新🚀
 
 - 2024/02/28 ParaClipper升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
 - 2024/02/28 原FunASR-APP/ClipVideo更名为ParaClipper。
 
-## 使用ParaClipper进行视频剪辑
+## 使用ParaClipper进行视频剪辑✂️
 
 ### 安装
 ```shell
