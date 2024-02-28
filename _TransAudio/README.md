@@ -1,0 +1,1 @@
+TransAudio is no longer under support, please use SDK in funasr(https://github.com/alibaba-damo-academy/FunASR) to establish your ASR service.
