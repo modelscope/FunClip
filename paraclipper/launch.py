@@ -15,9 +15,10 @@ if __name__ == "__main__":
                   )
     audio_clipper = VideoClipper(funasr_model)
 
-    def audio_recog(audio_input, sd_switch):
+    def audio_recog(audio_input, sd_switch, hotwords):
+        # import pdb; pdb.set_trace()
         print(audio_input)
-        return audio_clipper.recog(audio_input, sd_switch)
+        return audio_clipper.recog(audio_input, sd_switch, hotwords=hotwords)
 
     def audio_clip(dest_text, audio_spk_input, start_ost, end_ost, state):
         return audio_clipper.clip(dest_text, start_ost, end_ost, state, dest_spk=audio_spk_input)
@@ -83,8 +84,9 @@ if __name__ == "__main__":
                     gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E8%AE%BF%E8%B0%88.mp4'],
                                 [video_input],
                                 label='说话人切分示例 SD Demo')
-                    video_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
-                    hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
+                    with gr.Row():
+                        video_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
+                        hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
                     recog_button2 = gr.Button("👂识别 Recognize")
                     video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                     video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
@@ -110,7 +112,9 @@ if __name__ == "__main__":
                 with gr.Column():
                     audio_input = gr.Audio(label="🔊音频输入 Audio Input")
                     gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E9%B2%81%E8%82%83%E9%87%87%E8%AE%BF%E7%89%87%E6%AE%B51.wav'], [audio_input])
-                    audio_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
+                    with gr.Row():
+                        audio_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
+                        hotwords_input2 = gr.Textbox(label="🚒热词 Hotwords")
                     recog_button1 = gr.Button("👂识别 Recognize")
                     audio_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                     audio_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
@@ -127,7 +131,7 @@ if __name__ == "__main__":
                     audio_srt_clip_output = gr.Textbox(label="📖裁剪部分SRT字幕内容 Clipped RST Subtitles")
         
         recog_button1.click(audio_recog, 
-                            inputs=[audio_input, audio_sd_switch],
+                            inputs=[audio_input, audio_sd_switch, hotwords_input2],
                             outputs=[audio_text_output, audio_srt_output, audio_state])
         clip_button1.click(audio_clip, 
                            inputs=[audio_text_input, audio_spk_input, audio_start_ost, audio_end_ost, audio_state], 

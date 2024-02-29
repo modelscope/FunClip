@@ -69,9 +69,15 @@ class VideoClipper():
                         offset_b, offset_e = 0, 0
                         log_append = "(Bracket detected in dest_text but offset time matching failed)"
                     _dest_text = _dest_text[:_dest_text.find('[')]
+                else:
+                    log_append = ""
+                    offset_b, offset_e = 0, 0
                 _dest_text = pre_proc(_dest_text)
                 ts = proc(recog_res_raw, timestamp, _dest_text)
-                for _ts in ts: all_ts.append(_ts)
+                for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
+                if len(ts) > 1 and match:
+                    log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
+                        offsets are applied to all periods)'
         else:
             for _dest_spk in dest_spk.split('#'):
                 ts = proc_spk(_dest_spk, state['sd_sentences'])
