@@ -1,4 +1,5 @@
 import re
+import os
 import sys
 import copy
 import librosa
@@ -11,7 +12,7 @@ from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 from subtitle_utils import generate_srt, generate_srt_clip
 from argparse_tools import ArgumentParser, get_commandline_args
-from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, generate_vad_data
+from trans_utils import pre_proc, proc, write_state, load_state, proc_spk
 
 
 class VideoClipper():
@@ -194,7 +195,7 @@ class VideoClipper():
                     # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
                 concate_clip.append(copy.copy(_video_clip))
                 time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
-            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info + log_append
+            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
             logging.warning("Concating...")
             if len(concate_clip) > 1:
                 video_clip = concatenate_videoclips(concate_clip)
@@ -232,7 +233,7 @@ def get_parser():
         type=str,
         choices=("no", "yes"),
         default="no",
-        help="Trun on the speaker diarization or not",
+        help="Turn on the speaker diarization or not",
     )
     parser.add_argument(
         "--output_dir",
@@ -284,6 +285,8 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         logging.error("Unsupported file format: {}".format(file))
     while output_dir.endswith('/'):
         output_dir = output_dir[:-1]
+    if not os.path.exists(output_dir):
+        os.mkdir(output_dir)
     if stage == 1:
         from funasr import AutoModel
         # initialize funasr automodel

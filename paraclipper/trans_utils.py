@@ -55,7 +55,7 @@ def generate_vad_data(data, sd_sentences, sr=16000):
     return vad_data
 
 def write_state(output_dir, state):
-    for key in ['/recog_res_raw', '/timestamp', '/sentences', '/sd_sentences']:
+    for key in ['/recog_res_raw', '/timestamp', '/sentences']:#, '/sd_sentences']:
         with open(output_dir+key, 'w') as fout:
             fout.write(str(state[key[1:]]))
     if 'sd_sentences' in state:
