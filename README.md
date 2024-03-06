@@ -13,6 +13,7 @@ ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义
 
 ## 近期更新🚀
 
+- 2024/03/06 命令行调用方式更新与问题修复，相关功能可以正常使用。
 - 2024/02/28 ParaClipper升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
 - 2024/02/28 原FunASR-APP/ClipVideo更名为ParaClipper。
 
