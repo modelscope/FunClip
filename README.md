@@ -80,7 +80,7 @@ python paraclipper/videoclipper.py --stage 2 \
 ```
 
 #### C.通过Modelscope创空间体验ParaClipper
-[ParaClipper创空间](https://modelscope.cn/studios/damo/funasr_app_ParaClipper/summary)（版本较旧，并且受网络影响速度较慢，不推荐）
+[ParaClipper创空间](https://modelscope.cn/studios/damo/funasr_app_ParaClipper/summary)
 
 ### 通过FunASR了解语音识别相关技术
 
