@@ -83,6 +83,7 @@ class VideoClipper():
             for _dest_spk in dest_spk.split('#'):
                 ts = proc_spk(_dest_spk, state['sd_sentences'])
                 for _ts in ts: all_ts.append(_ts)
+            log_append = ""
         ts = all_ts
         # ts.sort()
         srt_index = 0
