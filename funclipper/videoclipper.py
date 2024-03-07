@@ -314,7 +314,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         total_srt_file = output_dir + '/total.srt'
         with open(total_srt_file, 'w') as fout:
             fout.write(res_srt)
-            logging.warning("Write total subtitile to {}".format(total_srt_file))
+            logging.warning("Write total subtitle to {}".format(total_srt_file))
         write_state(output_dir, state)
         logging.warning("Recognition successed. You can copy the text segment from below and use stage 2.")
         print(res_text)
@@ -334,7 +334,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
             logging.warning("Save clipped wav file to {}".format(output_file))
             with open(clip_srt_file, 'w') as fout:
                 fout.write(srt_clip)
-                logging.warning("Write clipped subtitile to {}".format(clip_srt_file))
+                logging.warning("Write clipped subtitle to {}".format(clip_srt_file))
         if mode == 'video':
             state = load_state(output_dir)
             state['vedio_filename'] = file
@@ -349,7 +349,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
             logging.warning("Save clipped mp4 file to {}".format(clip_video_file))
             with open(clip_srt_file, 'w') as fout:
                 fout.write(srt_clip)
-                logging.warning("Write clipped subtitile to {}".format(clip_srt_file))
+                logging.warning("Write clipped subtitle to {}".format(clip_srt_file))
 
 
 def main(cmd=None):

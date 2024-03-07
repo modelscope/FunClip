@@ -65,12 +65,12 @@ python FunClipper/launch.py
 #### B.通过命令行调用使用FunClipper的相关功能（更新中）
 ```shell
 # 步骤一：识别
-python FunClipper/videoclipper.py --stage 1 \
+python funclipper/videoclipper.py --stage 1 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output
 # ./output中生成了识别结果与srt字幕等
 # 步骤二：裁剪
-python FunClipper/videoclipper.py --stage 2 \
+python funclipper/videoclipper.py --stage 2 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output \
                        --dest_text '我们把它跟乡村振兴去结合起来，利用我们的设计的能力' \
