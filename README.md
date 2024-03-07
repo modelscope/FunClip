@@ -1,29 +1,29 @@
-# ParaClipper🎥
+#  FunClipper🎥
 
-ParaClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频音轨的语音识别。用户可以自由选择识别结果中的片段，点击裁剪按钮即可获取对应片段的视频。
+FunClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的片段，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/damo/funasr_app_FunClipper/summary)）。
 
-在上述基本功能的基础上，ParaClipper有以下特色：
-- ParaClipper集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
-- ParaClipper集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
-- ParaClipper集成了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
+在上述基本功能的基础上，FunClipper有以下特色：
+- FunClipper集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
+- FunClipper集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
+- FunClipper集成了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
 - 通过Gradio交互实现上述功能，安装简单使用方便，并且可以在服务端搭建服务通过浏览器使用。
-- ParaClipper支持多段自由剪辑，并且会自动返回全视频SRT字幕、目标段落SRT字幕，使用简单方便。
+- FunClipper支持多段自由剪辑，并且会自动返回全视频SRT字幕、目标段落SRT字幕，使用简单方便。
 
 欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
 
 ## 近期更新🚀
 
 - 2024/03/06 命令行调用方式更新与问题修复，相关功能可以正常使用。
-- 2024/02/28 ParaClipper升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
-- 2024/02/28 原FunASR-APP/ClipVideo更名为ParaClipper。
+- 2024/02/28 FunClipper升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
+- 2024/02/28 原FunASR-APP/ClipVideo更名为FunClipper。
 
-## 使用ParaClipper进行视频剪辑✂️
+## 使用FunClipper进行视频剪辑✂️
 
 ### 安装
 ```shell
 # 安装FunASR（必须）
 pip install -U funasr
-# 安装ParaClipper的Python依赖（必须）
+# 安装FunClipper的Python依赖（必须）
 pip install -r ./requirments.txt
 ```
 
@@ -42,15 +42,15 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 
 并且下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
 ```shell
-wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ParaClipper/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
+wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/FunClipper/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
 
-### 使用ParaClipper
+### 使用FunClipper
 
 #### A.在本地启动Gradio服务
 
 ```shell
-python paraclipper/launch.py
+python FunClipper/launch.py
 ```
 随后在浏览器中访问```localhost:7860```即可看到如下图所示的界面，按如下步骤即可进行视频剪辑
 1. 上传你的视频（或使用下方的视频用例）
@@ -62,15 +62,15 @@ python paraclipper/launch.py
 
 <img src="docs/images/demo.png"/>
 
-#### B.通过命令行调用使用ParaClipper的相关功能（更新中）
+#### B.通过命令行调用使用FunClipper的相关功能（更新中）
 ```shell
 # 步骤一：识别
-python paraclipper/videoclipper.py --stage 1 \
+python FunClipper/videoclipper.py --stage 1 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output
 # ./output中生成了识别结果与srt字幕等
 # 步骤二：裁剪
-python paraclipper/videoclipper.py --stage 2 \
+python FunClipper/videoclipper.py --stage 2 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output \
                        --dest_text '我们把它跟乡村振兴去结合起来，利用我们的设计的能力' \
@@ -79,8 +79,8 @@ python paraclipper/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-#### C.通过Modelscope创空间体验ParaClipper
-[ParaClipper创空间](https://modelscope.cn/studios/damo/funasr_app_ParaClipper/summary)
+#### C.通过Modelscope创空间体验FunClipper
+[FunClipper创空间](https://modelscope.cn/studios/damo/funasr_app_FunClipper/summary)
 
 ### 通过FunASR了解语音识别相关技术
 
