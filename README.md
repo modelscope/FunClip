@@ -23,8 +23,13 @@ FunClipper是一款自动化视频剪辑工具，通过调用阿里巴巴通义�
 ```shell
 # 安装FunASR（必须）
 pip install -U funasr
+# 可以通过源码安装funasr
+git clone https://github.com/alibaba-damo-academy/FunASR.git
+cd FunASR; pip install -e ./
 # 安装FunClipper的Python依赖（必须）
 pip install -r ./requirments.txt
+# 根据你的环境（CUDA，Python版本等）安装torch和torchaudio
+pip install torch torchaudio
 ```
 
 ### 安装imagemagick（可选）

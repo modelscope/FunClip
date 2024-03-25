@@ -4,3 +4,4 @@ funasr
 moviepy
 numpy
 gradio
+modelscope
