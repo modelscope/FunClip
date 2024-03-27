@@ -84,7 +84,7 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-#### C.通过Modelscope创空间体验funclip
+#### C.通过Modelscope创空间体验FunClip
 [funclip创空间](https://modelscope.cn/studios/damo/funasr_app_funclip/summary)
 
 ### 通过FunASR了解语音识别相关技术
