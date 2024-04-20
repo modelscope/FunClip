@@ -114,12 +114,16 @@ class VideoClipper():
         return (sr, res_audio), message, clip_srt
 
     def video_recog(self, vedio_filename, sd_switch='no', hotwords=""):
-        vedio_filename = vedio_filename
-        clip_video_file = vedio_filename[:-4] + '_clip.mp4'
         video = mpy.VideoFileClip(vedio_filename)
-        audio_file = vedio_filename[:-3] + 'wav'
+        # Extract the base name, add '_clip.mp4', and 'wav'
+        base_name, _ = os.path.splitext(vedio_filename)
+        clip_video_file = base_name + '_clip.mp4'
+        audio_file = base_name + '.wav'
         video.audio.write_audiofile(audio_file)
         wav = librosa.load(audio_file, sr=16000)[0]
+        # delete the audio file after processing
+        if os.path.exists(audio_file):
+            os.remove(audio_file)
         state = {
             'vedio_filename': vedio_filename,
             'clip_video_file': clip_video_file,
@@ -278,14 +282,16 @@ def get_parser():
 
 
 def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None):
-    audio_suffixs = ['wav']
-    video_suffixs = ['mp4']
-    if file[-3:] in audio_suffixs:
+    audio_suffixs = ['.wav','.mp3','.aac','.m4a','.flac']
+    video_suffixs = ['.mp4','.avi','.mkv','.flv','.mov','.webm','.ts','.mpeg']
+    _,ext = os.path.splitext(file)
+    if ext.lower() in audio_suffixs:
         mode = 'audio'
-    elif file[-3:] in video_suffixs:
+    elif ext.lower() in video_suffixs:
         mode = 'video'
     else:
-        logging.error("Unsupported file format: {}".format(file))
+        logging.error("Unsupported file format: {}\n\nplease choise one of the following: {}".format(file),audio_suffixs+video_suffixs)
+        sys.exit(1) # exit if the file is not supported
     while output_dir.endswith('/'):
         output_dir = output_dir[:-1]
     if not os.path.exists(output_dir):
