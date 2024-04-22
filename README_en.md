@@ -73,7 +73,16 @@ python FunClipper/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-### Study Speech Related Models in FunASR
+## Community Communication
+If you encounter problems in use, you can directly raise Issues on the github page.
+
+You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication and discussion.
+
+|                           DingTalk group                            |                     WeChat group                      |
+|:-------------------------------------------------------------------:|:-----------------------------------------------------:|
+| <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
+
+### Get Speech Models in FunASR
 
 [FunASR](https://github.com/alibaba-damo-academy/FunASR) hopes to build a bridge between academic research and industrial applications on speech recognition. By supporting the training & finetuning of the industrial-grade speech recognition model released on ModelScope, researchers and developers can conduct research and production of speech recognition models more conveniently, and promote the development of speech recognition ecology. ASR for Fun！
 
