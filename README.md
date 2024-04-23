@@ -26,13 +26,10 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 #### Python env install
 
 ```shell
-# install funasr and
-pip install -U funasr
-# or install funasr throuth source code
-git clone https://github.com/alibaba-damo-academy/FunASR.git
-cd FunASR; pip install -e ./
+# install funasr and modelscope
+pip install -U funasr modelscope
 # install python dependencies
-pip install -r funclip/requirments.txt
+pip install -r ./requirments.txt
 # install torch and torchaudio based on your CUDA and python version
 pip install torch==xxx torchaudio==xxx
 ```

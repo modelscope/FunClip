@@ -25,10 +25,7 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 
 ```shell
 # 安装FunASR
-pip install -U funasr
-# 可以通过源码安装funasr
-git clone https://github.com/alibaba-damo-academy/FunASR.git
-cd FunASR; pip install -e ./
+pip install -U funasr modelscope
 # 安装FunClip的Python依赖
 pip install -r ./requirments.txt
 # 根据你的环境（CUDA，Python版本等）安装torch和torchaudio
