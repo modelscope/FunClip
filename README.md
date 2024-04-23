@@ -95,9 +95,9 @@ python funclip/videoclipper.py --stage 2 \
 
 ## Community Communication🍟
 
-If you encounter problems in use, you can directly raise Issues on the github page.
+FunClip is firstly open-sourced bu FunASR team, any useful PR is welcomed.
 
-You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication and discussion.
+You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication.
 
 |                           DingTalk group                            |                     WeChat group                      |
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
