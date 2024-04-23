@@ -1,6 +1,6 @@
 # FunClip🎥
 
-([简体中文](./README_zh.md)|English)
+## ([简体中文](./README_zh.md)|English)
 
 FunClip is a fully open-source, locally deployed automated video editing tool. It leverages Alibaba DAMO Academy's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the trim button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
@@ -17,7 +17,7 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 ## What's New🚀
 
 - 2024/03/06 Fix bugs in using FunClip with command line.
-- 2024/02/28 Update call function of funasr into funasr1.0, use SeACo_Paraformer thus ASR now supports hotword. Also support destination transcription like 'abcd[-100,150]#efgh[200,200]' to adjust offset time for every sub-sentence.
+- 2024/02/28 [FunASR](https://github.com/alibaba-damo-academy/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR wit hotword customization.
 - 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
 - 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
 
@@ -101,6 +101,7 @@ python funclip/videoclipper.py --stage 2 \
 - FunClip will support Whisper model for English users, coming soon.
 
 ## Community Communication
+
 If you encounter problems in use, you can directly raise Issues on the github page.
 
 You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication and discussion.
@@ -114,4 +115,7 @@ You can also scan the following DingTalk group or WeChat group QR code to join t
 [FunASR](https://github.com/alibaba-damo-academy/FunASR) hopes to build a bridge between academic research and industrial applications on speech recognition. By supporting the training & finetuning of the industrial-grade speech recognition model released on ModelScope, researchers and developers can conduct research and production of speech recognition models more conveniently, and promote the development of speech recognition ecology. ASR for Fun！
 
 📚FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
+
+📚SeACo-Paraformer Paper: <a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a>
+
 🌟Support FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
