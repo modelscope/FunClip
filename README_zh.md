@@ -19,16 +19,16 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 - 2024/02/28 FunClip升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
 - 2024/02/28 原FunASR-APP/ClipVideo更名为FunClip。
 
-### 安装
+## 安装🔨
 
-#### Python环境安装
+### Python环境安装
 
 ```shell
 # 安装相关Python依赖
 pip install -r ./requirments.txt
 ```
 
-#### 安装imagemagick（可选）
+### 安装imagemagick（可选）
 
 1. 如果你希望使用自动生成字幕的视频裁剪功能，需要安装imagemagick
 
@@ -49,9 +49,9 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
 
-### 使用FunClip
+## 使用FunClip
 
-#### A.在本地启动Gradio服务
+### A.在本地启动Gradio服务
 
 ```shell
 python funclip/launch.py
@@ -66,7 +66,7 @@ python funclip/launch.py
 
 <img src="docs/images/demo.png"/>
 
-#### B.通过命令行调用使用FunClip的相关功能（更新中）
+### B.通过命令行调用使用FunClip的相关功能（更新中）
 ```shell
 # 步骤一：识别
 python funclip/videoclipper.py --stage 1 \
@@ -83,14 +83,14 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-#### C.通过Modelscope创空间体验FunClip
+### C.通过Modelscope创空间体验FunClip
 [funclip创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
 
-## 施工中
+## 施工中🌵
 
 - FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
 
-## 社区交流
+## 社区交流🍟
 
 FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。
 

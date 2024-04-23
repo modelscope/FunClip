@@ -21,16 +21,16 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 - 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
 - 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
 
-### Install
+## Install🔨
 
-#### Python env install
+### Python env install
 
 ```shell
 # install Python requirments
 pip install -r ./requirments.txt
 ```
 
-#### imagemagick install (Optional)
+### imagemagick install (Optional)
 
 If you want to clip video file with embedded subtitles
 
@@ -52,9 +52,9 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
 
-### Use FunClip
+## Use FunClip
 
-#### A. Use FunClip as local Gradio Service
+### A. Use FunClip as local Gradio Service
 You can establish your own FunClip service which is same as [Modelscope Space](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) as follow:
 ```shell
 python funclip/gradio_service.py
@@ -67,10 +67,10 @@ then visit ```localhost:7860``` you will get a Gradio service like below and you
 - Step3: Adjust subtitle settings (if needed)
 - Step4: Click 'Clip' or 'Clip and Generate Subtitles'
 
-#### B. Experience FunClip in Modelscope
+### B. Experience FunClip in Modelscope
 You can try FunClip in modelscope space: [link](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary).
 
-#### C. Use FunClip in command line
+### C. Use FunClip in command line
 
 FunClip supports you to recognize and clip with commands:
 ```shell
@@ -89,11 +89,11 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-## On Going
+## On Going🌵
 
 - FunClip will support Whisper model for English users, coming soon.
 
-## Community Communication
+## Community Communication🍟
 
 If you encounter problems in use, you can directly raise Issues on the github page.
 
