@@ -1,6 +1,6 @@
 # FunClip🎥
 
-## (简体中文|[English](./README.md))
+## 「简体中文 | [English](./README.md)」
 
 FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
 
@@ -24,12 +24,8 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 #### Python环境安装
 
 ```shell
-# 安装FunASR
-pip install -U funasr modelscope
-# 安装FunClip的Python依赖
+# 安装相关Python依赖
 pip install -r ./requirments.txt
-# 根据你的环境（CUDA，Python版本等）安装torch和torchaudio
-pip install torch==xxx torchaudio==xxx
 ```
 
 #### 安装imagemagick（可选）

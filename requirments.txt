@@ -1,7 +1,9 @@
 librosa
 soundfile
-funasr>=1.0.19
+funasr>=1.0.24
 moviepy
 numpy
 gradio
 modelscope
+torch>=1.13
+torchaudio

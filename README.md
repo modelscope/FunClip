@@ -1,6 +1,6 @@
 # FunClip🎥
 
-## ([简体中文](./README_zh.md)|English)
+## 「[简体中文](./README_zh.md) | English」
 
 FunClip is a fully open-source, locally deployed automated video editing tool. It leverages Alibaba DAMO Academy's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the trim button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
@@ -26,12 +26,8 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 #### Python env install
 
 ```shell
-# install funasr and modelscope
-pip install -U funasr modelscope
-# install python dependencies
+# install Python requirments
 pip install -r ./requirments.txt
-# install torch and torchaudio based on your CUDA and python version
-pip install torch==xxx torchaudio==xxx
 ```
 
 #### imagemagick install (Optional)
