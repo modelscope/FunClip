@@ -67,7 +67,7 @@ You can establish your own FunClip service which is same as [Modelscope Space](h
 python funclip/gradio_service.py
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
-<img src="funclip/docs/images/show2.0.png"/>
+<img src="docs/images/demo_en.png"/>
 
 - Step1: Upload your video file (or try the example videos below)
 - Step2: Copy the text segments you need to 'Text to Clip'
@@ -96,6 +96,10 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
+## On Going
+
+- FunClip will support Whisper model for English users, coming soon.
+
 ## Community Communication
 If you encounter problems in use, you can directly raise Issues on the github page.
 
@@ -105,7 +109,7 @@ You can also scan the following DingTalk group or WeChat group QR code to join t
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
-### Get Speech Models in FunASR
+## Find Speech Models in FunASR
 
 [FunASR](https://github.com/alibaba-damo-academy/FunASR) hopes to build a bridge between academic research and industrial applications on speech recognition. By supporting the training & finetuning of the industrial-grade speech recognition model released on ModelScope, researchers and developers can conduct research and production of speech recognition models more conveniently, and promote the development of speech recognition ecology. ASR for Fun！
 

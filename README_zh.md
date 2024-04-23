@@ -93,7 +93,11 @@ python funclip/videoclipper.py --stage 2 \
 #### C.通过Modelscope创空间体验FunClip
 [funclip创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
 
-### 社区交流
+## 施工中
+
+- FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
+
+## 社区交流
 
 FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。
 
@@ -102,7 +106,7 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
 
-### 通过FunASR了解语音识别相关技术
+## 通过FunASR了解语音识别相关技术
 
 [FunASR](https://github.com/alibaba-damo-academy/FunASR)是阿里巴巴通义实验室开源的端到端语音识别工具包，目前已经成为主流ASR工具包之一。其主要包括Python pipeline，SDK部署与海量开源工业ASR模型等。
 
