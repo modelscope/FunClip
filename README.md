@@ -14,7 +14,7 @@ On top of the basic features mentioned above, FunClip has the following highligh
 
 You're welcome to try it out, and we look forward to any requests and valuable suggestions you may have about subtitle generation or speech recognition~
 
-## Star History
+## Support Us🌟
 
 [![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 

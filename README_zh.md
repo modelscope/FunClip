@@ -13,7 +13,7 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 
 欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
 
-## Star一下支持我们
+## Star一下支持我们🌟
 
 [![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
