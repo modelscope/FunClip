@@ -28,6 +28,9 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 ### Python环境安装
 
 ```shell
+# 克隆funclip仓库
+git clone https://github.com/alibaba-damo-academy/FunClip.git
+cd FunClip
 # 安装相关Python依赖
 pip install -r ./requirments.txt
 ```

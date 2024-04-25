@@ -30,6 +30,9 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 ### Python env install
 
 ```shell
+# clone funclip repo
+git clone https://github.com/alibaba-damo-academy/FunClip.git
+cd FunClip
 # install Python requirments
 pip install -r ./requirments.txt
 ```
