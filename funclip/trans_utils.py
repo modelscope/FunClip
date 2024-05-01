@@ -79,5 +79,27 @@ def load_state(output_dir):
             line = fin.read()
             state['sd_sentences'] = eval(line)
     return state
-        
+
+import numpy as np       
+def convert_pcm_to_float(data):
+    if data.dtype == np.float64:
+        return data
+    elif data.dtype == np.float32:
+        return data.astype(np.float64)
+    elif data.dtype == np.int16:
+        bit_depth = 16
+    elif data.dtype == np.int32:
+        bit_depth = 32
+    elif data.dtype == np.int8:
+        bit_depth = 8
+    else:
+        raise ValueError("Unsupported audio data type")
+
+    # Now handle the integer types
+    max_int_value = float(2 ** (bit_depth - 1))
+    if bit_depth == 8:
+        data = data - 128
+    return (data.astype(np.float64) / max_int_value)
+
+
     

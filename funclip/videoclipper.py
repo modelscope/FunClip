@@ -12,7 +12,7 @@ from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 from subtitle_utils import generate_srt, generate_srt_clip
 from argparse_tools import ArgumentParser, get_commandline_args
-from trans_utils import pre_proc, proc, write_state, load_state, proc_spk
+from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
 
 
 class VideoClipper():
@@ -25,6 +25,10 @@ class VideoClipper():
         if state is None:
             state = {}
         sr, data = audio_input
+
+        # Convert to float64 consistently (includes data type checking)
+        data = convert_pcm_to_float(data)
+
         # assert sr == 16000, "16kHz sample rate required, {} given.".format(sr)
         if sr != 16000: # resample with librosa
             data = librosa.resample(data, orig_sr=sr, target_sr=16000)
@@ -32,7 +36,6 @@ class VideoClipper():
             logging.warning("Input wav shape: {}, only first channel reserved.").format(data.shape)
             data = data[:,0]
         state['audio_input'] = (sr, data)
-        data = data.astype(np.float64)
         if sd_switch == 'yes':
             rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords)
             res_srt = generate_srt(rec_result[0]['sentence_info'])
