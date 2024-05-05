@@ -21,7 +21,7 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 ## What's New🚀
 
 - 2024/03/06 Fix bugs in using FunClip with command line.
-- 2024/02/28 [FunASR](https://github.com/alibaba-damo-academy/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR wit hotword customization.
+- 2024/02/28 [FunASR](https://github.com/alibaba-damo-academy/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR with hotword customization.
 - 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
 - 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
 
@@ -99,6 +99,7 @@ python funclip/videoclipper.py --stage 2 \
 ## On Going🌵
 
 - FunClip will support Whisper model for English users, coming soon.
+- FunClip will intergrat the abilities of large langage model, coming soon.
 
 ## Community Communication🍟
 
