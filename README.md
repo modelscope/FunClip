@@ -2,9 +2,9 @@
 
 ## 「[简体中文](./README_zh.md) | English」
 
-FunClip is a fully open-source, locally deployed automated video editing tool. It leverages Alibaba DAMO Academy's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the trim button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
+FunClip is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
-On top of the basic features mentioned above, FunClip has the following highlights:
+On top of the basic features mentioned above, FunClip has following highlights:
 
 - FunClip integrates Alibaba's open-source industrial-grade model [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), which is one of the best-performing open-source Chinese ASR models available, with over 13 million downloads on Modelscope. It can also accurately predict timestamps in an integrated manner.
 - FunClip incorporates the hotword customization feature of [SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), allowing users to specify certain entity words, names, etc., as hotwords during the ASR process to enhance recognition results.
@@ -24,6 +24,11 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 - 2024/02/28 [FunASR](https://github.com/alibaba-damo-academy/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR with hotword customization.
 - 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
 - 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
+
+## On Going🌵
+
+- FunClip will support Whisper model for English users, coming soon.
+- FunClip will intergrat the abilities of large langage model, coming soon.
 
 ## Install🔨
 
@@ -95,11 +100,6 @@ python funclip/videoclipper.py --stage 2 \
                        --end_ost 100 \
                        --output_file './output/res.mp4'
 ```
-
-## On Going🌵
-
-- FunClip will support Whisper model for English users, coming soon.
-- FunClip will intergrat the abilities of large langage model, coming soon.
 
 ## Community Communication🍟
 
