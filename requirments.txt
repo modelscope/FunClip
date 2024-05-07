@@ -1,6 +1,6 @@
 librosa
 soundfile
-funasr>=1.0.24
+funasr>=1.0.25
 moviepy
 numpy
 gradio
