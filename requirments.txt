@@ -1,5 +1,6 @@
 librosa
 soundfile
+sklearn
 funasr>=1.0.25
 moviepy
 numpy
