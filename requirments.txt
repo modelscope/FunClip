@@ -1,6 +1,6 @@
 librosa
 soundfile
-scikit-learn
+scikit-learn>=1.3.2
 funasr>=1.0.25
 moviepy
 numpy
