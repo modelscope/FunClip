@@ -36,8 +36,8 @@ class VideoClipper():
             logging.warning("Input wav shape: {}, only first channel reserved.").format(data.shape)
             data = data[:,0]
         state['audio_input'] = (sr, data)
-        if sd_switch == 'yes':
-            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords)
+        if sd_switch == 'Yes':
+            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords, cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
             state['sd_sentences'] = rec_result[0]['sentence_info']
         else:

@@ -4,6 +4,7 @@ from videoclipper import VideoClipper
 
 
 if __name__ == "__main__":
+
     funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
                   model_revision="v2.0.4",
                   vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
@@ -16,12 +17,7 @@ if __name__ == "__main__":
     audio_clipper = VideoClipper(funasr_model)
 
     def audio_recog(audio_input, sd_switch, hotwords):
-        # import pdb; pdb.set_trace()
-        print(audio_input)
         return audio_clipper.recog(audio_input, sd_switch, hotwords=hotwords)
-
-    def audio_clip(dest_text, audio_spk_input, start_ost, end_ost, state):
-        return audio_clipper.clip(dest_text, start_ost, end_ost, state, dest_spk=audio_spk_input)
 
     def video_recog(video_input, sd_switch, hotwords):
         return audio_clipper.video_recog(video_input, sd_switch, hotwords)
@@ -31,6 +27,23 @@ if __name__ == "__main__":
 
     def video_clip_addsub(dest_text, video_spk_input, start_ost, end_ost, state, font_size, font_color):
         return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, font_size, font_color, add_sub=True, dest_spk=video_spk_input)
+
+    def mix_recog(video_input, audio_input, sd_switch, hotwords):
+        audio_state, video_state = None, None
+        if video_input is not None:
+            res_text, res_srt, video_state = video_recog(video_input, sd_switch, hotwords)
+            return res_text, res_srt, video_state, None
+        if audio_input is not None:
+            res_text, res_srt, audio_state = audio_recog(audio_input, sd_switch, hotwords)
+            return res_text, res_srt, None, audio_state
+    
+    def mix_clip(dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state):
+        if video_state is not None:
+            clip_video_file, message, clip_srt = audio_clipper.video_clip(dest_text, start_ost, end_ost, video_state, dest_spk=video_spk_input)
+            return clip_video_file, None, message, clip_srt
+        if audio_state is not None:
+            (sr, res_audio), message, clip_srt = audio_clipper.clip(dest_text, start_ost, end_ost, audio_state, dest_spk=video_spk_input)
+            return None, (sr, res_audio), message, clip_srt
 
     top_md_1 = ("""
     基于阿里巴巴通义实验室自研SeACo-Paraformer-长音频版的语音识别、端点检测、标点预测、时间戳功能、角色区分、热词定制化功能
@@ -69,83 +82,58 @@ if __name__ == "__main__":
         gr.Markdown(top_md_1)
         gr.Markdown(top_md_2)
         gr.Markdown(top_md_3)
-        video_state = gr.State()
-        audio_state = gr.State()
-        with gr.Tab("🎥✂️视频裁剪 Video Clipping"):
-            with gr.Row():
-                with gr.Column():
+        video_state, audio_state = gr.State(), gr.State()
+        with gr.Row():
+            with gr.Column():
+                with gr.Row():
                     video_input = gr.Video(label="🎥视频输入 Video Input")
+                    audio_input = gr.Audio(label="🔊音频输入 Audio Input")
+                with gr.Column():
                     gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%9A%E8%AF%BB%E4%B9%A6%EF%BC%9F%E8%BF%99%E6%98%AF%E6%88%91%E5%90%AC%E8%BF%87%E6%9C%80%E5%A5%BD%E7%9A%84%E7%AD%94%E6%A1%88-%E7%89%87%E6%AE%B5.mp4', 
-                                 'https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B5.mp4', 
                                  'https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B52.mp4', 
                                  'https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E4%BD%BF%E7%94%A8chatgpt_%E7%89%87%E6%AE%B5.mp4'],
                                 [video_input],
-                                label='语音识别示例 ASR Demo')
+                                label='示例视频 Demo Video')
                     gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E8%AE%BF%E8%B0%88.mp4'],
                                 [video_input],
-                                label='说话人切分示例 SD Demo')
-                    with gr.Row():
-                        video_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
-                        hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
-                    recog_button2 = gr.Button("👂识别 Recognize")
-                    video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
-                    video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
-                with gr.Column():
-                    video_text_input = gr.Textbox(label="✏️待裁剪文本 Text to Clip (多段文本使用'#'连接)")
-                    video_spk_input = gr.Textbox(label="✏️待裁剪说话人 Speaker to Clip (多个说话人使用'#'连接)")
-                    with gr.Row():
-                        video_start_ost = gr.Slider(minimum=-500, maximum=1000, value=0, step=50, label="⏪开始位置偏移 Start Offset (ms)")
-                        video_end_ost = gr.Slider(minimum=-500, maximum=1000, value=100, step=50, label="⏩结束位置偏移 End Offset (ms)")
-                    with gr.Row():
-                        font_size = gr.Slider(minimum=10, maximum=100, value=32, step=2, label="🔠字幕字体大小 Subtitle Font Size")
-                        font_color = gr.Radio(["black", "white", "green", "red"], label="🌈字幕颜色 Subtitle Color", value='white')
-                        # font = gr.Radio(["黑体", "Alibaba Sans"], label="字体 Font")
-                    with gr.Row():
-                        clip_button2 = gr.Button("✂️裁剪\nClip")
-                        clip_button3 = gr.Button("✂️裁剪并添加字幕\nClip and Generate Subtitles")
-                    video_output = gr.Video(label="🎥裁剪结果 Audio Clipped")
-                    video_mess_output = gr.Textbox(label="ℹ️裁剪信息 Clipping Log")
-                    video_srt_clip_output = gr.Textbox(label="📖裁剪部分SRT字幕内容 Clipped RST Subtitles")
-
-        with gr.Tab("🔊✂️音频裁剪 Audio Clipping"):
-            with gr.Row():
-                with gr.Column():
-                    audio_input = gr.Audio(label="🔊音频输入 Audio Input")
-                    gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E9%B2%81%E8%82%83%E9%87%87%E8%AE%BF%E7%89%87%E6%AE%B51.wav'], [audio_input])
-                    with gr.Row():
-                        audio_sd_switch = gr.Radio(["no", "yes"], label="👥是否区分说话人 Recognize Speakers", value='no')
-                        hotwords_input2 = gr.Textbox(label="🚒热词 Hotwords")
-                    recog_button1 = gr.Button("👂识别 Recognize")
-                    audio_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
-                    audio_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
-                with gr.Column():
-                    audio_text_input = gr.Textbox(label="✏️待裁剪文本 Text to Clip (多段文本使用'#'连接)")
-                    audio_spk_input = gr.Textbox(label="✏️待裁剪说话人 Speaker to Clip (多个说话人使用'#'连接)")
-                    with gr.Row():
-                        audio_start_ost = gr.Slider(minimum=-500, maximum=1000, value=0, step=50, label="⏪开始位置偏移 Start Offset (ms)")
-                        audio_end_ost = gr.Slider(minimum=-500, maximum=1000, value=0, step=50, label="⏩结束位置偏移 End Offset (ms)")
-                    with gr.Row():
-                        clip_button1 = gr.Button("✂️裁剪 Clip")
-                    audio_output = gr.Audio(label="🔊裁剪结果 Audio Clipped")
-                    audio_mess_output = gr.Textbox(label="ℹ️裁剪信息 Clipping Log")
-                    audio_srt_clip_output = gr.Textbox(label="📖裁剪部分SRT字幕内容 Clipped RST Subtitles")
-        
-        recog_button1.click(audio_recog, 
-                            inputs=[audio_input, audio_sd_switch, hotwords_input2],
-                            outputs=[audio_text_output, audio_srt_output, audio_state])
-        clip_button1.click(audio_clip, 
-                           inputs=[audio_text_input, audio_spk_input, audio_start_ost, audio_end_ost, audio_state], 
-                           outputs=[audio_output, audio_mess_output, audio_srt_clip_output])
-
-        recog_button2.click(video_recog, 
-                            inputs=[video_input, video_sd_switch, hotwords_input], 
-                            outputs=[video_text_output, video_srt_output, video_state])
-        clip_button2.click(video_clip, 
-                           inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state], 
-                           outputs=[video_output, video_mess_output, video_srt_clip_output])
-        clip_button3.click(video_clip_addsub, 
+                                label='多说话人示例视频 Multi-speaker Demo Video')
+                    gr.Examples(['https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/%E9%B2%81%E8%82%83%E9%87%87%E8%AE%BF%E7%89%87%E6%AE%B51.wav'],
+                                [audio_input],
+                                label="示例音频 Demo Audio")
+                    with gr.Column():
+                        with gr.Row():
+                            video_sd_switch = gr.Radio(["No", "Yes"], label="👥是否区分说话人 Recognize Speakers", value='No')
+                            hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
+                        recog_button = gr.Button("👂识别 Recognize")
+                video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
+                video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
+            with gr.Column():
+                video_text_input = gr.Textbox(label="✏️待裁剪文本 Text to Clip (多段文本使用'#'连接)")
+                video_spk_input = gr.Textbox(label="✏️待裁剪说话人 Speaker to Clip (多个说话人使用'#'连接)")
+                with gr.Row():
+                    video_start_ost = gr.Slider(minimum=-500, maximum=1000, value=0, step=50, label="⏪开始位置偏移 Start Offset (ms)")
+                    video_end_ost = gr.Slider(minimum=-500, maximum=1000, value=100, step=50, label="⏩结束位置偏移 End Offset (ms)")
+                with gr.Row():
+                    font_size = gr.Slider(minimum=10, maximum=100, value=32, step=2, label="🔠字幕字体大小 Subtitle Font Size")
+                    font_color = gr.Radio(["black", "white", "green", "red"], label="🌈字幕颜色 Subtitle Color", value='white')
+                    # font = gr.Radio(["黑体", "Alibaba Sans"], label="字体 Font")
+                with gr.Row():
+                    clip_button = gr.Button("✂️裁剪\nClip")
+                    clip_subti_button = gr.Button("✂️裁剪+字幕\nClip+Subtitles")
+                video_output = gr.Video(label="🎥裁剪结果 Video Clipped")
+                audio_output = gr.Audio(label="🔊裁剪结果 Audio Clipped")
+                clip_message = gr.Textbox(label="ℹ️裁剪信息 Clipping Log")
+                srt_clipped = gr.Textbox(label="📖裁剪部分SRT字幕内容 Clipped RST Subtitles")
+                
+        recog_button.click(mix_recog, 
+                            inputs=[video_input, audio_input, video_sd_switch, hotwords_input], 
+                            outputs=[video_text_output, video_srt_output, video_state, audio_state])
+        clip_button.click(mix_clip, 
+                           inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state, audio_state], 
+                           outputs=[video_output, audio_output, clip_message, srt_clipped])
+        clip_subti_button.click(video_clip_addsub, 
                            inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state, font_size, font_color], 
-                           outputs=[video_output, video_mess_output, video_srt_clip_output])
+                           outputs=[video_output, clip_message, srt_clipped])
     
     # start gradio service in local
     demo.launch()
