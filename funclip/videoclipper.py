@@ -116,10 +116,10 @@ class VideoClipper():
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
-    def video_recog(self, vedio_filename, sd_switch='no', hotwords=""):
-        video = mpy.VideoFileClip(vedio_filename)
+    def video_recog(self, video_filename, sd_switch='no', hotwords=""):
+        video = mpy.VideoFileClip(video_filename)
         # Extract the base name, add '_clip.mp4', and 'wav'
-        base_name, _ = os.path.splitext(vedio_filename)
+        base_name, _ = os.path.splitext(video_filename)
         clip_video_file = base_name + '_clip.mp4'
         audio_file = base_name + '.wav'
         video.audio.write_audiofile(audio_file)
@@ -128,7 +128,7 @@ class VideoClipper():
         if os.path.exists(audio_file):
             os.remove(audio_file)
         state = {
-            'vedio_filename': vedio_filename,
+            'video_filename': video_filename,
             'clip_video_file': clip_video_file,
             'video': video,
         }
@@ -142,7 +142,7 @@ class VideoClipper():
         sentences = state['sentences']
         video = state['video']
         clip_video_file = state['clip_video_file']
-        vedio_filename = state['vedio_filename']
+        video_filename = state['video_filename']
         
         all_ts = []
         srt_index = 0
@@ -213,7 +213,7 @@ class VideoClipper():
             video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile="video_no{}.mp4".format(self.GLOBAL_COUNT))
             self.GLOBAL_COUNT += 1
         else:
-            clip_video_file = vedio_filename
+            clip_video_file = video_filename
             message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text."
             srt_clip = ''
         return clip_video_file, message, clip_srt
@@ -346,7 +346,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
                 logging.warning("Write clipped subtitle to {}".format(clip_srt_file))
         if mode == 'video':
             state = load_state(output_dir)
-            state['vedio_filename'] = file
+            state['video_filename'] = file
             if output_file is None:
                 state['clip_video_file'] = file[:-4] + '_clip.mp4'
             else:
