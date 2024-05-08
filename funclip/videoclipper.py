@@ -7,8 +7,8 @@ import logging
 import argparse
 import numpy as np
 import soundfile as sf
-import moviepy.editor as mpy
 from moviepy.editor import *
+import moviepy.editor as mpy
 from moviepy.video.tools.subtitles import SubtitlesClip
 from utils.subtitle_utils import generate_srt, generate_srt_clip
 from utils.argparse_tools import ArgumentParser, get_commandline_args
@@ -304,13 +304,9 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
         funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                  model_revision="v2.0.4",
                   vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                  vad_model_revision="v2.0.4",
                   punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                  punc_model_revision="v2.0.4",
                   spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                  spk_model_revision="v2.0.2",
                   )
         audio_clipper = VideoClipper(funasr_model)
         if mode == 'audio':

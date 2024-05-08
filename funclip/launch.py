@@ -42,7 +42,7 @@ if __name__ == "__main__":
             return None, (sr, res_audio), message, clip_srt
 
     # gradio interface
-    with gr.Blocks() as demo:
+    with gr.Blocks() as funclip_service:
         gr.Markdown(top_md_1)
         gr.Markdown(top_md_2)
         gr.Markdown(top_md_3)
@@ -100,4 +100,4 @@ if __name__ == "__main__":
                            outputs=[video_output, clip_message, srt_clipped])
     
     # start gradio service in local
-    demo.launch()
+    funclip_service.launch()
