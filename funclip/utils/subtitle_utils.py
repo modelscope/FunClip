@@ -60,21 +60,21 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0
     subs = []
     for _, sent in enumerate(sentence_list):
         if sent['timestamp'][-1][1] <= start:
-            print("CASE0")
+            # print("CASE0")
             continue
         if sent['timestamp'][0][0] >= end:
-            print("CASE4")
+            # print("CASE4")
             break
         # parts in between
         if (sent['timestamp'][-1][1] <= end and sent['timestamp'][0][0] > start) or (sent['timestamp'][-1][1] == end and sent['timestamp'][0][0] == start):
-            print("CASE1")
+            # print("CASE1")
             t2s = Text2SRT(sent['text'], sent['timestamp'], offset=start)
             srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
             subs.append((t2s.time(time_acc_ost), t2s.text()))
             cc += 1
             continue
         if sent['timestamp'][0][0] <= start:
-            print("CASE2")
+            # print("CASE2")
             if not sent['timestamp'][-1][1] > end:
                 for j, ts in enumerate(sent['timestamp']):
                     if ts[1] > start:
@@ -97,10 +97,9 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0
                 srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
                 subs.append((t2s.time(time_acc_ost), t2s.text()))
                 cc += 1
-            # import pdb; pdb.set_trace()
             continue
         if sent['timestamp'][-1][1] > end:
-            print("CASE3")
+            # print("CASE3")
             for j, ts in enumerate(sent['timestamp']):
                 if ts[1] > end:
                     break
