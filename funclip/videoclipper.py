@@ -121,6 +121,7 @@ class VideoClipper():
         video = mpy.VideoFileClip(video_filename)
         # Extract the base name, add '_clip.mp4', and 'wav'
         if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
             _, base_name = os.path.split(video_filename)
             base_name, _ = os.path.splitext(base_name)
             clip_video_file = base_name + '_clip.mp4'
@@ -233,7 +234,7 @@ class VideoClipper():
                 clip_video_file_name, _ = os.path.splitext(file_with_extension)
                 print(output_dir, clip_video_file)
                 clip_video_file = os.path.join(output_dir, "{}_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
-                temp_audio_file = os.path.join(output_dir, "{}_no{}.mp3".format(clip_video_file_name, self.GLOBAL_COUNT))
+                temp_audio_file = os.path.join(output_dir, "{}_tempaudio_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
             else:
                 clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
                 temp_audio_file = clip_video_file[:-4] + '_tempaudio_no{}.mp4'.format(self.GLOBAL_COUNT)
