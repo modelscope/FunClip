@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
@@ -12,34 +13,58 @@ if __name__ == "__main__":
                             )
     audio_clipper = VideoClipper(funasr_model)
 
-    def audio_recog(audio_input, sd_switch, hotwords):
-        return audio_clipper.recog(audio_input, sd_switch, hotwords=hotwords)
+    def audio_recog(audio_input, sd_switch, hotwords, output_dir):
+        return audio_clipper.recog(audio_input, sd_switch, hotwords, output_dir=output_dir)
 
-    def video_recog(video_input, sd_switch, hotwords):
-        return audio_clipper.video_recog(video_input, sd_switch, hotwords)
+    def video_recog(video_input, sd_switch, hotwords, output_dir):
+        return audio_clipper.video_recog(video_input, sd_switch, hotwords, output_dir=output_dir)
 
-    def video_clip(dest_text, video_spk_input, start_ost, end_ost, state):
-        return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=video_spk_input)
+    def video_clip(dest_text, video_spk_input, start_ost, end_ost, state, output_dir):
+        return audio_clipper.video_clip(
+            dest_text, start_ost, end_ost, state, dest_spk=video_spk_input, output_dir=output_dir
+            )
 
-    def video_clip_addsub(dest_text, video_spk_input, start_ost, end_ost, state, font_size, font_color):
-        return audio_clipper.video_clip(dest_text, start_ost, end_ost, state, font_size, font_color, add_sub=True, dest_spk=video_spk_input)
-
-    def mix_recog(video_input, audio_input, sd_switch, hotwords):
+    def mix_recog(video_input, audio_input, sd_switch, hotwords, output_dir):
+        # output_dir here is for funasr model generate
+        # both relative and absolute paths are OK
+        output_dir = output_dir.strip()
+        if not len(output_dir):
+            output_dir = None
+        else:
+            output_dir = os.path.abspath(output_dir)
         audio_state, video_state = None, None
         if video_input is not None:
-            res_text, res_srt, video_state = video_recog(video_input, sd_switch, hotwords)
+            res_text, res_srt, video_state = video_recog(
+                video_input, sd_switch, hotwords, output_dir=output_dir)
             return res_text, res_srt, video_state, None
         if audio_input is not None:
-            res_text, res_srt, audio_state = audio_recog(audio_input, sd_switch, hotwords)
+            res_text, res_srt, audio_state = audio_recog(
+                audio_input, sd_switch, hotwords, output_dir=output_dir)
             return res_text, res_srt, None, audio_state
     
-    def mix_clip(dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state):
+    def mix_clip(dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
+        # output_dir here is for moviepy, vedio saving
+        # supposed to be absolute path only
+        output_dir = output_dir.strip()
+        if not len(output_dir):
+            output_dir = None
+        else:
+            output_dir = os.path.abspath(output_dir)
         if video_state is not None:
-            clip_video_file, message, clip_srt = audio_clipper.video_clip(dest_text, start_ost, end_ost, video_state, dest_spk=video_spk_input)
+            clip_video_file, message, clip_srt = audio_clipper.video_clip(
+                dest_text, start_ost, end_ost, video_state, dest_spk=video_spk_input, output_dir=output_dir)
             return clip_video_file, None, message, clip_srt
         if audio_state is not None:
-            (sr, res_audio), message, clip_srt = audio_clipper.clip(dest_text, start_ost, end_ost, audio_state, dest_spk=video_spk_input)
+            (sr, res_audio), message, clip_srt = audio_clipper.clip(
+                dest_text, start_ost, end_ost, audio_state, dest_spk=video_spk_input, output_dir=output_dir)
             return None, (sr, res_audio), message, clip_srt
+    
+    def video_clip_addsub(dest_text, video_spk_input, start_ost, end_ost, state, output_dir, font_size, font_color):
+        return audio_clipper.video_clip(
+            dest_text, start_ost, end_ost, state, 
+            font_size=font_size, font_color=font_color, 
+            add_sub=True, dest_spk=video_spk_input, output_dir=output_dir
+            )
 
     # gradio interface
     with gr.Blocks() as funclip_service:
@@ -68,6 +93,7 @@ if __name__ == "__main__":
                         with gr.Row():
                             video_sd_switch = gr.Radio(["No", "Yes"], label="👥是否区分说话人 Recognize Speakers", value='No')
                             hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
+                        output_dir = gr.Textbox(label="文件输出路径 File Output Dir", value=" ")
                         recog_button = gr.Button("👂识别 Recognize")
                 video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                 video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
@@ -90,13 +116,33 @@ if __name__ == "__main__":
                 srt_clipped = gr.Textbox(label="📖裁剪部分SRT字幕内容 Clipped RST Subtitles")
                 
         recog_button.click(mix_recog, 
-                            inputs=[video_input, audio_input, video_sd_switch, hotwords_input], 
+                            inputs=[video_input, 
+                                    audio_input, 
+                                    video_sd_switch, 
+                                    hotwords_input, 
+                                    output_dir,
+                                    ], 
                             outputs=[video_text_output, video_srt_output, video_state, audio_state])
         clip_button.click(mix_clip, 
-                           inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state, audio_state], 
+                           inputs=[video_text_input, 
+                                   video_spk_input, 
+                                   video_start_ost, 
+                                   video_end_ost, 
+                                   video_state, 
+                                   audio_state, 
+                                   output_dir
+                                   ],
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
         clip_subti_button.click(video_clip_addsub, 
-                           inputs=[video_text_input, video_spk_input, video_start_ost, video_end_ost, video_state, font_size, font_color], 
+                           inputs=[video_text_input, 
+                                   video_spk_input, 
+                                   video_start_ost, 
+                                   video_end_ost, 
+                                   video_state, 
+                                   output_dir, 
+                                   font_size, 
+                                   font_color,
+                                   ], 
                            outputs=[video_output, clip_message, srt_clipped])
     
     # start gradio service in local

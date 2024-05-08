@@ -21,7 +21,7 @@ class VideoClipper():
         self.funasr_model = funasr_model
         self.GLOBAL_COUNT = 0
 
-    def recog(self, audio_input, sd_switch='no', state=None, hotwords=""):
+    def recog(self, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
         if state is None:
             state = {}
         sr, data = audio_input
@@ -46,7 +46,8 @@ class VideoClipper():
                                                     sentence_timestamp=True, 
                                                     return_raw_text=True, 
                                                     is_final=True, 
-                                                    hotword=hotwords)
+                                                    hotword=hotwords,
+                                                    output_dir=output_dir,)
             res_srt = generate_srt(rec_result[0]['sentence_info'])
         state['recog_res_raw'] = rec_result[0]['raw_text']
         state['timestamp'] = rec_result[0]['timestamp']
@@ -54,7 +55,7 @@ class VideoClipper():
         res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
-    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None):
+    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None, output_dir=None):
         # get from state
         audio_input = state['audio_input']
         recog_res_raw = state['recog_res_raw']
@@ -116,12 +117,19 @@ class VideoClipper():
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
-    def video_recog(self, video_filename, sd_switch='no', hotwords=""):
+    def video_recog(self, video_filename, sd_switch='no', hotwords="", output_dir=None):
         video = mpy.VideoFileClip(video_filename)
         # Extract the base name, add '_clip.mp4', and 'wav'
-        base_name, _ = os.path.splitext(video_filename)
-        clip_video_file = base_name + '_clip.mp4'
-        audio_file = base_name + '.wav'
+        if output_dir is not None:
+            _, base_name = os.path.split(video_filename)
+            base_name, _ = os.path.splitext(base_name)
+            clip_video_file = base_name + '_clip.mp4'
+            audio_file = base_name + '.wav'
+            audio_file = os.path.join(output_dir, audio_file)
+        else:
+            base_name, _ = os.path.splitext(video_filename)
+            clip_video_file = base_name + '_clip.mp4'
+            audio_file = base_name + '.wav'
         video.audio.write_audiofile(audio_file)
         wav = librosa.load(audio_file, sr=16000)[0]
         # delete the audio file after processing
@@ -133,9 +141,18 @@ class VideoClipper():
             'video': video,
         }
         # res_text, res_srt = self.recog((16000, wav), state)
-        return self.recog((16000, wav), sd_switch, state, hotwords)
+        return self.recog((16000, wav), sd_switch, state, hotwords, output_dir)
 
-    def video_clip(self, dest_text, start_ost, end_ost, state, font_size=32, font_color='white', add_sub=False, dest_spk=None):
+    def video_clip(self, 
+                   dest_text, 
+                   start_ost, 
+                   end_ost, 
+                   state, 
+                   font_size=32, 
+                   font_color='white', 
+                   add_sub=False, 
+                   dest_spk=None, 
+                   output_dir=None):
         # get from state
         recog_res_raw = state['recog_res_raw']
         timestamp = state['timestamp']
@@ -209,8 +226,18 @@ class VideoClipper():
             logging.warning("Concating...")
             if len(concate_clip) > 1:
                 video_clip = concatenate_videoclips(concate_clip)
-            clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
-            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile="video_no{}.mp4".format(self.GLOBAL_COUNT))
+            # clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
+            if output_dir is not None:
+                os.makedirs(output_dir, exist_ok=True)
+                _, file_with_extension = os.path.split(clip_video_file)
+                clip_video_file_name, _ = os.path.splitext(file_with_extension)
+                print(output_dir, clip_video_file)
+                clip_video_file = os.path.join(output_dir, "{}_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
+                temp_audio_file = os.path.join(output_dir, "{}_no{}.mp3".format(clip_video_file_name, self.GLOBAL_COUNT))
+            else:
+                clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
+                temp_audio_file = clip_video_file[:-4] + '_tempaudio_no{}.mp4'.format(self.GLOBAL_COUNT)
+            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile=temp_audio_file)
             self.GLOBAL_COUNT += 1
         else:
             clip_video_file = video_filename
