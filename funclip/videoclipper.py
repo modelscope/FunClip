@@ -10,9 +10,9 @@ import soundfile as sf
 import moviepy.editor as mpy
 from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
-from subtitle_utils import generate_srt, generate_srt_clip
-from argparse_tools import ArgumentParser, get_commandline_args
-from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
+from utils.subtitle_utils import generate_srt, generate_srt_clip
+from utils.argparse_tools import ArgumentParser, get_commandline_args
+from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
 
 
 class VideoClipper():
