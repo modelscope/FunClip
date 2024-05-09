@@ -4,9 +4,9 @@
 
 <p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
-### <center>「简体中文 | [English](./README.md)」</center>
+### <p align="center">「简体中文 | [English](./README.md)」</p>
 
-FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
+**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
 
 在上述基本功能的基础上，FunClip有以下特色：
 - FunClip集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。

@@ -4,9 +4,9 @@
 
 <p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
-### <center>「[简体中文](./README.md) | English」</center>
+### <p align="center">「[简体中文](./README.md) | English」</p>
 
-FunClip is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
+**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
 On top of the basic features mentioned above, FunClip has following highlights:
 
