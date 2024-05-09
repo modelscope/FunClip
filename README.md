@@ -1,10 +1,19 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> 🌸 开源、精准、方便的视频切片工具 🌸 </p>**
+**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 ⚡ </p>**
 
 <p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
 ### <p align="center">「简体中文 | [English](./README.md)」</p>
+
+<div align="center">  
+<h4><a href="#近期更新"> 近期更新 </a>
+｜<a href="#施工中"> 施工中 </a>
+｜<a href="#安装环境"> 安装环境 </a>
+｜<a href="#使用方法"> 使用方法 </a>
+｜<a href="#社区交流"> 社区交流 </a>
+</h4>
+</div>
 
 **FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
 
@@ -17,6 +26,7 @@
 
 欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
 
+<a name="近期更新></a>
 ## 近期更新🚀
 
 - 2024/05/09 FunClip更新至v1.1.0，包含如下更新与修复：
@@ -29,11 +39,13 @@
 - 2024/02/28 FunClip升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
 - 2024/02/28 原FunASR-APP/ClipVideo更名为FunClip。
 
+<a name="施工中"></a>
 ## 施工中🌵
 
 - FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
 - FunClip即将集成大语言模型的能力，提供智能视频剪辑相关功能，敬请期待。
 
+<a name="安装环境"></a>
 ## 安装🔨
 
 ### Python环境安装
@@ -67,6 +79,7 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
 
+<a name="使用方法"></a>
 ## 使用FunClip
 
 ### A.在本地启动Gradio服务
@@ -104,6 +117,7 @@ python funclip/videoclipper.py --stage 2 \
 ### C.通过Modelscope创空间体验FunClip
 [funclip创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
 
+<a name="社区交流"></a>
 ## 社区交流🍟
 
 FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。

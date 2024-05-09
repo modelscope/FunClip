@@ -1,10 +1,20 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> 🌸 Open-source, accurate and easy-to-use video clipping tool 🌸 </p>**
+**<p align="center"> ⚡ Open-source, accurate and easy-to-use video clipping tool ⚡ </p>**
 
 <p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
 ### <p align="center">「[简体中文](./README.md) | English」</p>
+
+<div align="center">  
+<h4>
+<a href="#What's New"> What's New </a>
+｜<a href="#On Going"> On Going </a>
+｜<a href="#Install"> Install </a>
+｜<a href="#Usage"> Usage </a>
+｜<a href="#Community"> Community </a>
+</h4>
+</div>
 
 **FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
@@ -18,6 +28,7 @@ On top of the basic features mentioned above, FunClip has following highlights:
 
 You're welcome to try it out, and we look forward to any requests and valuable suggestions you may have about subtitle generation or speech recognition~
 
+<a name="What's New"></a>
 ## What's New🚀
 
 - 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
@@ -31,11 +42,13 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 - 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
 - 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
 
+<a name="On Going"></a>
 ## On Going🌵
 
 - FunClip will support Whisper model for English users, coming soon.
 - FunClip will intergrat the abilities of large langage model, coming soon.
 
+<a name="Install"></a>
 ## Install🔨
 
 ### Python env install
@@ -69,7 +82,7 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 ```shell
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
-
+<a name="Usage"></a>
 ## Use FunClip
 
 ### A. Use FunClip as local Gradio Service
@@ -107,6 +120,7 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
+<a name="Community"></a>
 ## Community Communication🍟
 
 FunClip is firstly open-sourced bu FunASR team, any useful PR is welcomed.
