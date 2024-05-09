@@ -1,8 +1,8 @@
-# <center>FunClip🎥</center>
+# <p align="center"> FunClip🎥</p>
 
-**<center>开源、精准、方便的视频切片工具</center>**
+**<p align="center"> 🌸 开源、精准、方便的视频切片工具 🌸 </p>**
 
-<center><img src="docs/images/interface.png" width=400/></center>
+<p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
 ### <center>「简体中文 | [English](./README.md)」</center>
 

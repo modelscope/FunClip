@@ -1,8 +1,8 @@
-# <center>FunClip🎥</center>
+# <p align="center"> FunClip🎥</p>
 
-**<center>Open-source, accurate and easy-to-use video clipping tool</center>**
+**<p align="center"> 🌸 Open-source, accurate and easy-to-use video clipping tool 🌸 </p>**
 
-<center><img src="docs/images/interface.png" width=400/></center>
+<p align="center"> <img src="docs/images/interface.png" width=444/></p>
 
 ### <center>「[简体中文](./README.md) | English」</center>
 
