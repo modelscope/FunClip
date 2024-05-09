@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+# Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
+#  MIT License  (https://opensource.org/licenses/MIT)
+
 def time_convert(ms):
     ms = int(ms)
     tail = ms % 1000

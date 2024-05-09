@@ -1,5 +1,12 @@
-PUNC_LIST = ['，', '。', '！', '？', '、']
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+# Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
+#  MIT License  (https://opensource.org/licenses/MIT)
 
+import os
+import numpy as np  
+
+PUNC_LIST = ['，', '。', '！', '？', '、']
 
 def pre_proc(text):
     res = ''
@@ -62,7 +69,6 @@ def write_state(output_dir, state):
         with open(output_dir+'/sd_sentences', 'w') as fout:
             fout.write(str(state['sd_sentences']))
 
-import os
 def load_state(output_dir):
     state = {}
     with open(output_dir+'/recog_res_raw') as fin:
@@ -80,7 +86,6 @@ def load_state(output_dir):
             state['sd_sentences'] = eval(line)
     return state
 
-import numpy as np       
 def convert_pcm_to_float(data):
     if data.dtype == np.float64:
         return data
