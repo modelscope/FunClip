@@ -1,6 +1,10 @@
-# FunClip🎥
+# <center>FunClip🎥</center>
 
-## 「简体中文 | [English](./README.md)」
+**<center>开源、精准、方便的视频切片工具</center>**
+
+<center><img src="docs/images/interface.png" width=400/></center>
+
+### <center>「简体中文 | [English](./README.md)」</center>
 
 FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
 
@@ -12,10 +16,6 @@ FunClip是一款完全开源、本地部署的自动化视频剪辑工具，通�
 - FunClip支持多段自由剪辑，并且会自动返回全视频SRT字幕、目标段落SRT字幕，使用简单方便。
 
 欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
-
-## Star一下支持我们🌟
-
-[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
 ## 近期更新🚀
 
@@ -112,6 +112,9 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
+## Star一下支持我们🌟
+
+[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
 ## 通过FunASR了解语音识别相关技术
 

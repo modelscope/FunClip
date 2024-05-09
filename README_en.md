@@ -1,6 +1,10 @@
-# FunClip🎥
+# <center>FunClip🎥</center>
 
-## 「[简体中文](./README_zh.md) | English」
+**<center>Open-source, accurate and easy-to-use video clipping tool</center>**
+
+<center><img src="docs/images/interface.png" width=400/></center>
+
+### <center>「[简体中文](./README.md) | English」</center>
 
 FunClip is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
@@ -13,10 +17,6 @@ On top of the basic features mentioned above, FunClip has following highlights:
 - FunClip supports multi-segment free clipping and automatically returns full video SRT subtitles and target segment SRT subtitles, offering a simple and convenient user experience.
 
 You're welcome to try it out, and we look forward to any requests and valuable suggestions you may have about subtitle generation or speech recognition~
-
-## Support Us🌟
-
-[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
 ## What's New🚀
 
@@ -116,6 +116,10 @@ You can also scan the following DingTalk group or WeChat group QR code to join t
 |                           DingTalk group                            |                     WeChat group                      |
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
+
+## Support Us🌟
+
+[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
 ## Find Speech Models in FunASR
 
