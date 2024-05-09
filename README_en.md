@@ -2,7 +2,7 @@
 
 **<p align="center"> ⚡ Open-source, accurate and easy-to-use video clipping tool ⚡ </p>**
 
-<p align="center"> <img src="docs/images/interface.png" width=444/></p>
+<p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
 ### <p align="center">「[简体中文](./README.md) | English」</p>
 
@@ -91,7 +91,7 @@ You can establish your own FunClip service which is same as [Modelscope Space](h
 python funclip/launch.py
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
-<img src="docs/images/guide.png"/>
+<img src="docs/images/guide.jpg"/>
 
 - Step1: Upload your video file (or try the example videos below)
 - Step2: Copy the text segments you need to 'Text to Clip'

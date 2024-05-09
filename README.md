@@ -2,7 +2,7 @@
 
 **<p align="center"> ⚡ 开源、精准、方便的视频切片工具 ⚡ </p>**
 
-<p align="center"> <img src="docs/images/interface.png" width=444/></p>
+<p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
 ### <p align="center">「简体中文 | [English](./README.md)」</p>
 
@@ -95,7 +95,7 @@ python funclip/launch.py
 5. （可选）配置剪辑参数，偏移量与字幕设置等
 6. 点击“裁剪”或“裁剪+字幕”按钮
 
-<img src="docs/images/guide.png"/>
+<img src="docs/images/guide.jpg"/>
 
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
