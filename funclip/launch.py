@@ -11,12 +11,14 @@ from introduction import top_md_1, top_md_2, top_md_3
 
 
 if __name__ == "__main__":
+    
     funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
                              vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
                              punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
                              spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
                             )
     audio_clipper = VideoClipper(funasr_model)
+    theme = gr.Theme.load("funclip/utils/theme.json")
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
         return audio_clipper.recog(audio_input, sd_switch, hotwords, output_dir=output_dir)
@@ -29,9 +31,7 @@ if __name__ == "__main__":
             dest_text, start_ost, end_ost, state, dest_spk=video_spk_input, output_dir=output_dir
             )
 
-    def mix_recog(video_input, audio_input, sd_switch, hotwords, output_dir):
-        # output_dir here is for funasr model generate
-        # both relative and absolute paths are OK
+    def mix_recog(video_input, audio_input, hotwords, output_dir):
         output_dir = output_dir.strip()
         if not len(output_dir):
             output_dir = None
@@ -40,16 +40,30 @@ if __name__ == "__main__":
         audio_state, video_state = None, None
         if video_input is not None:
             res_text, res_srt, video_state = video_recog(
-                video_input, sd_switch, hotwords, output_dir=output_dir)
+                video_input, 'No', hotwords, output_dir=output_dir)
             return res_text, res_srt, video_state, None
         if audio_input is not None:
             res_text, res_srt, audio_state = audio_recog(
-                audio_input, sd_switch, hotwords, output_dir=output_dir)
+                audio_input, 'No', hotwords, output_dir=output_dir)
+            return res_text, res_srt, None, audio_state
+    
+    def mix_recog_speaker(video_input, audio_input, hotwords, output_dir):
+        output_dir = output_dir.strip()
+        if not len(output_dir):
+            output_dir = None
+        else:
+            output_dir = os.path.abspath(output_dir)
+        audio_state, video_state = None, None
+        if video_input is not None:
+            res_text, res_srt, video_state = video_recog(
+                video_input, 'Yes', hotwords, output_dir=output_dir)
+            return res_text, res_srt, video_state, None
+        if audio_input is not None:
+            res_text, res_srt, audio_state = audio_recog(
+                audio_input, 'Yes', hotwords, output_dir=output_dir)
             return res_text, res_srt, None, audio_state
     
     def mix_clip(dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
-        # output_dir here is for moviepy, vedio saving
-        # supposed to be absolute path only
         output_dir = output_dir.strip()
         if not len(output_dir):
             output_dir = None
@@ -72,7 +86,7 @@ if __name__ == "__main__":
             )
 
     # gradio interface
-    with gr.Blocks() as funclip_service:
+    with gr.Blocks(theme=theme) as funclip_service:
         gr.Markdown(top_md_1)
         gr.Markdown(top_md_2)
         gr.Markdown(top_md_3)
@@ -95,11 +109,13 @@ if __name__ == "__main__":
                                 [audio_input],
                                 label="示例音频 Demo Audio")
                     with gr.Column():
+                        # with gr.Row():
+                            # video_sd_switch = gr.Radio(["No", "Yes"], label="👥区分说话人 Get Speakers", value='No')
+                        hotwords_input = gr.Textbox(label="🚒热词 Hotwords(多个热词使用空格分隔，仅支持中文热词)")
+                        output_dir = gr.Textbox(label="📁文件输出路径 File Output Dir", value=" ")
                         with gr.Row():
-                            video_sd_switch = gr.Radio(["No", "Yes"], label="👥是否区分说话人 Recognize Speakers", value='No')
-                            hotwords_input = gr.Textbox(label="🚒热词 Hotwords")
-                        output_dir = gr.Textbox(label="文件输出路径 File Output Dir", value=" ")
-                        recog_button = gr.Button("👂识别 Recognize")
+                            recog_button = gr.Button("👂识别 ASR", variant="primary")
+                            recog_button2 = gr.Button("👂识别+区分说话人 ASR+SD")
                 video_text_output = gr.Textbox(label="✏️识别结果 Recognition Result")
                 video_srt_output = gr.Textbox(label="📖SRT字幕内容 RST Subtitles")
             with gr.Column():
@@ -113,7 +129,7 @@ if __name__ == "__main__":
                     font_color = gr.Radio(["black", "white", "green", "red"], label="🌈字幕颜色 Subtitle Color", value='white')
                     # font = gr.Radio(["黑体", "Alibaba Sans"], label="字体 Font")
                 with gr.Row():
-                    clip_button = gr.Button("✂️裁剪\nClip")
+                    clip_button = gr.Button("✂️裁剪\nClip", variant="primary")
                     clip_subti_button = gr.Button("✂️裁剪+字幕\nClip+Subtitles")
                 video_output = gr.Video(label="🎥裁剪结果 Video Clipped")
                 audio_output = gr.Audio(label="🔊裁剪结果 Audio Clipped")
@@ -123,7 +139,13 @@ if __name__ == "__main__":
         recog_button.click(mix_recog, 
                             inputs=[video_input, 
                                     audio_input, 
-                                    video_sd_switch, 
+                                    hotwords_input, 
+                                    output_dir,
+                                    ], 
+                            outputs=[video_text_output, video_srt_output, video_state, audio_state])
+        recog_button2.click(mix_recog_speaker, 
+                            inputs=[video_input, 
+                                    audio_input, 
                                     hotwords_input, 
                                     output_dir,
                                     ], 
