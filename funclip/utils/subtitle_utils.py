@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+# Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
+#  MIT License  (https://opensource.org/licenses/MIT)
+
 def time_convert(ms):
     ms = int(ms)
     tail = ms % 1000
@@ -45,10 +50,10 @@ class Text2SRT():
 
 def generate_srt(sentence_list):
     srt_total = ''
-    for i, d in enumerate(sentence_list):
-        t2s = Text2SRT(d['text'], d['timestamp'])
-        if 'spk' in d:
-            srt_total += "{}  spk{}\n{}".format(i, d['spk'], t2s.srt())
+    for i, sent in enumerate(sentence_list):
+        t2s = Text2SRT(sent['text'], sent['timestamp'])
+        if 'spk' in sent:
+            srt_total += "{}  spk{}\n{}".format(i, sent['spk'], t2s.srt())
         else:
             srt_total += "{}\n{}".format(i, t2s.srt())
     return srt_total
@@ -58,48 +63,53 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0
     srt_total = ''
     cc = 1 + begin_index
     subs = []
-    for i, d in enumerate(sentence_list):
-        if d['timestamp'][-1][1] <= start:
+    for _, sent in enumerate(sentence_list):
+        if sent['timestamp'][-1][1] <= start:
+            # print("CASE0")
             continue
-        if d['timestamp'][0][0] >= end:
+        if sent['timestamp'][0][0] >= end:
+            # print("CASE4")
             break
         # parts in between
-        if (d['timestamp'][-1][1] <= end and d['timestamp'][0][0] > start) or (d['timestamp'][-1][1] == end and d['timestamp'][0][0] == start):
-            t2s = Text2SRT(d['text'], d['timestamp'], offset=start)
+        if (sent['timestamp'][-1][1] <= end and sent['timestamp'][0][0] > start) or (sent['timestamp'][-1][1] == end and sent['timestamp'][0][0] == start):
+            # print("CASE1")
+            t2s = Text2SRT(sent['text'], sent['timestamp'], offset=start)
             srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
             subs.append((t2s.time(time_acc_ost), t2s.text()))
             cc += 1
             continue
-        if d['timestamp'][0][0] <= start:
-            if not d['timestamp'][-1][1] > end:
-                for j, ts in enumerate(d['timestamp']):
+        if sent['timestamp'][0][0] <= start:
+            # print("CASE2")
+            if not sent['timestamp'][-1][1] > end:
+                for j, ts in enumerate(sent['timestamp']):
                     if ts[1] > start:
                         break
-                _text = " ".join(d['text'].split()[j:])
-                _ts = d['timestamp'][j:]
+                _text = " ".join(sent['text'][j:])
+                _ts = sent['timestamp'][j:]
             else:
-                for j, ts in enumerate(d['timestamp']):
+                for j, ts in enumerate(sent['timestamp']):
                     if ts[1] > start:
                         _start = j
                         break
-                for j, ts in enumerate(d['timestamp']):
+                for j, ts in enumerate(sent['timestamp']):
                     if ts[1] > end:
                         _end = j
                         break
-                _text = " ".join(d['text'].split()[_start:_end])
-                _ts = d['timestamp'][_start:_end]
+                _text = " ".join(sent['text'][_start:_end])
+                _ts = sent['timestamp'][_start:_end]
             if len(ts):
                 t2s = Text2SRT(_text, _ts, offset=start)
                 srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))
                 subs.append((t2s.time(time_acc_ost), t2s.text()))
                 cc += 1
             continue
-        if d['timestamp'][-1][1] > end:
-            for j, ts in enumerate(d['timestamp']):
+        if sent['timestamp'][-1][1] > end:
+            # print("CASE3")
+            for j, ts in enumerate(sent['timestamp']):
                 if ts[1] > end:
                     break
-            _text = " ".join(d['text'].split()[:j])
-            _ts = d['timestamp'][:j]
+            _text = " ".join(sent['text'][:j])
+            _ts = sent['timestamp'][:j]
             if len(_ts):
                 t2s = Text2SRT(_text, _ts, offset=start)
                 srt_total += "{}\n{}".format(cc, t2s.srt(time_acc_ost))

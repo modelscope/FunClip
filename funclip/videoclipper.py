@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+# Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
+#  MIT License  (https://opensource.org/licenses/MIT)
+
 import re
 import os
 import sys
@@ -7,12 +12,12 @@ import logging
 import argparse
 import numpy as np
 import soundfile as sf
-import moviepy.editor as mpy
 from moviepy.editor import *
+import moviepy.editor as mpy
 from moviepy.video.tools.subtitles import SubtitlesClip
-from subtitle_utils import generate_srt, generate_srt_clip
-from argparse_tools import ArgumentParser, get_commandline_args
-from trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
+from utils.subtitle_utils import generate_srt, generate_srt_clip
+from utils.argparse_tools import ArgumentParser, get_commandline_args
+from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
 
 
 class VideoClipper():
@@ -21,7 +26,7 @@ class VideoClipper():
         self.funasr_model = funasr_model
         self.GLOBAL_COUNT = 0
 
-    def recog(self, audio_input, sd_switch='no', state=None, hotwords=""):
+    def recog(self, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
         if state is None:
             state = {}
         sr, data = audio_input
@@ -36,8 +41,8 @@ class VideoClipper():
             logging.warning("Input wav shape: {}, only first channel reserved.").format(data.shape)
             data = data[:,0]
         state['audio_input'] = (sr, data)
-        if sd_switch == 'yes':
-            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords)
+        if sd_switch == 'Yes':
+            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords, cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
             state['sd_sentences'] = rec_result[0]['sentence_info']
         else:
@@ -46,7 +51,8 @@ class VideoClipper():
                                                     sentence_timestamp=True, 
                                                     return_raw_text=True, 
                                                     is_final=True, 
-                                                    hotword=hotwords)
+                                                    hotword=hotwords,
+                                                    output_dir=output_dir,)
             res_srt = generate_srt(rec_result[0]['sentence_info'])
         state['recog_res_raw'] = rec_result[0]['raw_text']
         state['timestamp'] = rec_result[0]['timestamp']
@@ -54,7 +60,7 @@ class VideoClipper():
         res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
-    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None):
+    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None, output_dir=None):
         # get from state
         audio_input = state['audio_input']
         recog_res_raw = state['recog_res_raw']
@@ -116,33 +122,50 @@ class VideoClipper():
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
-    def video_recog(self, vedio_filename, sd_switch='no', hotwords=""):
-        video = mpy.VideoFileClip(vedio_filename)
+    def video_recog(self, video_filename, sd_switch='no', hotwords="", output_dir=None):
+        video = mpy.VideoFileClip(video_filename)
         # Extract the base name, add '_clip.mp4', and 'wav'
-        base_name, _ = os.path.splitext(vedio_filename)
-        clip_video_file = base_name + '_clip.mp4'
-        audio_file = base_name + '.wav'
+        if output_dir is not None:
+            os.makedirs(output_dir, exist_ok=True)
+            _, base_name = os.path.split(video_filename)
+            base_name, _ = os.path.splitext(base_name)
+            clip_video_file = base_name + '_clip.mp4'
+            audio_file = base_name + '.wav'
+            audio_file = os.path.join(output_dir, audio_file)
+        else:
+            base_name, _ = os.path.splitext(video_filename)
+            clip_video_file = base_name + '_clip.mp4'
+            audio_file = base_name + '.wav'
         video.audio.write_audiofile(audio_file)
         wav = librosa.load(audio_file, sr=16000)[0]
         # delete the audio file after processing
         if os.path.exists(audio_file):
             os.remove(audio_file)
         state = {
-            'vedio_filename': vedio_filename,
+            'video_filename': video_filename,
             'clip_video_file': clip_video_file,
             'video': video,
         }
         # res_text, res_srt = self.recog((16000, wav), state)
-        return self.recog((16000, wav), sd_switch, state, hotwords)
+        return self.recog((16000, wav), sd_switch, state, hotwords, output_dir)
 
-    def video_clip(self, dest_text, start_ost, end_ost, state, font_size=32, font_color='white', add_sub=False, dest_spk=None):
+    def video_clip(self, 
+                   dest_text, 
+                   start_ost, 
+                   end_ost, 
+                   state, 
+                   font_size=32, 
+                   font_color='white', 
+                   add_sub=False, 
+                   dest_spk=None, 
+                   output_dir=None):
         # get from state
         recog_res_raw = state['recog_res_raw']
         timestamp = state['timestamp']
         sentences = state['sentences']
         video = state['video']
         clip_video_file = state['clip_video_file']
-        vedio_filename = state['vedio_filename']
+        video_filename = state['video_filename']
         
         all_ts = []
         srt_index = 0
@@ -209,11 +232,21 @@ class VideoClipper():
             logging.warning("Concating...")
             if len(concate_clip) > 1:
                 video_clip = concatenate_videoclips(concate_clip)
-            clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
-            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile="video_no{}.mp4".format(self.GLOBAL_COUNT))
+            # clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
+            if output_dir is not None:
+                os.makedirs(output_dir, exist_ok=True)
+                _, file_with_extension = os.path.split(clip_video_file)
+                clip_video_file_name, _ = os.path.splitext(file_with_extension)
+                print(output_dir, clip_video_file)
+                clip_video_file = os.path.join(output_dir, "{}_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
+                temp_audio_file = os.path.join(output_dir, "{}_tempaudio_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
+            else:
+                clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
+                temp_audio_file = clip_video_file[:-4] + '_tempaudio_no{}.mp4'.format(self.GLOBAL_COUNT)
+            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile=temp_audio_file)
             self.GLOBAL_COUNT += 1
         else:
-            clip_video_file = vedio_filename
+            clip_video_file = video_filename
             message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text."
             srt_clip = ''
         return clip_video_file, message, clip_srt
@@ -304,13 +337,9 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
         funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                  model_revision="v2.0.4",
                   vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                  vad_model_revision="v2.0.4",
                   punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                  punc_model_revision="v2.0.4",
                   spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                  spk_model_revision="v2.0.2",
                   )
         audio_clipper = VideoClipper(funasr_model)
         if mode == 'audio':
@@ -346,7 +375,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
                 logging.warning("Write clipped subtitle to {}".format(clip_srt_file))
         if mode == 'video':
             state = load_state(output_dir)
-            state['vedio_filename'] = file
+            state['video_filename'] = file
             if output_file is None:
                 state['clip_video_file'] = file[:-4] + '_clip.mp4'
             else:
