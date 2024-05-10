@@ -21,7 +21,7 @@ if __name__ == "__main__":
     theme = gr.Theme.load("funclip/utils/theme.json")
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
-        return audio_clipper.recog(audio_input, sd_switch, hotwords, output_dir=output_dir)
+        return audio_clipper.recog(audio_input, sd_switch, None, hotwords, output_dir=output_dir)
 
     def video_recog(video_input, sd_switch, hotwords, output_dir):
         return audio_clipper.video_recog(video_input, sd_switch, hotwords, output_dir=output_dir)

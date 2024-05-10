@@ -38,7 +38,7 @@ class VideoClipper():
         if sr != 16000: # resample with librosa
             data = librosa.resample(data, orig_sr=sr, target_sr=16000)
         if len(data.shape) == 2:  # multi-channel wav input
-            logging.warning("Input wav shape: {}, only first channel reserved.").format(data.shape)
+            logging.warning("Input wav shape: {}, only first channel reserved.".format(data.shape))
             data = data[:,0]
         state['audio_input'] = (sr, data)
         if sd_switch == 'Yes':
