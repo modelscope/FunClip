@@ -85,7 +85,7 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMed
 ### A.在本地启动Gradio服务
 
 ```shell
-python funclip/launch.py
+python launch.py
 ```
 随后在浏览器中访问```localhost:7860```即可看到如下图所示的界面，按如下步骤即可进行视频剪辑
 1. 上传你的视频（或使用下方的视频用例）
