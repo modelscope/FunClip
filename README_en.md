@@ -88,7 +88,7 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMed
 ### A. Use FunClip as local Gradio Service
 You can establish your own FunClip service which is same as [Modelscope Space](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) as follow:
 ```shell
-python launch.py
+python funclip/launch.py
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 <img src="docs/images/guide.jpg"/>
