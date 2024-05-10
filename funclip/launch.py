@@ -6,8 +6,8 @@
 import os
 import gradio as gr
 from funasr import AutoModel
-from funclip.videoclipper import VideoClipper
-from funclip.introduction import top_md_1, top_md_2, top_md_3
+from videoclipper import VideoClipper
+from introduction import top_md_1, top_md_2, top_md_3
 
 
 if __name__ == "__main__":
