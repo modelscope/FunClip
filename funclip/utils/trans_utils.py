@@ -4,6 +4,7 @@
 #  MIT License  (https://opensource.org/licenses/MIT)
 
 import os
+import re
 import numpy as np  
 
 PUNC_LIST = ['，', '。', '！', '？', '、']
@@ -106,5 +107,28 @@ def convert_pcm_to_float(data):
         data = data - 128
     return (data.astype(np.float64) / max_int_value)
 
+def convert_time_to_millis(time_str):
+    # 格式: [小时:分钟:秒,毫秒]
+    hours, minutes, seconds, milliseconds = map(int, re.split('[:,]', time_str))
+    return (hours * 3600 + minutes * 60 + seconds) * 1000 + milliseconds
 
+def extract_timestamps(input_text):
+    # 使用正则表达式查找所有时间戳
+    timestamps = re.findall(r'\[(\d{2}:\d{2}:\d{2},\d{2,3})-(\d{2}:\d{2}:\d{2},\d{2,3})\]', input_text)
+    times_list = []
+
+    # 循环遍历找到的所有时间戳，并转换为毫秒
+    for start_time, end_time in timestamps:
+        start_millis = convert_time_to_millis(start_time)
+        end_millis = convert_time_to_millis(end_time)
+        times_list.append([start_millis, end_millis])
     
+    return times_list
+
+
+if __name__ == '__main__':
+    text = ("1. [00:00:00,500-00:00:05,850] 在我们的设计普惠当中，有一个我经常津津乐道的项目叫寻找远方的美好。"
+    "2. [00:00:07,120-00:00:12,940] 啊，在这样一个我们叫寻美在这样的一个项目当中，我们把它跟乡村振兴去结合起来，利用我们的设计的能力。"
+    "3. [00:00:13,240-00:00:25,620] 问我们自身员工的设设计能力，我们设计生态伙伴的能力，帮助乡村振兴当中，要希望把他的产品推向市场，把他的农产品把他加工产品推向市场的这样的伙伴做一件事情，")
+
+    print(extract_timestamps(text))

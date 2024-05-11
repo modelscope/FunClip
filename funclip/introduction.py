@@ -28,3 +28,12 @@ top_md_3 = ("""访问FunASR项目与论文能够帮助您深入了解ParaClipper
     </div>
     </div>
     """)
+
+top_md_4 = ("""我们在「LLM智能裁剪」模块中提供两种LLM调用方式，
+            1. 选择openai开头的模型即为调用openai官方api，此时需要您自备sk与网络环境；
+            2. [gpt4free](https://github.com/xtekky/gpt4free?tab=readme-ov-file)项目也被集成进FunClip，可以通过它免费调用gpt模型；
+            
+            其中方式1中可以通过在界面中传入sk，或通过`export OPENAI_API_KEY=YOUR_SK`的方式在linux或mac中配置sk
+            
+            方式2而可能非常不稳定，返回时间可能很长或者结果获取失败，可以多多尝试或者自己准备sk使用方式1
+            """)

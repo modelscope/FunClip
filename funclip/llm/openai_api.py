@@ -1,8 +1,10 @@
 import os
+import logging
 from openai import OpenAI
-from demo_prompt import demo_prompt
+
 
 if __name__ == '__main__':
+    from llm.demo_prompt import demo_prompt
     client = OpenAI(
         # This is the default and can be omitted
         api_key=os.environ.get("OPENAI_API_KEY"),
@@ -35,4 +37,5 @@ def openai_call(prompt, model="gpt-3.5-turbo"):
         ],
         model=model,
     )
+    logging.info("Openai model inference done.")
     return chat_completion.choices[0].message.content

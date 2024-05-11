@@ -60,7 +60,7 @@ class VideoClipper():
         res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
-    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None, output_dir=None):
+    def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None, output_dir=None, timestamp_list=None):
         # get from state
         audio_input = state['audio_input']
         recog_res_raw = state['recog_res_raw']
@@ -69,32 +69,35 @@ class VideoClipper():
         sr, data = audio_input
         data = data.astype(np.float64)
 
-        all_ts = []
-        if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
-            for _dest_text in dest_text.split('#'):
-                if '[' in _dest_text:
-                    match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
-                    if match:
-                        offset_b, offset_e = map(int, match.groups())
-                        log_append = ""
+        if timestamp_list is not None:
+            all_ts = []
+            if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
+                for _dest_text in dest_text.split('#'):
+                    if '[' in _dest_text:
+                        match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                        if match:
+                            offset_b, offset_e = map(int, match.groups())
+                            log_append = ""
+                        else:
+                            offset_b, offset_e = 0, 0
+                            log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                        _dest_text = _dest_text[:_dest_text.find('[')]
                     else:
+                        log_append = ""
                         offset_b, offset_e = 0, 0
-                        log_append = "(Bracket detected in dest_text but offset time matching failed)"
-                    _dest_text = _dest_text[:_dest_text.find('[')]
-                else:
-                    log_append = ""
-                    offset_b, offset_e = 0, 0
-                _dest_text = pre_proc(_dest_text)
-                ts = proc(recog_res_raw, timestamp, _dest_text)
-                for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
-                if len(ts) > 1 and match:
-                    log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
-                        offsets are applied to all periods)'
+                    _dest_text = pre_proc(_dest_text)
+                    ts = proc(recog_res_raw, timestamp, _dest_text)
+                    for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
+                    if len(ts) > 1 and match:
+                        log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
+                            offsets are applied to all periods)'
+            else:
+                for _dest_spk in dest_spk.split('#'):
+                    ts = proc_spk(_dest_spk, state['sd_sentences'])
+                    for _ts in ts: all_ts.append(_ts)
+                log_append = ""
         else:
-            for _dest_spk in dest_spk.split('#'):
-                ts = proc_spk(_dest_spk, state['sd_sentences'])
-                for _ts in ts: all_ts.append(_ts)
-            log_append = ""
+            all_ts = timestamp_list
         ts = all_ts
         # ts.sort()
         srt_index = 0
@@ -158,7 +161,8 @@ class VideoClipper():
                    font_color='white', 
                    add_sub=False, 
                    dest_spk=None, 
-                   output_dir=None):
+                   output_dir=None,
+                   timestamp_list=None):
         # get from state
         recog_res_raw = state['recog_res_raw']
         timestamp = state['timestamp']
@@ -167,32 +171,36 @@ class VideoClipper():
         clip_video_file = state['clip_video_file']
         video_filename = state['video_filename']
         
-        all_ts = []
-        srt_index = 0
-        if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
-            for _dest_text in dest_text.split('#'):
-                if '[' in _dest_text:
-                    match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
-                    if match:
-                        offset_b, offset_e = map(int, match.groups())
-                        log_append = ""
+        if timestamp_list is None:
+            all_ts = []
+            if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
+                for _dest_text in dest_text.split('#'):
+                    if '[' in _dest_text:
+                        match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                        if match:
+                            offset_b, offset_e = map(int, match.groups())
+                            log_append = ""
+                        else:
+                            offset_b, offset_e = 0, 0
+                            log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                        _dest_text = _dest_text[:_dest_text.find('[')]
                     else:
                         offset_b, offset_e = 0, 0
-                        log_append = "(Bracket detected in dest_text but offset time matching failed)"
-                    _dest_text = _dest_text[:_dest_text.find('[')]
-                else:
-                    offset_b, offset_e = 0, 0
-                    log_append = ""
-                _dest_text = pre_proc(_dest_text)
-                ts = proc(recog_res_raw, timestamp, _dest_text)
-                for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
-                if len(ts) > 1 and match:
-                    log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
-                        offsets are applied to all periods)'
-        else:
-            for _dest_spk in dest_spk.split('#'):
-                ts = proc_spk(_dest_spk, state['sd_sentences'])
-                for _ts in ts: all_ts.append(_ts)
+                        log_append = ""
+                    _dest_text = pre_proc(_dest_text)
+                    ts = proc(recog_res_raw, timestamp, _dest_text)
+                    for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
+                    if len(ts) > 1 and match:
+                        log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
+                            offsets are applied to all periods)'
+            else:
+                for _dest_spk in dest_spk.split('#'):
+                    ts = proc_spk(_dest_spk, state['sd_sentences'])
+                    for _ts in ts: all_ts.append(_ts)
+        else:  # AI clip pass timestamp as input directly
+            all_ts = [[i[0]*16.0, i[1]*16.0] for i in timestamp_list]
+        import pdb; pdb.set_trace()
+        srt_index = 0
         time_acc_ost = 0.0
         ts = all_ts
         # ts.sort()
