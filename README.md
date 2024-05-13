@@ -5,7 +5,7 @@
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
-### <p align="center">「简体中文 | [English](./README.md)」</p>
+### <p align="center">「简体中文 | [English](./README_en.md)」</p>
 
 <div align="center">  
 <h4><a href="#近期更新"> 近期更新 </a>
