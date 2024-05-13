@@ -11,6 +11,7 @@ from videoclipper import VideoClipper
 from introduction import top_md_1, top_md_2, top_md_3, top_md_4
 from llm.openai_api import openai_call
 from llm.g4f_openai_api import g4f_openai_call
+from llm.qwen_api import call_qwen_model
 from utils.trans_utils import extract_timestamps
 
 
@@ -88,14 +89,15 @@ if __name__ == "__main__":
             add_sub=True, dest_spk=video_spk_input, output_dir=output_dir
             )
         
-    def llm_inference(prompt_head, srt_text, model):
-        SUPPORT_LLM_PREFIX = ['openai', 'g4f']
-        prefix = model.split('-')[0]
-        model_wo_prefix = "-".join(model.split('-')[1:])
-        if prefix == 'openai':
-            return openai_call(prompt_head+'\n'+srt_text, model_wo_prefix)
-        elif prefix.startswith('g4f'):
-            return g4f_openai_call(prompt_head+'\n'+srt_text, model_wo_prefix)
+    def llm_inference(system_content, user_content, srt_text, model, apikey):
+        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot']
+        if model.startswith('qwen'):
+            return call_qwen_model(apikey, model, system_content, user_content+'\n'+srt_text)
+        if model.startswith('gpt') or model.startswith('moonshot'):
+            return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
+        elif model.startswith('g4f'):
+            model = "-".join(model.split('-')[1:])
+            return g4f_openai_call(model, system_content, user_content+'\n'+srt_text)
         else:
             logging.error("LLM name error, only {} are supported as LLM name prefix."
                           .format(SUPPORT_LLM_PREFIX))
@@ -146,8 +148,8 @@ if __name__ == "__main__":
                     with gr.Column():
                         # with gr.Row():
                             # video_sd_switch = gr.Radio(["No", "Yes"], label="👥区分说话人 Get Speakers", value='No')
-                        hotwords_input = gr.Textbox(label="🚒 热词 | Hotwords(多个热词使用空格分隔，仅支持中文热词)")
-                        output_dir = gr.Textbox(label="📁 文件输出路径 | File Output Dir", value=" ")
+                        hotwords_input = gr.Textbox(label="🚒 热词 | Hotwords(可以为空，多个热词使用空格分隔，仅支持中文热词)")
+                        output_dir = gr.Textbox(label="📁 文件输出路径 | File Output Dir (可以为空，Linux, mac系统可以稳定使用)", value=" ")
                         with gr.Row():
                             recog_button = gr.Button("👂 识别 | ASR", variant="primary")
                             recog_button2 = gr.Button("👂👫 识别+区分说话人 | ASR+SD")
@@ -156,20 +158,23 @@ if __name__ == "__main__":
             with gr.Column():
                 with gr.Tab("🧠 LLM智能裁剪 | LLM Clipping"):
                     with gr.Column():
-                        prompt_head = gr.Textbox(label="Prompt Head", value=("你是一个视频srt字幕剪辑工具，"
-                            "输入视频的srt字幕之后根据如下要求剪辑出最精彩的并且尽可能连续的片段，输出每个段落的开始与结束时间，"
-                            "输出需严格按照如下格式：1. [开始时间-结束时间] 文本，\n"
-                            "原始srt字幕如下："))
-                        with gr.Row():
-                            llm_model = gr.Dropdown(
-                                choices=["openai-gpt-3.5-turbo", 
-                                         "openai-gpt-3.5-turbo-0125", 
-                                         "openai-gpt-4-turbo",
-                                         "g4fopenai-gpt-3.5-turbo"], 
-                                value="openai-gpt-3.5-turbo",
-                                label="LLM Model Name with Prefix",
-                                allow_custom_value=True)
-                            llm_button =  gr.Button("LLM Clip", variant="primary")
+                        prompt_head = gr.Textbox(label="Prompt System", value=("你是一个视频srt字幕分析剪辑器，输入视频的srt字幕，"
+                                "分析其中的精彩且尽可能连续的片段并裁剪出来，将片段中在时间上连续的多个句子及它们的时间戳合并为一条，"
+                                "注意确保文字与时间戳的正确匹配。输出需严格按照如下格式：1. [开始时间-结束时间] 文本"))
+                        prompt_head2 = gr.Textbox(label="Prompt User", value=("这是待裁剪的视频srt字幕："))
+                        with gr.Column():
+                            with gr.Row():
+                                llm_model = gr.Dropdown(
+                                    choices=["qwen-plus",
+                                             "gpt-3.5-turbo", 
+                                             "gpt-3.5-turbo-0125", 
+                                             "gpt-4-turbo",
+                                             "g4f-gpt-3.5-turbo"], 
+                                    value="qwen-plus",
+                                    label="LLM Model Name",
+                                    allow_custom_value=True)
+                                apikey_input = gr.Textbox(label="APIKEY")
+                            llm_button =  gr.Button("LLM智能段落选择（首先进行识别，非g4f需配置对应apikey）", variant="primary")
                         llm_result = gr.Textbox(label="LLM Clipper Result")
                         with gr.Row():
                             llm_clip_button = gr.Button("🧠 LLM智能裁剪 | AI Clip", variant="primary")
@@ -228,7 +233,7 @@ if __name__ == "__main__":
                                    ], 
                            outputs=[video_output, clip_message, srt_clipped])
         llm_button.click(llm_inference,
-                         inputs=[prompt_head, video_srt_output, llm_model],
+                         inputs=[prompt_head, prompt_head2, video_srt_output, llm_model, apikey_input],
                          outputs=[llm_result])
         llm_clip_button.click(AI_clip, 
                            inputs=[llm_result,

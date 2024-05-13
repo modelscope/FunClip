@@ -20,6 +20,7 @@
 
 On top of the basic features mentioned above, FunClip has following highlights:
 
+- Try AI clipping using LLM in FunClip now.
 - FunClip integrates Alibaba's open-source industrial-grade model [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), which is one of the best-performing open-source Chinese ASR models available, with over 13 million downloads on Modelscope. It can also accurately predict timestamps in an integrated manner.
 - FunClip incorporates the hotword customization feature of [SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), allowing users to specify certain entity words, names, etc., as hotwords during the ASR process to enhance recognition results.
 - FunClip integrates the [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) speaker recognition model, enabling users to use the auto-recognized speaker ID as the target for trimming, to clip segments from a specific speaker.
@@ -30,7 +31,12 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 
 <a name="What's New"></a>
 ## What's New🚀
-
+- 🔥2024/05/13 FunClip updates its clipping feature based on large language models, and the usage is as follows:
+  1. After the recognition, select the name of the large model and configure your own apikey;
+  2. Click on the 'LLM Smart Paragraph Selection' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
+  3. Click on the 'LLM Smart Clipping' button, and based on the output results of the large language model from the previous step, FunClip will extract the timestamps for clipping;
+  4. You can try changing the prompt to leverage the capabilities of the large language models to get the results you want;
+- 🔥FunClip adds smart clipping functionality with large language models, integrating models from the qwen series, gpt series, etc., providing default prompts. You can also explore and share tips for setting prompts.
 - 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
   - Support configuration of output file directory, saving ASR intermediate results and video clipping intermediate files;
   - UI upgrade (see guide picture below), video and audio cropping function on the same page, button position adjustment;
@@ -58,7 +64,7 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 git clone https://github.com/alibaba-damo-academy/FunClip.git
 cd FunClip
 # install Python requirments
-pip install -r ./requirments.txt
+pip install -r ./requirements.txt
 ```
 
 ### imagemagick install (Optional)
