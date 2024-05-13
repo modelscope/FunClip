@@ -1,7 +1,7 @@
 # <p align="center"> FunClip🎥</p>
 
 **<p align="center"> ⚡ 开源、精准、方便的视频切片工具 </p>**
-**<p align="center"> 🧠 通过FunClip探索基于大模型的视频剪辑 </p>**
+**<p align="center"> 🧠 通过FunClip探索基于大语言模型的视频剪辑 </p>**
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
@@ -31,12 +31,11 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
-- 🔥2024/05/13 FunClip更新基于大语言模型的剪辑功能，使用方法如下：
+- 🔥2024/05/13 FunClip加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
   1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
   2. 点击'LLM智能段落选择'按钮，FunClip将自动组合两个prompt与视频的srt字幕；
   3. 点击'LLM智能裁剪'按钮，基于前一步的大语言模型输出结果，FunClip将提取其中的时间戳进行裁剪；
   4. 您可以尝试改变prompt来借助大语言模型的能力来获取您想要的结果；
-- 🔥FunClip加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧。
 - 2024/05/09 FunClip更新至v1.1.0，包含如下更新与修复：
   - 支持配置输出文件目录，保存ASR中间结果与视频裁剪中间文件；
   - UI升级（见下方演示图例），视频与音频裁剪功能在同一页，按钮位置调整；
