@@ -1,7 +1,7 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 ⚡ </p>**
-**<p align="center"> 🧠 通过FunClip探索基于大模型的视频剪辑 🧠 </p>**
+**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 </p>**
+**<p align="center"> 🧠 通过FunClip探索基于大模型的视频剪辑 </p>**
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 

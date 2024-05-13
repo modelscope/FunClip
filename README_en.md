@@ -1,6 +1,7 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> ⚡ Open-source, accurate and easy-to-use video clipping tool ⚡ </p>**
+**<p align="center"> ⚡ Open-source, accurate and easy-to-use video clipping tool </p>**
+**<p align="center"> 🧠 Explore LLM based video clipping with FunClip </p>**
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
