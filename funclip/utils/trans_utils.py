@@ -32,14 +32,12 @@ def proc(raw_text, timestamp, dest_text):
     offset = 0
     while True:
         fi = raw_text.find(dest_text, offset, len(raw_text))
-        # import pdb; pdb.set_trace()
         ti = raw_text[:fi].count(' ')
         if fi == -1:
             break
         offset = fi + ld
         mi.append(fi)
         ts.append([timestamp[ti][0]*16, timestamp[ti+ld-1][1]*16])
-        # import pdb; pdb.set_trace()
     return ts
 
 def proc_spk(dest_spk, sd_sentences):
@@ -48,7 +46,6 @@ def proc_spk(dest_spk, sd_sentences):
         d_start = d['timestamp'][0][0]
         d_end = d['timestamp'][-1][1]
         spkid=dest_spk[3:]
-        # import pdb; pdb.set_trace()
         if str(d['spk']) == spkid and d_end-d_start>999:
             ts.append([d['start']*16, d['end']*16])
     return ts

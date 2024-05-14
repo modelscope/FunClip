@@ -105,6 +105,7 @@ python funclip/launch.py
 <img src="docs/images/guide.jpg"/>
 
 使用大语言模型裁剪请参考如下教程
+
 <img src="docs/images/LLM_guide.png" width=360/>
 
 ### B.通过命令行调用使用FunClip的相关功能

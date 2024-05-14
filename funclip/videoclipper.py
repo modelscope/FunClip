@@ -199,7 +199,7 @@ class VideoClipper():
                     for _ts in ts: all_ts.append(_ts)
         else:  # AI clip pass timestamp as input directly
             all_ts = [[i[0]*16.0, i[1]*16.0] for i in timestamp_list]
-        import pdb; pdb.set_trace()
+        
         srt_index = 0
         time_acc_ost = 0.0
         ts = all_ts

@@ -100,6 +100,7 @@ then visit ```localhost:7860``` you will get a Gradio service like below and you
 <img src="docs/images/guide.jpg"/>
 
 Follow the guide below to explore LLM based clipping:
+
 <img src="docs/images/LLM_guide.png" width=360/>
 
 - Step1: Upload your video file (or try the example videos below)
