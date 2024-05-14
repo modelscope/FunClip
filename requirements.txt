@@ -10,3 +10,4 @@ torch>=1.13
 torchaudio
 openai
 g4f
+dashscope
