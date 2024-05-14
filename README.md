@@ -1,10 +1,11 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 ⚡ </p>**
+**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 </p>**
+**<p align="center"> 🧠 通过FunClip探索基于大语言模型的视频剪辑 </p>**
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
-### <p align="center">「简体中文 | [English](./README.md)」</p>
+### <p align="center">「简体中文 | [English](./README_en.md)」</p>
 
 <div align="center">  
 <h4><a href="#近期更新"> 近期更新 </a>
@@ -18,6 +19,7 @@
 **FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
 
 在上述基本功能的基础上，FunClip有以下特色：
+- 🔥FunClip集成了多种大语言模型调用方式并提供了prompt配置接口，尝试通过大语言模型进行视频裁剪~
 - FunClip集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
 - FunClip集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
 - FunClip集成了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
@@ -29,6 +31,11 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
+- 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
+  1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
+  2. 点击'LLM智能段落选择'按钮，FunClip将自动组合两个prompt与视频的srt字幕；
+  3. 点击'LLM智能裁剪'按钮，基于前一步的大语言模型输出结果，FunClip将提取其中的时间戳进行裁剪；
+  4. 您可以尝试改变prompt来借助大语言模型的能力来获取您想要的结果；
 - 2024/05/09 FunClip更新至v1.1.0，包含如下更新与修复：
   - 支持配置输出文件目录，保存ASR中间结果与视频裁剪中间文件；
   - UI升级（见下方演示图例），视频与音频裁剪功能在同一页，按钮位置调整；
@@ -55,7 +62,7 @@
 git clone https://github.com/alibaba-damo-academy/FunClip.git
 cd FunClip
 # 安装相关Python依赖
-pip install -r ./requirments.txt
+pip install -r ./requirements.txt
 ```
 
 ### 安装imagemagick（可选）
