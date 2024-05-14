@@ -52,7 +52,8 @@ class VideoClipper():
                                                     return_raw_text=True, 
                                                     is_final=True, 
                                                     hotword=hotwords,
-                                                    output_dir=output_dir,)
+                                                    output_dir=output_dir,
+                                                    cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
         state['recog_res_raw'] = rec_result[0]['raw_text']
         state['timestamp'] = rec_result[0]['timestamp']

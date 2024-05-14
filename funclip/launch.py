@@ -8,7 +8,7 @@ import logging
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
-from introduction import top_md_1, top_md_2, top_md_3, top_md_4
+from introduction import top_md_1, top_md_3, top_md_4
 from llm.openai_api import openai_call
 from llm.g4f_openai_api import g4f_openai_call
 from llm.qwen_api import call_qwen_model
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     theme = gr.Theme.load("funclip/utils/theme.json")
     with gr.Blocks(theme=theme) as funclip_service:
         gr.Markdown(top_md_1)
-        gr.Markdown(top_md_2)
+        # gr.Markdown(top_md_2)
         gr.Markdown(top_md_3)
         gr.Markdown(top_md_4)
         video_state, audio_state = gr.State(), gr.State()
