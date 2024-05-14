@@ -99,6 +99,9 @@ python funclip/launch.py
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 <img src="docs/images/guide.jpg"/>
 
+Follow the guide below to explore LLM based clipping:
+<img src="docs/images/LLM_guide.png" width=360/>
+
 - Step1: Upload your video file (or try the example videos below)
 - Step2: Copy the text segments you need to 'Text to Clip'
 - Step3: Adjust subtitle settings (if needed)
