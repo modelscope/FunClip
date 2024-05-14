@@ -84,6 +84,7 @@ brew install imagemagick
 sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMagick-7/policy.xml 
 ```
 - On Windows
+
 Download and install imagemagick https://imagemagick.org/script/download.php#windows
 Find your python install path and change the `IMAGEMAGICK_BINARY` to your imagemagick install path in file `site-packages\moviepy\config_defaults.py`
 

@@ -81,6 +81,7 @@ brew install imagemagick
 sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMagick-7/policy.xml 
 ```
 - Windows
+
 首先下载并安装imagemagick https://imagemagick.org/script/download.php#windows
 然后确定您的Python安装位置，在其中的`site-packages\moviepy\config_defaults.py`文件中修改`IMAGEMAGICK_BINARY`为imagemagick的exe路径
 
