@@ -83,9 +83,10 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 - Windows
 
 首先下载并安装imagemagick https://imagemagick.org/script/download.php#windows
+
 然后确定您的Python安装位置，在其中的`site-packages\moviepy\config_defaults.py`文件中修改`IMAGEMAGICK_BINARY`为imagemagick的exe路径
 
-1. 下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
+2. 下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
 
 ```shell
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc

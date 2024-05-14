@@ -86,9 +86,10 @@ sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMa
 - On Windows
 
 Download and install imagemagick https://imagemagick.org/script/download.php#windows
+
 Find your python install path and change the `IMAGEMAGICK_BINARY` to your imagemagick install path in file `site-packages\moviepy\config_defaults.py`
 
-1. Download font file to funclip/font
+2. Download font file to funclip/font
 
 ```shell
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
