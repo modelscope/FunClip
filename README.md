@@ -57,6 +57,7 @@
 
 ### Python环境安装
 
+FunClip的运行仅依赖于一个Python环境，若您是一个小白开发者，可以先了解下如何使用Python，pip等~
 ```shell
 # 克隆funclip仓库
 git clone https://github.com/alibaba-damo-academy/FunClip.git
@@ -79,8 +80,11 @@ sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 brew install imagemagick
 sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMagick-7/policy.xml 
 ```
+- Windows
+首先下载并安装imagemagick https://imagemagick.org/script/download.php#windows
+然后确定您的Python安装位置，在其中的`site-packages\moviepy\config_defaults.py`文件中修改`IMAGEMAGICK_BINARY`为imagemagick的exe路径
 
-2. 下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
+1. 下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
 
 ```shell
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
