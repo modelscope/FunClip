@@ -111,9 +111,9 @@ def convert_time_to_millis(time_str):
 
 def extract_timestamps(input_text):
     # 使用正则表达式查找所有时间戳
-    timestamps = re.findall(r'\[(\d{2}:\d{2}:\d{2},\d{2,3})-(\d{2}:\d{2}:\d{2},\d{2,3})\]', input_text)
+    timestamps = re.findall(r'\[(\d{2}:\d{2}:\d{2},\d{2,3})\s*-\s*(\d{2}:\d{2}:\d{2},\d{2,3})\]', input_text)
     times_list = []
-
+    print(timestamps)
     # 循环遍历找到的所有时间戳，并转换为毫秒
     for start_time, end_time in timestamps:
         start_millis = convert_time_to_millis(start_time)
