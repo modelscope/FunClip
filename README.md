@@ -1,127 +1,132 @@
 # <p align="center"> FunClip🎥</p>
 
-**<p align="center"> ⚡ 开源、精准、方便的视频切片工具 </p>**
-**<p align="center"> 🧠 通过FunClip探索基于大语言模型的视频剪辑 </p>**
+### <p align="center">「[简体中文](./README_zh.md) | English」</p>
+
+**<p align="center"> ⚡ Open-source, accurate and easy-to-use video clipping tool </p>**
+**<p align="center"> 🧠 Explore LLM based video clipping with FunClip </p>**
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
-### <p align="center">「简体中文 | [English](./README_en.md)」</p>
-
 <div align="center">  
-<h4><a href="#近期更新"> 近期更新 </a>
-｜<a href="#施工中"> 施工中 </a>
-｜<a href="#安装环境"> 安装环境 </a>
-｜<a href="#使用方法"> 使用方法 </a>
-｜<a href="#社区交流"> 社区交流 </a>
+<h4>
+<a href="#What's New"> What's New </a>
+｜<a href="#On Going"> On Going </a>
+｜<a href="#Install"> Install </a>
+｜<a href="#Usage"> Usage </a>
+｜<a href="#Community"> Community </a>
 </h4>
 </div>
 
-**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
+**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
-在上述基本功能的基础上，FunClip有以下特色：
-- 🔥FunClip集成了多种大语言模型调用方式并提供了prompt配置接口，尝试通过大语言模型进行视频裁剪~
-- FunClip集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
-- FunClip集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。
-- FunClip集成了[CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary)说话人识别模型，用户可以将自动识别出的说话人ID作为裁剪目标，将某一说话人的段落裁剪出来。
-- 通过Gradio交互实现上述功能，安装简单使用方便，并且可以在服务端搭建服务通过浏览器使用。
-- FunClip支持多段自由剪辑，并且会自动返回全视频SRT字幕、目标段落SRT字幕，使用简单方便。
+On top of the basic features mentioned above, FunClip has following highlights:
 
-欢迎体验使用，欢迎提出关于字幕生成或语音识别的需求与宝贵建议~
+- Try AI clipping using LLM in FunClip now.
+- FunClip integrates Alibaba's open-source industrial-grade model [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), which is one of the best-performing open-source Chinese ASR models available, with over 13 million downloads on Modelscope. It can also accurately predict timestamps in an integrated manner.
+- FunClip incorporates the hotword customization feature of [SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), allowing users to specify certain entity words, names, etc., as hotwords during the ASR process to enhance recognition results.
+- FunClip integrates the [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) speaker recognition model, enabling users to use the auto-recognized speaker ID as the target for trimming, to clip segments from a specific speaker.
+- The functionalities are realized through Gradio interaction, offering simple installation and ease of use. It can also be deployed on a server and accessed via a browser.
+- FunClip supports multi-segment free clipping and automatically returns full video SRT subtitles and target segment SRT subtitles, offering a simple and convenient user experience.
 
-<a name="近期更新"></a>
-## 近期更新🚀
+You're welcome to try it out, and we look forward to any requests and valuable suggestions you may have about subtitle generation or speech recognition~
 
-- 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
-  1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
-  2. 点击'LLM智能段落选择'按钮，FunClip将自动组合两个prompt与视频的srt字幕；
-  3. 点击'LLM智能裁剪'按钮，基于前一步的大语言模型输出结果，FunClip将提取其中的时间戳进行裁剪；
-  4. 您可以尝试改变prompt来借助大语言模型的能力来获取您想要的结果；
-- 2024/05/09 FunClip更新至v1.1.0，包含如下更新与修复：
-  - 支持配置输出文件目录，保存ASR中间结果与视频裁剪中间文件；
-  - UI升级（见下方演示图例），视频与音频裁剪功能在同一页，按钮位置调整；
-  - 修复了由于FunASR接口升级引入的bug，该bug曾导致一些严重的剪辑错误；
-  - 支持为每一个段落配置不同的起止时间偏移；
-  - 代码优化等；
-- 2024/03/06 命令行调用方式更新与问题修复，相关功能可以正常使用。
-- 2024/02/28 FunClip升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
-- 2024/02/28 原FunASR-APP/ClipVideo更名为FunClip。
+<a name="What's New"></a>
+## What's New🚀
+- 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
+  1. After the recognition, select the name of the large model and configure your own apikey;
+  2. Click on the 'LLM Smart Paragraph Selection' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
+  3. Click on the 'LLM Smart Clipping' button, and based on the output results of the large language model from the previous step, FunClip will extract the timestamps for clipping;
+  4. You can try changing the prompt to leverage the capabilities of the large language models to get the results you want;
+- 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
+  - Support configuration of output file directory, saving ASR intermediate results and video clipping intermediate files;
+  - UI upgrade (see guide picture below), video and audio cropping function on the same page, button position adjustment;
+  - Fixed a bug introduced due to FunASR interface upgrade, which has caused some serious editing errors;
+  - Support configuring different start and end time offsets for each paragraph;
+  - Code update, etc;
+- 2024/03/06 Fix bugs in using FunClip with command line.
+- 2024/02/28 [FunASR](https://github.com/alibaba-damo-academy/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR with hotword customization.
+- 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
+- 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
 
-<a name="施工中"></a>
-## 施工中🌵
+<a name="On Going"></a>
+## On Going🌵
 
-- FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
-- FunClip即将集成大语言模型的能力，提供智能视频剪辑相关功能，敬请期待。
+- FunClip will support Whisper model for English users, coming soon.
+- FunClip will intergrat the abilities of large langage model, coming soon.
 
-<a name="安装环境"></a>
-## 安装🔨
+<a name="Install"></a>
+## Install🔨
 
-### Python环境安装
+### Python env install
 
-FunClip的运行仅依赖于一个Python环境，若您是一个小白开发者，可以先了解下如何使用Python，pip等~
 ```shell
-# 克隆funclip仓库
+# clone funclip repo
 git clone https://github.com/alibaba-damo-academy/FunClip.git
 cd FunClip
-# 安装相关Python依赖
+# install Python requirments
 pip install -r ./requirements.txt
 ```
 
-### 安装imagemagick（可选）
+### imagemagick install (Optional)
 
-1. 如果你希望使用自动生成字幕的视频裁剪功能，需要安装imagemagick
+If you want to clip video file with embedded subtitles
 
-- Ubuntu
+1. ffmpeg and imagemagick is required
+
+- On Ubuntu
 ```shell
 apt-get -y update && apt-get -y install ffmpeg imagemagick
 sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 ```
-- MacOS
+- On MacOS
 ```shell
 brew install imagemagick
 sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMagick-7/policy.xml 
 ```
-- Windows
+- On Windows
 
-首先下载并安装imagemagick https://imagemagick.org/script/download.php#windows
+Download and install imagemagick https://imagemagick.org/script/download.php#windows
 
-然后确定您的Python安装位置，在其中的`site-packages\moviepy\config_defaults.py`文件中修改`IMAGEMAGICK_BINARY`为imagemagick的exe路径
+Find your python install path and change the `IMAGEMAGICK_BINARY` to your imagemagick install path in file `site-packages\moviepy\config_defaults.py`
 
-2. 下载你需要的字体文件，这里我们提供一个默认的黑体字体文件
+2. Download font file to funclip/font
 
 ```shell
 wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
 ```
+<a name="Usage"></a>
+## Use FunClip
 
-<a name="使用方法"></a>
-## 使用FunClip
-
-### A.在本地启动Gradio服务
-
+### A. Use FunClip as local Gradio Service
+You can establish your own FunClip service which is same as [Modelscope Space](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) as follow:
 ```shell
 python funclip/launch.py
 ```
-随后在浏览器中访问```localhost:7860```即可看到如下图所示的界面，按如下步骤即可进行视频剪辑
-1. 上传你的视频（或使用下方的视频用例）
-2. （可选）设置热词，设置文件输出路径（保存识别结果、视频等）
-3. 点击识别按钮获取识别结果，或点击识别+区分说话人在语音识别基础上识别说话人ID
-4. 将识别结果中的选段复制到对应位置，或者将说话人ID输入到对应为止
-5. （可选）配置剪辑参数，偏移量与字幕设置等
-6. 点击“裁剪”或“裁剪+字幕”按钮
-
+then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 <img src="docs/images/guide.jpg"/>
 
-使用大语言模型裁剪请参考如下教程
+Follow the guide below to explore LLM based clipping:
 
 <img src="docs/images/LLM_guide.png" width=360/>
 
-### B.通过命令行调用使用FunClip的相关功能
+- Step1: Upload your video file (or try the example videos below)
+- Step2: Copy the text segments you need to 'Text to Clip'
+- Step3: Adjust subtitle settings (if needed)
+- Step4: Click 'Clip' or 'Clip and Generate Subtitles'
+
+### B. Experience FunClip in Modelscope
+You can try FunClip in modelscope space: [link](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary).
+
+### C. Use FunClip in command line
+
+FunClip supports you to recognize and clip with commands:
 ```shell
-# 步骤一：识别
+# step1: Recognize
 python funclip/videoclipper.py --stage 1 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output
-# ./output中生成了识别结果与srt字幕等
-# 步骤二：裁剪
+# now you can find recognition results and entire SRT file in ./output/
+# step2: Clip
 python funclip/videoclipper.py --stage 2 \
                        --file examples/2022云栖大会_片段.mp4 \
                        --output_dir ./output \
@@ -131,28 +136,27 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-### C.通过Modelscope创空间体验FunClip
-[funclip创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
+<a name="Community"></a>
+## Community Communication🍟
 
-<a name="社区交流"></a>
-## 社区交流🍟
+FunClip is firstly open-sourced bu FunASR team, any useful PR is welcomed.
 
-FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。
+You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication.
 
-|                              钉钉群                                |                     微信群                      |
+|                           DingTalk group                            |                     WeChat group                      |
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
-## Star一下支持我们🌟
+## Support Us🌟
 
 [![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
 
-## 通过FunASR了解语音识别相关技术
+## Find Speech Models in FunASR
 
-[FunASR](https://github.com/alibaba-damo-academy/FunASR)是阿里巴巴通义实验室开源的端到端语音识别工具包，目前已经成为主流ASR工具包之一。其主要包括Python pipeline，SDK部署与海量开源工业ASR模型等。
+[FunASR](https://github.com/alibaba-damo-academy/FunASR) hopes to build a bridge between academic research and industrial applications on speech recognition. By supporting the training & finetuning of the industrial-grade speech recognition model released on ModelScope, researchers and developers can conduct research and production of speech recognition models more conveniently, and promote the development of speech recognition ecology. ASR for Fun！
 
-📚FunASR论文: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
+📚FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
 
-📚SeACo-Paraformer论文：<a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a> 
+📚SeACo-Paraformer Paper: <a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a>
 
-⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR.stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
+🌟Support FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
