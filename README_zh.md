@@ -16,7 +16,7 @@
 </h4>
 </div>
 
-**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（[快速体验](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)）。
+**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（快速体验 [Modelscope](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) [HuggingFace](https://huggingface.co/spaces/R1ckShi/FunClip)）。
 
 在上述基本功能的基础上，FunClip有以下特色：
 - 🔥FunClip集成了多种大语言模型调用方式并提供了prompt配置接口，尝试通过大语言模型进行视频裁剪~
@@ -131,8 +131,10 @@ python funclip/videoclipper.py --stage 2 \
                        --output_file './output/res.mp4'
 ```
 
-### C.通过Modelscope创空间体验FunClip
-[funclip创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
+### C.通过创空间与Space体验FunClip
+[FunClip@Modelscope创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
+[FunClip@HuggingFace Space](https://huggingface.co/spaces/R1ckShi/FunClip)
+
 
 <a name="社区交流"></a>
 ## 社区交流🍟
