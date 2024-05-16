@@ -17,11 +17,11 @@
 </h4>
 </div>
 
-**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
+**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video clip corresponding to the selected segments ([Quick Experience](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)).
 
 On top of the basic features mentioned above, FunClip has following highlights:
 
-- Try AI clipping using LLM in FunClip now.
+- 🔥Try AI clipping using LLM in FunClip now.
 - FunClip integrates Alibaba's open-source industrial-grade model [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), which is one of the best-performing open-source Chinese ASR models available, with over 13 million downloads on Modelscope. It can also accurately predict timestamps in an integrated manner.
 - FunClip incorporates the hotword customization feature of [SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), allowing users to specify certain entity words, names, etc., as hotwords during the ASR process to enhance recognition results.
 - FunClip integrates the [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) speaker recognition model, enabling users to use the auto-recognized speaker ID as the target for trimming, to clip segments from a specific speaker.
@@ -39,8 +39,8 @@ You're welcome to try it out, and we look forward to any requests and valuable s
   4. You can try changing the prompt to leverage the capabilities of the large language models to get the results you want;
 - 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
   - Support configuration of output file directory, saving ASR intermediate results and video clipping intermediate files;
-  - UI upgrade (see guide picture below), video and audio cropping function on the same page, button position adjustment;
-  - Fixed a bug introduced due to FunASR interface upgrade, which has caused some serious editing errors;
+  - UI upgrade (see guide picture below), video and audio cropping function are on the same page now, button position adjustment;
+  - Fixed a bug introduced due to FunASR interface upgrade, which has caused some serious clipping errors;
   - Support configuring different start and end time offsets for each paragraph;
   - Code update, etc;
 - 2024/03/06 Fix bugs in using FunClip with command line.
@@ -52,13 +52,14 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 ## On Going🌵
 
 - FunClip will support Whisper model for English users, coming soon.
-- FunClip will intergrat the abilities of large langage model, coming soon.
+- FunClip will future explore the abilities of large langage model based AI clipping, welcome to discuss about prompt setting and clipping, etc.
 
 <a name="Install"></a>
 ## Install🔨
 
 ### Python env install
 
+FunClip basic functions rely on a python environment only.
 ```shell
 # clone funclip repo
 git clone https://github.com/alibaba-damo-academy/FunClip.git
@@ -103,16 +104,17 @@ You can establish your own FunClip service which is same as [Modelscope Space](h
 python funclip/launch.py
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
-<img src="docs/images/guide.jpg"/>
-
-Follow the guide below to explore LLM based clipping:
-
-<img src="docs/images/LLM_guide.png" width=360/>
 
 - Step1: Upload your video file (or try the example videos below)
 - Step2: Copy the text segments you need to 'Text to Clip'
 - Step3: Adjust subtitle settings (if needed)
 - Step4: Click 'Clip' or 'Clip and Generate Subtitles'
+- 
+<img src="docs/images/guide.jpg"/>
+
+Follow the guide below to explore LLM based clipping:
+
+<img src="docs/images/LLM_guide.png" width=360/>
 
 ### B. Experience FunClip in Modelscope
 You can try FunClip in modelscope space: [link](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary).
