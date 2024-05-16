@@ -117,7 +117,9 @@ Follow the guide below to explore LLM based clipping:
 <img src="docs/images/LLM_guide.png" width=360/>
 
 ### B. Experience FunClip in Modelscope
+
 [FunClip@Modelscope Space](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
+
 [FunClip@HuggingFace Space](https://huggingface.co/spaces/R1ckShi/FunClip)
 
 ### C. Use FunClip in command line

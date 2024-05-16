@@ -132,7 +132,9 @@ python funclip/videoclipper.py --stage 2 \
 ```
 
 ### C.通过创空间与Space体验FunClip
+
 [FunClip@Modelscope创空间](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
+
 [FunClip@HuggingFace Space](https://huggingface.co/spaces/R1ckShi/FunClip)
 
 
