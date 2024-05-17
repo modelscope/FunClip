@@ -159,4 +159,4 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 
 📚SeACo-Paraformer论文：<a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a> 
 
-⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR.stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
+⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
