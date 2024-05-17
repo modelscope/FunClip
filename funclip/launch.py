@@ -92,7 +92,7 @@ if __name__ == "__main__":
     def llm_inference(system_content, user_content, srt_text, model, apikey):
         SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot']
         if model.startswith('qwen'):
-            return call_qwen_model(apikey, model, system_content, user_content+'\n'+srt_text)
+            return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
         if model.startswith('gpt') or model.startswith('moonshot'):
             return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
         elif model.startswith('g4f'):
