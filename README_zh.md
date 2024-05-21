@@ -49,8 +49,10 @@
 <a name="施工中"></a>
 ## 施工中🌵
 
-- FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
-- FunClip即将集成大语言模型的能力，提供智能视频剪辑相关功能，敬请期待。
+- [ ] FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
+- [x] 集成大语言模型的能力，提供智能视频剪辑相关功能。大家可以基于FunClip探索使用大语言模型的视频剪辑~
+- [ ] 给定文本段落，反向选取其他段落。
+- [ ] 删除视频中无人说话的片段。
 
 <a name="安装环境"></a>
 ## 安装🔨
@@ -159,4 +161,4 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 
 📚SeACo-Paraformer论文：<a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a> 
 
-⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
+⭐支持FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR.stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
