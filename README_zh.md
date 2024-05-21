@@ -7,6 +7,10 @@
 
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
+<p align="center" class="trendshift">
+<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="alibaba-damo-academy%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+</p>
+
 <div align="center">  
 <h4><a href="#近期更新"> 近期更新 </a>
 ｜<a href="#施工中"> 施工中 </a>
