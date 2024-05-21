@@ -1,4 +1,4 @@
-# <p align="center"> FunClip🎥</p>
+[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=400)](https://github.com/Akshay090/svg-banners)
 
 ### <p align="center">「简体中文 | [English](./README.md)」</p>
 
