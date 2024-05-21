@@ -51,8 +51,10 @@ You're welcome to try it out, and we look forward to any requests and valuable s
 <a name="On Going"></a>
 ## On Going🌵
 
-- FunClip will support Whisper model for English users, coming soon.
-- FunClip will future explore the abilities of large langage model based AI clipping, welcome to discuss about prompt setting and clipping, etc.
+- [ ] FunClip will support Whisper model for English users, coming soon.
+- [x] FunClip will further explore the abilities of large langage model based AI clipping, welcome to discuss about prompt setting and clipping, etc.
+- [ ] Reverse periods choosing while clipping.
+- [ ] Removing silence periods.
 
 <a name="Install"></a>
 ## Install🔨
