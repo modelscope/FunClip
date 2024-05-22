@@ -83,6 +83,11 @@ if __name__ == "__main__":
             return None, (sr, res_audio), message, clip_srt
     
     def video_clip_addsub(dest_text, video_spk_input, start_ost, end_ost, state, output_dir, font_size, font_color):
+        output_dir = output_dir.strip()
+        if not len(output_dir):
+            output_dir = None
+        else:
+            output_dir = os.path.abspath(output_dir)
         return audio_clipper.video_clip(
             dest_text, start_ost, end_ost, state, 
             font_size=font_size, font_color=font_color, 
