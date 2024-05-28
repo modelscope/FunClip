@@ -1,4 +1,4 @@
-[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=260)](https://github.com/Akshay090/svg-banners)
+[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=210)](https://github.com/Akshay090/svg-banners)
 
 ### <p align="center">「简体中文 | [English](./README.md)」</p>
 
@@ -22,7 +22,8 @@
 
 **FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（快速体验 [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)  [HuggingFace🤗](https://huggingface.co/spaces/R1ckShi/FunClip)）。
 
-在上述基本功能的基础上，FunClip有以下特色：
+## 热点&特性🎨
+
 - 🔥FunClip集成了多种大语言模型调用方式并提供了prompt配置接口，尝试通过大语言模型进行视频裁剪~
 - FunClip集成了阿里巴巴开源的工业级模型[Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)，是当前识别效果最优的开源中文ASR模型之一，Modelscope下载量1300w+次，并且能够一体化的准确预测时间戳。
 - FunClip集成了[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)的热词定制化功能，在ASR过程中可以指定一些实体词、人名等作为热词，提升识别效果。

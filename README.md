@@ -1,4 +1,4 @@
-[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=260)](https://github.com/Akshay090/svg-banners)
+[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=210)](https://github.com/Akshay090/svg-banners)
 
 ### <p align="center">「[简体中文](./README_zh.md) | English」</p>
 
@@ -23,7 +23,7 @@
 
 **FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/alibaba-damo-academy/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video clip corresponding to the selected segments (Quick Experience [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) [HuggingFace🤗](https://huggingface.co/spaces/R1ckShi/FunClip)).
 
-On top of the basic features mentioned above, FunClip has following highlights:
+## Highlights🎨
 
 - 🔥Try AI clipping using LLM in FunClip now.
 - FunClip integrates Alibaba's open-source industrial-grade model [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), which is one of the best-performing open-source Chinese ASR models available, with over 13 million downloads on Modelscope. It can also accurately predict timestamps in an integrated manner.
@@ -31,8 +31,6 @@ On top of the basic features mentioned above, FunClip has following highlights:
 - FunClip integrates the [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) speaker recognition model, enabling users to use the auto-recognized speaker ID as the target for trimming, to clip segments from a specific speaker.
 - The functionalities are realized through Gradio interaction, offering simple installation and ease of use. It can also be deployed on a server and accessed via a browser.
 - FunClip supports multi-segment free clipping and automatically returns full video SRT subtitles and target segment SRT subtitles, offering a simple and convenient user experience.
-
-You're welcome to try it out, and we look forward to any requests and valuable suggestions you may have about subtitle generation or speech recognition~
 
 <a name="What's New"></a>
 ## What's New🚀
@@ -115,7 +113,7 @@ then visit ```localhost:7860``` you will get a Gradio service like below and you
 - Step2: Copy the text segments you need to 'Text to Clip'
 - Step3: Adjust subtitle settings (if needed)
 - Step4: Click 'Clip' or 'Clip and Generate Subtitles'
-- 
+
 <img src="docs/images/guide.jpg"/>
 
 Follow the guide below to explore LLM based clipping:
