@@ -70,7 +70,7 @@ class VideoClipper():
         sr, data = audio_input
         data = data.astype(np.float64)
 
-        if timestamp_list is not None:
+        if timestamp_list is None:
             all_ts = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
                 for _dest_text in dest_text.split('#'):
