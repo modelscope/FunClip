@@ -36,8 +36,8 @@
 ## What's New🚀
 - 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
   1. After the recognition, select the name of the large model and configure your own apikey;
-  2. Click on the 'LLM Smart Paragraph Selection' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
-  3. Click on the 'LLM Smart Clipping' button, and based on the output results of the large language model from the previous step, FunClip will extract the timestamps for clipping;
+  2. Click on the 'LLM Inference' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
+  3. Click on the 'AI Clip' button, and based on the output results of the large language model from the previous step, FunClip will extract the timestamps for clipping;
   4. You can try changing the prompt to leverage the capabilities of the large language models to get the results you want;
 - 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
   - Support configuration of output file directory, saving ASR intermediate results and video clipping intermediate files;
