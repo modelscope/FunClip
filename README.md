@@ -54,7 +54,7 @@
 <a name="On Going"></a>
 ## On Going🌵
 
-- [ ] FunClip will support Whisper model for English users, coming soon.
+- [x] FunClip will support Whisper model for English users, coming soon (ASR using Whisper with timestamp requires massive GPU memory, we support timestamp prediction for vanilla Paraformer in FunASR to achieving this).
 - [x] FunClip will further explore the abilities of large langage model based AI clipping, welcome to discuss about prompt setting and clipping, etc.
 - [ ] Reverse periods choosing while clipping.
 - [ ] Removing silence periods.
