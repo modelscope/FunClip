@@ -132,12 +132,30 @@ if __name__ == "__main__":
         if video_state is not None:
             clip_video_file, message, clip_srt = audio_clipper.video_clip(
                 dest_text, start_ost, end_ost, video_state, 
-                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list)
+                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list, add_sub=False)
             return clip_video_file, None, message, clip_srt
         if audio_state is not None:
             (sr, res_audio), message, clip_srt = audio_clipper.clip(
                 dest_text, start_ost, end_ost, audio_state, 
-                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list)
+                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list, add_sub=False)
+            return None, (sr, res_audio), message, clip_srt
+    
+    def AI_clip_subti(LLM_res, dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
+        timestamp_list = extract_timestamps(LLM_res)
+        output_dir = output_dir.strip()
+        if not len(output_dir):
+            output_dir = None
+        else:
+            output_dir = os.path.abspath(output_dir)
+        if video_state is not None:
+            clip_video_file, message, clip_srt = audio_clipper.video_clip(
+                dest_text, start_ost, end_ost, video_state, 
+                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list, add_sub=True)
+            return clip_video_file, None, message, clip_srt
+        if audio_state is not None:
+            (sr, res_audio), message, clip_srt = audio_clipper.clip(
+                dest_text, start_ost, end_ost, audio_state, 
+                dest_spk=video_spk_input, output_dir=output_dir, timestamp_list=timestamp_list, add_sub=True)
             return None, (sr, res_audio), message, clip_srt
     
     # gradio interface
@@ -263,7 +281,18 @@ if __name__ == "__main__":
                                    video_end_ost, 
                                    video_state, 
                                    audio_state, 
-                                   output_dir
+                                   output_dir,
+                                   ],
+                           outputs=[video_output, audio_output, clip_message, srt_clipped])
+        llm_clip_subti_button.click(AI_clip_subti, 
+                           inputs=[llm_result,
+                                   video_text_input, 
+                                   video_spk_input, 
+                                   video_start_ost, 
+                                   video_end_ost, 
+                                   video_state, 
+                                   audio_state, 
+                                   output_dir,
                                    ],
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
     

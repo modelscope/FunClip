@@ -69,7 +69,8 @@ def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0
     cc = 1 + begin_index
     subs = []
     for _, sent in enumerate(sentence_list):
-        sent['text'] = str2list(sent['text'])
+        if isinstance(sent['text'], str):
+            sent['text'] = str2list(sent['text'])
         if sent['timestamp'][-1][1] <= start:
             # print("CASE0")
             continue
