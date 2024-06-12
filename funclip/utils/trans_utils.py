@@ -7,7 +7,7 @@ import os
 import re
 import numpy as np  
 
-PUNC_LIST = ['，', '。', '！', '？', '、']
+PUNC_LIST = ['，', '。', '！', '？', '、', ',', '.', '?', '!']
 
 def pre_proc(text):
     res = ''
@@ -25,7 +25,7 @@ def pre_proc(text):
         res = res[:-1]
     return res
 
-def proc(raw_text, timestamp, dest_text):
+def proc(raw_text, timestamp, dest_text, lang='zh'):
     # simple matching
     ld = len(dest_text.split())
     mi, ts = [], []
@@ -39,6 +39,7 @@ def proc(raw_text, timestamp, dest_text):
         mi.append(fi)
         ts.append([timestamp[ti][0]*16, timestamp[ti+ld-1][1]*16])
     return ts
+            
 
 def proc_spk(dest_spk, sd_sentences):
     ts = []

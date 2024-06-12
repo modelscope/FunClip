@@ -5,24 +5,39 @@
 
 import os
 import logging
+import argparse
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
-from introduction import top_md_1, top_md_3, top_md_4
 from llm.openai_api import openai_call
-from llm.g4f_openai_api import g4f_openai_call
 from llm.qwen_api import call_qwen_model
+from llm.g4f_openai_api import g4f_openai_call
 from utils.trans_utils import extract_timestamps
+from introduction import top_md_1, top_md_3, top_md_4
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='argparse testing')
+    parser.add_argument('--lang', '-l', type=str, default = "zh", help="language")
+    parser.add_argument('--share', '-s', type=bool, default = False, help="if to establish gradio share link")
+    parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
+    args = parser.parse_args()
     
-    funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                             vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                             punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                             spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                            )
+    if args.lang == 'zh':
+        funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                                )
+    else:
+        funasr_model = AutoModel(model="iic/speech_paraformer_asr-en-16k-vocab4199-pytorch",
+                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                                )
     audio_clipper = VideoClipper(funasr_model)
+    audio_clipper.lang = args.lang
+        
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
         return audio_clipper.recog(audio_input, sd_switch, None, hotwords, output_dir=output_dir)
@@ -252,5 +267,8 @@ if __name__ == "__main__":
                                    ],
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
     
-    # start gradio service in local
-    funclip_service.launch()
+    # start gradio service in local or share
+    if args.share:
+        funclip_service.launch(share=True, server_port=args.port)
+    else:
+        funclip_service.launch(server_port=args.port)
