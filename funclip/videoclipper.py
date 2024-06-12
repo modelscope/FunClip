@@ -42,7 +42,13 @@ class VideoClipper():
             data = data[:,0]
         state['audio_input'] = (sr, data)
         if sd_switch == 'Yes':
-            rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords, cache={})
+            rec_result = self.funasr_model.generate(data, 
+                                                    return_raw_text=True, 
+                                                    is_final=True,
+                                                    output_dir=output_dir, 
+                                                    hotword=hotwords, 
+                                                    pred_timestamp=self.lang=='en',
+                                                    cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
             state['sd_sentences'] = rec_result[0]['sentence_info']
         else:
@@ -53,6 +59,8 @@ class VideoClipper():
                                                     is_final=True, 
                                                     hotword=hotwords,
                                                     output_dir=output_dir,
+                                                    pred_timestamp=self.lang=='en',
+                                                    en_post_proc=True,
                                                     cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
         state['recog_res_raw'] = rec_result[0]['raw_text']
@@ -207,6 +215,8 @@ class VideoClipper():
         # ts.sort()
         clip_srt = ""
         if len(ts):
+            if self.lang == 'en':
+                sentences = sentences.split()
             start, end = ts[0][0] / 16000, ts[0][1] / 16000
             srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index, time_acc_ost=time_acc_ost)
             start, end = start+start_ost/1000.0, end+end_ost/1000.0

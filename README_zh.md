@@ -36,6 +36,7 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
+- 2024/06/12 FunClip现在支持识别与裁剪英文视频，通过`python funclip/launch.py -l en`来启动英文版本服务。
 - 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
   1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
   2. 点击'LLM智能段落选择'按钮，FunClip将自动组合两个prompt与视频的srt字幕；
@@ -54,7 +55,7 @@
 <a name="施工中"></a>
 ## 施工中🌵
 
-- [ ] FunClip将会集成Whisper模型，以提供英文视频剪辑能力。
+- [x] FunClip将会集成Whisper模型，以提供英文视频剪辑能力(Whisper模型的时间戳预测功能需要显存较大，我们在FunASR中添加了Paraformer英文模型的时间戳预测支持以允许FunClip支持英文识别裁剪)。
 - [x] 集成大语言模型的能力，提供智能视频剪辑相关功能。大家可以基于FunClip探索使用大语言模型的视频剪辑~
 - [ ] 给定文本段落，反向选取其他段落。
 - [ ] 删除视频中无人说话的片段。
@@ -106,6 +107,9 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMed
 
 ```shell
 python funclip/launch.py
+# '-l en' for English audio recognize
+# '-p xxx' for setting port number
+# '-s True' for establishing service for public accessing
 ```
 随后在浏览器中访问```localhost:7860```即可看到如下图所示的界面，按如下步骤即可进行视频剪辑
 1. 上传你的视频（或使用下方的视频用例）

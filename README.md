@@ -34,6 +34,7 @@
 
 <a name="What's New"></a>
 ## What's New🚀
+- 2024/06/12 FunClip supports recognize and clip English audio files now. Run `python funclip/launch.py -l en` to try.
 - 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
   1. After the recognition, select the name of the large model and configure your own apikey;
   2. Click on the 'LLM Inference' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
@@ -106,6 +107,9 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMed
 You can establish your own FunClip service which is same as [Modelscope Space](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) as follow:
 ```shell
 python funclip/launch.py
+# '-l en' for English audio recognize
+# '-p xxx' for setting port number
+# '-s True' for establishing service for public accessing
 ```
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 
