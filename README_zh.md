@@ -160,7 +160,7 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 
 ## Star一下支持我们🌟
 
-[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunASR,modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunASR&modelscope/FunClip&Date)
 
 ## 通过FunASR了解语音识别相关技术
 

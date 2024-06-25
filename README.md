@@ -162,7 +162,7 @@ You can also scan the following DingTalk group or WeChat group QR code to join t
 
 ## Support Us🌟
 
-[![Star History Chart](https://api.star-history.com/svg?repos=alibaba-damo-academy/FunClip&type=Date)](https://star-history.com/#alibaba-damo-academy/FunClip&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunASR,modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunASR&modelscope/FunClip&Date)
 
 ## Find Speech Models in FunASR
 
