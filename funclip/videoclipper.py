@@ -43,11 +43,13 @@ class VideoClipper():
         state['audio_input'] = (sr, data)
         if sd_switch == 'Yes':
             rec_result = self.funasr_model.generate(data, 
+                                                    return_spk_res=True,
                                                     return_raw_text=True, 
                                                     is_final=True,
                                                     output_dir=output_dir, 
                                                     hotword=hotwords, 
                                                     pred_timestamp=self.lang=='en',
+                                                    en_post_proc=self.lang=='en',
                                                     cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
             state['sd_sentences'] = rec_result[0]['sentence_info']
@@ -60,7 +62,7 @@ class VideoClipper():
                                                     hotword=hotwords,
                                                     output_dir=output_dir,
                                                     pred_timestamp=self.lang=='en',
-                                                    en_post_proc=True,
+                                                    en_post_proc=self.lang=='en',
                                                     cache={})
             res_srt = generate_srt(rec_result[0]['sentence_info'])
         state['recog_res_raw'] = rec_result[0]['raw_text']

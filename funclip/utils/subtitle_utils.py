@@ -35,15 +35,16 @@ class Text2SRT():
         self.start_time = time_convert(start)
         self.end_time = time_convert(end)
     def text(self):
-        res = ""
-        for word in self.token_list:
-            if '\u4e00' <= word <= '\u9fff':
-                res += word
-            else:
-                res += " " + word
-        return res
-    def len(self):
-        return len(self.token_list)
+        if isinstance(self.token_list, str):
+            return self.token_list
+        else:
+            res = ""
+            for word in self.token_list:
+                if '\u4e00' <= word <= '\u9fff':
+                    res += word
+                else:
+                    res += " " + word
+            return res.lstrip()
     def srt(self, acc_ost=0.0):
         return "{} --> {}\n{}\n".format(
             time_convert(self.start_sec+acc_ost*1000),
