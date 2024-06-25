@@ -234,6 +234,8 @@ class VideoClipper():
             for _ts in ts[1:]:
                 start, end = _ts[0] / 16000, _ts[1] / 16000
                 srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1, time_acc_ost=time_acc_ost)
+                if not len(subs):
+                    continue
                 chi_subs = []
                 sub_starts = subs[0][0][0]
                 for sub in subs:
