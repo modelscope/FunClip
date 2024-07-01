@@ -217,7 +217,7 @@ class VideoClipper():
         # ts.sort()
         clip_srt = ""
         if len(ts):
-            if self.lang == 'en':
+            if self.lang == 'en' and isinstance(sentences, str):
                 sentences = sentences.split()
             start, end = ts[0][0] / 16000, ts[0][1] / 16000
             srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index, time_acc_ost=time_acc_ost)
