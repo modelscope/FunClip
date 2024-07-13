@@ -305,6 +305,6 @@ if __name__ == "__main__":
     
     # start gradio service in local or share
     if args.listen:
-        funclip_service.launch(share=True, server_port=args.port, server_name=server_name, inbrowser=False)
+        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name, inbrowser=False)
     else:
-        funclip_service.launch(share=True, server_port=args.port, server_name=server_name)
+        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name)
