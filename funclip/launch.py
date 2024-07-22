@@ -3,6 +3,7 @@
 # Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
 #  MIT License  (https://opensource.org/licenses/MIT)
 
+from http import server
 import os
 import logging
 import argparse
@@ -19,8 +20,9 @@ from introduction import top_md_1, top_md_3, top_md_4
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='argparse testing')
     parser.add_argument('--lang', '-l', type=str, default = "zh", help="language")
-    parser.add_argument('--share', '-s', type=bool, default = False, help="if to establish gradio share link")
+    parser.add_argument('--share', '-s', action='store_true', help="if to establish gradio share link")
     parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
+    parser.add_argument('--listen', action='store_true', help="if to listen to all hosts")
     args = parser.parse_args()
     
     if args.lang == 'zh':
@@ -37,6 +39,11 @@ if __name__ == "__main__":
                                 )
     audio_clipper = VideoClipper(funasr_model)
     audio_clipper.lang = args.lang
+    
+    server_name='127.0.0.1'
+    if args.listen:
+        server_name = '0.0.0.0'
+        
         
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
@@ -217,7 +224,7 @@ if __name__ == "__main__":
                         with gr.Row():
                             llm_clip_button = gr.Button("🧠 LLM智能裁剪 | AI Clip", variant="primary")
                             llm_clip_subti_button = gr.Button("🧠 LLM智能裁剪+字幕 | AI Clip+Subtitles")
-                with gr.Tab("✂️ 根据文本\说话人裁剪 | Text\Speaker Clipping"):
+                with gr.Tab("✂️ 根据文本/说话人裁剪 | Text/Speaker Clipping"):
                     video_text_input = gr.Textbox(label="✏️ 待裁剪文本 | Text to Clip (多段文本使用'#'连接)")
                     video_spk_input = gr.Textbox(label="✏️ 待裁剪说话人 | Speaker to Clip (多个说话人使用'#'连接)")
                     with gr.Row():
@@ -297,7 +304,7 @@ if __name__ == "__main__":
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
     
     # start gradio service in local or share
-    if args.share:
-        funclip_service.launch(share=True, server_port=args.port)
+    if args.listen:
+        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name, inbrowser=False)
     else:
-        funclip_service.launch(server_port=args.port)
+        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name)
