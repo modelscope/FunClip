@@ -1,4 +1,4 @@
-[![SVG Banners](https://svg-banners.vercel.app/api?type=origin&text1=FunClip🤠&text2=💖%20Open%20Source%20by%20Alibaba%20TONGYI,%20LLM%20intergrated&width=800&height=210)](https://github.com/Akshay090/svg-banners)
+[![SVG Banners](https://svg-banners.vercel.app/api?type=rainbow&text1=FunClip%20%20🥒&width=800&height=210)](https://github.com/Akshay090/svg-banners)
 
 ### <p align="center">「[简体中文](./README_zh.md) | English」</p>
 
@@ -8,7 +8,7 @@
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
 <p align="center" class="trendshift">
-<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="alibaba-damo-academy%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="alibaba-damo-academy%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="300" height="55"/></a>
 </p>
 
 <div align="center">  
