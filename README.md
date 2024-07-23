@@ -160,10 +160,6 @@ You can also scan the following DingTalk group or WeChat group QR code to join t
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
-## Support Us🌟
-
-[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunASR,modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunASR&modelscope/FunClip&Date)
-
 ## Find Speech Models in FunASR
 
 [FunASR](https://github.com/alibaba-damo-academy/FunASR) hopes to build a bridge between academic research and industrial applications on speech recognition. By supporting the training & finetuning of the industrial-grade speech recognition model released on ModelScope, researchers and developers can conduct research and production of speech recognition models more conveniently, and promote the development of speech recognition ecology. ASR for Fun！

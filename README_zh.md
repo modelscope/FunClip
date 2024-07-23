@@ -158,10 +158,6 @@ FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论�
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
 
-## Star一下支持我们🌟
-
-[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunASR,modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunASR&modelscope/FunClip&Date)
-
 ## 通过FunASR了解语音识别相关技术
 
 [FunASR](https://github.com/alibaba-damo-academy/FunASR)是阿里巴巴通义实验室开源的端到端语音识别工具包，目前已经成为主流ASR工具包之一。其主要包括Python pipeline，SDK部署与海量开源工业ASR模型等。
