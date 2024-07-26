@@ -342,7 +342,7 @@ def get_parser():
         "--lang",
         type=str,
         default="zh",
-        help="Language choose"
+        help="Language choice"
     )
     return parser
 
