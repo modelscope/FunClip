@@ -372,14 +372,16 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
                     punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
                     spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
                     )
-        elif lang == "en":
+            audio_clipper = VideoClipper(funasr_model)
+            audio_clipper.lang = 'zh'
+        elif lang == 'en':
             funasr_model = AutoModel(model="iic/speech_paraformer_asr-en-16k-vocab4199-pytorch",
-                    vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                    punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                    spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                    )
-        audio_clipper = VideoClipper(funasr_model)
-        audio_clipper.lang = lang
+                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                                )
+            audio_clipper = VideoClipper(funasr_model)
+            audio_clipper.lang = 'en'
         if mode == 'audio':
             logging.warning("Recognizing audio file: {}".format(file))
             wav, sr = librosa.load(file, sr=16000)
