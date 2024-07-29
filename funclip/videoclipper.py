@@ -337,10 +337,16 @@ def get_parser():
         default=None,
         help="Output file path"
     )
+    parser.add_argument(
+        "--lang",
+        type=str,
+        default='zh',
+        help="language"
+    )
     return parser
 
 
-def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None):
+def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None, lang='zh'):
     audio_suffixs = ['.wav','.mp3','.aac','.m4a','.flac']
     video_suffixs = ['.mp4','.avi','.mkv','.flv','.mov','.webm','.ts','.mpeg']
     _,ext = os.path.splitext(file)
@@ -359,12 +365,22 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         from funasr import AutoModel
         # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
-        funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                  vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                  punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                  spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                  )
-        audio_clipper = VideoClipper(funasr_model)
+        if lang == 'zh':
+            funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+                    vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                    punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                    spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                    )
+            audio_clipper = VideoClipper(funasr_model)
+            audio_clipper.lang = 'zh'
+        elif lang == 'en':
+            funasr_model = AutoModel(model="iic/speech_paraformer_asr-en-16k-vocab4199-pytorch",
+                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                                )
+            audio_clipper = VideoClipper(funasr_model)
+            audio_clipper.lang = 'en'
         if mode == 'audio':
             logging.warning("Recognizing audio file: {}".format(file))
             wav, sr = librosa.load(file, sr=16000)
