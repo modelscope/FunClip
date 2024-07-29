@@ -25,6 +25,7 @@ class VideoClipper():
         logging.warning("Initializing VideoClipper.")
         self.funasr_model = funasr_model
         self.GLOBAL_COUNT = 0
+        self.lang = "zh"
 
     def recog(self, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
         if state is None:
@@ -340,13 +341,13 @@ def get_parser():
     parser.add_argument(
         "--lang",
         type=str,
-        default='zh',
-        help="language"
+        default="zh",
+        help="Language choice"
     )
     return parser
 
 
-def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None, lang='zh'):
+def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, lang="zh", config=None):
     audio_suffixs = ['.wav','.mp3','.aac','.m4a','.flac']
     video_suffixs = ['.mp4','.avi','.mkv','.flv','.mov','.webm','.ts','.mpeg']
     _,ext = os.path.splitext(file)
@@ -365,7 +366,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         from funasr import AutoModel
         # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
-        if lang == 'zh':
+        if lang == "zh":
             funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
                     vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
                     punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
