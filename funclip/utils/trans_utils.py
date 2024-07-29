@@ -48,7 +48,7 @@ def proc_spk(dest_spk, sd_sentences):
         d_end = d['timestamp'][-1][1]
         spkid=dest_spk[3:]
         if str(d['spk']) == spkid and d_end-d_start>999:
-            ts.append([d['start']*16, d['end']*16])
+            ts.append([d_start*16, d_end*16])
     return ts
 
 def generate_vad_data(data, sd_sentences, sr=16000):

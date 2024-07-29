@@ -25,7 +25,6 @@ class VideoClipper():
         logging.warning("Initializing VideoClipper.")
         self.funasr_model = funasr_model
         self.GLOBAL_COUNT = 0
-        self.lang = "zh"
 
     def recog(self, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
         if state is None:
@@ -243,7 +242,7 @@ class VideoClipper():
                     chi_subs.append(((sub[0][0]-sub_starts, sub[0][1]-sub_starts), sub[1]))
                 start, end = start+start_ost/1000.0, end+end_ost/1000.0
                 _video_clip = video.subclip(start, end)
-                start_end_info += ", from {} to {}".format(start, end)
+                start_end_info += ", from {} to {}".format(str(start)[:5], str(end)[:5])
                 clip_srt += srt_clip
                 if add_sub:
                     generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
@@ -341,13 +340,13 @@ def get_parser():
     parser.add_argument(
         "--lang",
         type=str,
-        default="zh",
-        help="Language choice"
+        default='zh',
+        help="language"
     )
     return parser
 
 
-def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, lang="zh", config=None):
+def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, end_ost, output_file, config=None, lang='zh'):
     audio_suffixs = ['.wav','.mp3','.aac','.m4a','.flac']
     video_suffixs = ['.mp4','.avi','.mkv','.flv','.mov','.webm','.ts','.mpeg']
     _,ext = os.path.splitext(file)
@@ -366,7 +365,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         from funasr import AutoModel
         # initialize funasr automodel
         logging.warning("Initializing modelscope asr pipeline.")
-        if lang == "zh":
+        if lang == 'zh':
             funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
                     vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
                     punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
