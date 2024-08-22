@@ -14,7 +14,9 @@ import numpy as np
 import soundfile as sf
 from moviepy.editor import *
 import moviepy.editor as mpy
-from moviepy.video.tools.subtitles import SubtitlesClip
+from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
+from moviepy.editor import VideoFileClip, concatenate_videoclips
+from moviepy.video.compositing import CompositeVideoClip
 from utils.subtitle_utils import generate_srt, generate_srt_clip
 from utils.argparse_tools import ArgumentParser, get_commandline_args
 from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
@@ -198,8 +200,9 @@ class VideoClipper():
                     else:
                         offset_b, offset_e = 0, 0
                         log_append = ""
+                    # import pdb; pdb.set_trace()
                     _dest_text = pre_proc(_dest_text)
-                    ts = proc(recog_res_raw, timestamp, _dest_text)
+                    ts = proc(recog_res_raw, timestamp, _dest_text.lower())
                     for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
                     if len(ts) > 1 and match:
                         log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
