@@ -94,17 +94,42 @@ if __name__ == "__main__":
             )
         
     def llm_inference(system_content, user_content, srt_text, model, apikey):
-        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot']
-        if model.startswith('qwen'):
-            return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
-        if model.startswith('gpt') or model.startswith('moonshot'):
-            return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
-        elif model.startswith('g4f'):
-            model = "-".join(model.split('-')[1:])
-            return g4f_openai_call(model, system_content, user_content+'\n'+srt_text)
-        else:
-            logging.error("LLM name error, only {} are supported as LLM name prefix."
-                          .format(SUPPORT_LLM_PREFIX))
+        """LLM 推理函数"""
+        # 更新支持的模型前缀列表
+        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'claude', 'deepseek', 'gemini', 'minimax']
+        
+        try:
+            if model.startswith('qwen'):
+                return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
+            
+            elif model.startswith('gpt') or model.startswith('moonshot'):
+                return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            
+            elif model.startswith('g4f'):
+                model = "-".join(model.split('-')[1:])
+                return g4f_openai_call(model, system_content, user_content+'\n'+srt_text)
+            
+            elif model.startswith('claude'):
+                return claude_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            
+            elif model.startswith('deepseek'):
+                return deepseek_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            
+            elif model.startswith('gemini'):
+                return gemini_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            
+            elif model.startswith('minimax'):
+                return minimax_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            
+            else:
+                error_msg = f"LLM name error, only {SUPPORT_LLM_PREFIX} are supported as LLM name prefix."
+                logging.error(error_msg)
+                return error_msg
+            
+        except Exception as e:
+            error_msg = f"LLM inference error: {str(e)}"
+            logging.error(error_msg)
+            return error_msg
     
     def AI_clip(LLM_res, dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
         timestamp_list = extract_timestamps(LLM_res)
