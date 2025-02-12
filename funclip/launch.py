@@ -13,6 +13,10 @@ from llm.openai_api import openai_call
 from llm.g4f_openai_api import g4f_openai_call
 from llm.qwen_api import call_qwen_model
 from utils.trans_utils import extract_timestamps
+from llm.claude_api import claude_call
+from llm.deepseek_api import deepseek_call
+from llm.gemini_api import gemini_call
+from llm.minimax_api import minimax_call
 
 
 if __name__ == "__main__":
@@ -158,18 +162,36 @@ if __name__ == "__main__":
             with gr.Column():
                 with gr.Tab("🧠 LLM智能裁剪 | LLM Clipping"):
                     with gr.Column():
-                        prompt_head = gr.Textbox(label="Prompt System", value=("你是一个视频srt字幕分析剪辑器，输入视频的srt字幕，"
-                                "分析其中的精彩且尽可能连续的片段并裁剪出来，输出四条以内的片段，将片段中在时间上连续的多个句子及它们的时间戳合并为一条，"
-                                "注意确保文字与时间戳的正确匹配。输出需严格按照如下格式：1. [开始时间-结束时间] 文本，注意其中的连接符是“-”"))
-                        prompt_head2 = gr.Textbox(label="Prompt User", value=("这是待裁剪的视频srt字幕："))
+                        prompt_head = gr.Textbox(
+                            label="Prompt System", 
+                            value="你是一个视频srt字幕分析剪辑器，输入视频的srt字幕，分析其中的精彩且尽可能连续的片段并裁剪出来，输出四条以内的片段，将片段中在时间上连续的多个句子及它们的时间戳合并为一条，注意确保文字与时间戳的正确匹配。输出需严格按照如下格式：1. [开始时间-结束时间] 文本，注意其中的连接符是'-'"
+                        )
+                        prompt_head2 = gr.Textbox(
+                            label="Prompt User", 
+                            value="这是待裁剪的视频srt字幕："
+                        )
                         with gr.Column():
                             with gr.Row():
                                 llm_model = gr.Dropdown(
-                                    choices=["qwen-plus",
-                                             "gpt-3.5-turbo", 
-                                             "gpt-3.5-turbo-0125", 
-                                             "gpt-4-turbo",
-                                             "g4f-gpt-3.5-turbo"], 
+                                    choices=[
+                                        # 阿里云模型
+                                        "qwen-plus",
+                                        # OpenAI 模型
+                                        "gpt-3.5-turbo", 
+                                        "gpt-3.5-turbo-0125", 
+                                        "gpt-4-turbo",
+                                        # G4F 模型
+                                        "g4f-gpt-3.5-turbo",
+                                        # Claude 模型
+                                        "claude-3-opus",
+                                        "claude-3-sonnet",
+                                        # Deepseek 模型
+                                        "deepseek-chat",
+                                        # Gemini 模型
+                                        "gemini-pro",
+                                        # Minimax 模型
+                                        "minimax-abab5.5"
+                                    ], 
                                     value="qwen-plus",
                                     label="LLM Model Name",
                                     allow_custom_value=True)

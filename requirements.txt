@@ -11,3 +11,6 @@ torchaudio
 openai
 g4f
 dashscope
+anthropic
+google-generativeai
+requests
