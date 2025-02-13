@@ -170,9 +170,18 @@ class VideoClipper():
         sentences = state['sentences']
         video = state['video']
         clip_video_file = state['clip_video_file']
-        video_filename = state['video_filename']
-        
-        if timestamp_list is None:
+
+
+        # 确保输出目录存在
+        if output_dir is None or output_dir.strip() == "":
+            output_dir = "./output"  # 设置默认输出目录
+        output_dir = os.path.abspath(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
+
+        # 获取时间戳
+        if timestamp_list is not None:
+            all_ts = [[i[0]*16.0, i[1]*16.0] for i in timestamp_list]
+        else:
             all_ts = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
                 for _dest_text in dest_text.split('#'):
@@ -191,74 +200,58 @@ class VideoClipper():
                     _dest_text = pre_proc(_dest_text)
                     ts = proc(recog_res_raw, timestamp, _dest_text)
                     for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
-                    if len(ts) > 1 and match:
-                        log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
-                            offsets are applied to all periods)'
             else:
                 for _dest_spk in dest_spk.split('#'):
                     ts = proc_spk(_dest_spk, state['sd_sentences'])
                     for _ts in ts: all_ts.append(_ts)
-        else:  # AI clip pass timestamp as input directly
-            all_ts = [[i[0]*16.0, i[1]*16.0] for i in timestamp_list]
         
-        srt_index = 0
-        time_acc_ost = 0.0
-        ts = all_ts
-        # ts.sort()
-        clip_srt = ""
+        ts = all_ts  # 使用处理后的时间戳列表
+        
         if len(ts):
-            start, end = ts[0][0] / 16000, ts[0][1] / 16000
-            srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index, time_acc_ost=time_acc_ost)
-            start, end = start+start_ost/1000.0, end+end_ost/1000.0
-            video_clip = video.subclip(start, end)
-            start_end_info = "from {} to {}".format(start, end)
-            clip_srt += srt_clip
-            if add_sub:
-                generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
-                subtitles = SubtitlesClip(subs, generator)
-                video_clip = CompositeVideoClip([video_clip, subtitles.set_pos(('center','bottom'))])
-            concate_clip = [video_clip]
-            time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
-            for _ts in ts[1:]:
+            clips = []
+            segment_files = []
+            clip_srt = ""
+            srt_index = 0
+            
+            message = f"Processing {len(ts)} segments"
+            
+            for i, _ts in enumerate(ts):
                 start, end = _ts[0] / 16000, _ts[1] / 16000
-                srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1, time_acc_ost=time_acc_ost)
-                chi_subs = []
-                sub_starts = subs[0][0][0]
-                for sub in subs:
-                    chi_subs.append(((sub[0][0]-sub_starts, sub[0][1]-sub_starts), sub[1]))
                 start, end = start+start_ost/1000.0, end+end_ost/1000.0
-                _video_clip = video.subclip(start, end)
-                start_end_info += ", from {} to {}".format(start, end)
-                clip_srt += srt_clip
+                message += f"\nSegment {i+1}: {start:.2f}s - {end:.2f}s"
+                
+                video_clip = video.subclip(start, end)
                 if add_sub:
-                    generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
-                    subtitles = SubtitlesClip(chi_subs, generator)
-                    _video_clip = CompositeVideoClip([_video_clip, subtitles.set_pos(('center','bottom'))])
-                    # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
-                concate_clip.append(copy.copy(_video_clip))
-                time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
-            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
-            logging.warning("Concating...")
-            if len(concate_clip) > 1:
-                video_clip = concatenate_videoclips(concate_clip)
-            # clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
-            if output_dir is not None:
-                os.makedirs(output_dir, exist_ok=True)
-                _, file_with_extension = os.path.split(clip_video_file)
-                clip_video_file_name, _ = os.path.splitext(file_with_extension)
-                print(output_dir, clip_video_file)
-                clip_video_file = os.path.join(output_dir, "{}_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
-                temp_audio_file = os.path.join(output_dir, "{}_tempaudio_no{}.mp4".format(clip_video_file_name, self.GLOBAL_COUNT))
-            else:
-                clip_video_file = clip_video_file[:-4] + '_no{}.mp4'.format(self.GLOBAL_COUNT)
-                temp_audio_file = clip_video_file[:-4] + '_tempaudio_no{}.mp4'.format(self.GLOBAL_COUNT)
-            video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile=temp_audio_file)
+                    srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, 
+                        begin_index=srt_index-1 if i > 0 else srt_index)
+                    generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', 
+                        fontsize=font_size, color=font_color)
+                    subtitles = SubtitlesClip(subs, generator)
+                    video_clip = CompositeVideoClip([video_clip, 
+                        subtitles.set_pos(('center','bottom'))])
+                    clip_srt += srt_clip
+                
+                # 保存分段视频
+                segment_file = os.path.join(output_dir, 
+                    f"{os.path.splitext(os.path.basename(clip_video_file))[0]}_seg{i}_no{self.GLOBAL_COUNT}.mp4")
+                video_clip.write_videofile(segment_file, audio_codec="aac")
+                segment_files.append(segment_file)
+                
+                clips.append(video_clip)
+
+            # 生成合成视频
+            final_clip = concatenate_videoclips(clips)
+            combined_file = os.path.join(output_dir, 
+                f"{os.path.splitext(os.path.basename(clip_video_file))[0]}_combined_no{self.GLOBAL_COUNT}.mp4")
+            final_clip.write_videofile(combined_file, audio_codec="aac")
+            
             self.GLOBAL_COUNT += 1
+            message += "\nGenerated segment and combined video files"
+            
+            return segment_files, combined_file, message, clip_srt
         else:
-            clip_video_file = video_filename
-            message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text."
-            srt_clip = ''
-        return clip_video_file, message, clip_srt
+            message = "No period found in the speech, return raw video."
+            return [], clip_video_file, message, ""
 
 
 def get_parser():
@@ -391,9 +384,9 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
                 state['clip_video_file'] = output_file
             clip_srt_file = state['clip_video_file'][:-3] + 'srt'
             state['video'] = mpy.VideoFileClip(file)
-            clip_video_file, message, srt_clip = audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=dest_spk)
+            segment_files, combined_file, message, srt_clip = audio_clipper.video_clip(dest_text, start_ost, end_ost, state, dest_spk=dest_spk)
             logging.warning("Clipping Log: {}".format(message))
-            logging.warning("Save clipped mp4 file to {}".format(clip_video_file))
+            logging.warning("Save clipped mp4 file to {}".format(combined_file))
             with open(clip_srt_file, 'w') as fout:
                 fout.write(srt_clip)
                 logging.warning("Write clipped subtitle to {}".format(clip_srt_file))
