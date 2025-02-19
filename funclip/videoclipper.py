@@ -3,20 +3,20 @@
 # Copyright FunASR (https://github.com/alibaba-damo-academy/FunClip). All Rights Reserved.
 #  MIT License  (https://opensource.org/licenses/MIT)
 
-import re
-import os
-import sys
-import copy
-import librosa
-import logging
 import argparse
+import logging
+import re
+
+import librosa
+import moviepy.editor as mpy
 import numpy as np
 import soundfile as sf
 from moviepy.editor import *
-import moviepy.editor as mpy
 from moviepy.video.tools.subtitles import SubtitlesClip
-from utils.subtitle_utils import generate_srt, generate_srt_clip
+
+from utils.speech_analyzer import SpeechAnalyzer
 from utils.argparse_tools import ArgumentParser, get_commandline_args
+from utils.subtitle_utils import generate_srt_clip, time_convert
 from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
 
 
@@ -26,7 +26,7 @@ class VideoClipper():
         self.funasr_model = funasr_model
         self.GLOBAL_COUNT = 0
 
-    def recog(self, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
+    def recog(self, file_path, audio_input, sd_switch='no', state=None, hotwords="", output_dir=None):
         if state is None:
             state = {}
         sr, data = audio_input
@@ -43,7 +43,7 @@ class VideoClipper():
         state['audio_input'] = (sr, data)
         if sd_switch == 'Yes':
             rec_result = self.funasr_model.generate(data, return_raw_text=True, is_final=True, hotword=hotwords, cache={})
-            res_srt = generate_srt(rec_result[0]['sentence_info'])
+            sentences = rec_result[0]['sentence_info']
             state['sd_sentences'] = rec_result[0]['sentence_info']
         else:
             rec_result = self.funasr_model.generate(data, 
@@ -54,10 +54,32 @@ class VideoClipper():
                                                     hotword=hotwords,
                                                     output_dir=output_dir,
                                                     cache={})
-            res_srt = generate_srt(rec_result[0]['sentence_info'])
+            sentences = rec_result[0]['sentence_info']
         state['recog_res_raw'] = rec_result[0]['raw_text']
         state['timestamp'] = rec_result[0]['timestamp']
         state['sentences'] = rec_result[0]['sentence_info']
+
+        # 增加音量和语调信息
+        analyzer = SpeechAnalyzer()
+        time_ranges = []
+        for sent in sentences:
+            start_time = time_convert(sent['start'])
+            end_time = time_convert(sent['end'])
+            time_ranges.append((start_time, end_time))
+        try:
+            analyses = analyzer.analyze_file_segments(file_path, time_ranges)
+        except Exception as e:
+            print(f"Warning: Audio analysis failed: {str(e)}")
+
+        # 生成 SRT 内容
+        res_srt = ""
+        for i, (seg, analysis) in enumerate(zip(sentences, analyses), start=1):
+            print(f"index={i},seg={seg},analysis={analysis}")
+            res_srt += f"{i}\n"  #序号
+            res_srt += f"{analysis['time_range']['start']} --> {analysis['time_range']['end']}\n"  #时间戳
+            res_srt += f"语调均值:{analysis['pitch']['mean']}Hz;音量RMS:{round(analysis['volume']['rms_db'],1)}dB\n"  #语调&音量
+            res_srt += f"{seg['text']}\n"  #文本
+
         res_text = rec_result[0]['text']
         return res_text, res_srt, state
 
@@ -151,7 +173,7 @@ class VideoClipper():
             'video': video,
         }
         # res_text, res_srt = self.recog((16000, wav), state)
-        return self.recog((16000, wav), sd_switch, state, hotwords, output_dir)
+        return self.recog(video_filename, (16000, wav), sd_switch, state, hotwords, output_dir)
 
     def video_clip(self, 
                    dest_text, 
@@ -347,7 +369,7 @@ def runner(stage, file, sd_switch, output_dir, dest_text, dest_spk, start_ost, e
         if mode == 'audio':
             logging.warning("Recognizing audio file: {}".format(file))
             wav, sr = librosa.load(file, sr=16000)
-            res_text, res_srt, state = audio_clipper.recog((sr, wav), sd_switch)
+            res_text, res_srt, state = audio_clipper.recog(file,(sr, wav), sd_switch)
         if mode == 'video':
             logging.warning("Recognizing video file: {}".format(file))
             res_text, res_srt, state = audio_clipper.video_recog(file, sd_switch)

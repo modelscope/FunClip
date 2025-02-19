@@ -1,23 +1,30 @@
-import requests
+from openai import OpenAI
 
 def deepseek_call(api_key, model_name, system_content, user_content):
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "model": model_name,
-        "messages": [
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": user_content}
-        ]
-    }
-    
-    response = requests.post(
-        "https://api.deepseek.com/v1/chat/completions",
-        headers=headers,
-        json=data
+    client = OpenAI(
+        api_key=f"{api_key}",
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
     )
-    
-    return response.json()["choices"][0]["message"]["content"] 
+
+    conversation = [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": ""}
+    ]
+    completion = client.chat.completions.create(
+        model="deepseek-r1",
+        messages=conversation
+    )
+    result = completion.choices[0].message.content
+    print(result)
+
+    # 增加「身份确认」
+    conversation.append({"role": "assistant", "content": result})
+    conversation.append({"role": "user", "content": user_content})
+    completion = client.chat.completions.create(
+        model="deepseek-r1",
+        messages=conversation
+    )
+
+    result = completion.choices[0].message.content
+    print(result)
+    return result

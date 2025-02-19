@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
-        return audio_clipper.recog(audio_input, sd_switch, None, hotwords, output_dir=output_dir)
+        return audio_clipper.recog(audio_input, audio_input, sd_switch, None, hotwords, output_dir=output_dir)
 
 
     def video_recog(video_input, sd_switch, hotwords, output_dir):
@@ -127,7 +127,7 @@ if __name__ == "__main__":
             elif model.startswith('claude'):
                 return claude_call(apikey, model, system_content, user_content + '\n' + srt_text)
 
-            elif model.startswith('deepseek'):
+            elif model == 'deepseek-chat':
                 return deepseek_call(apikey, model, system_content, user_content + '\n' + srt_text)
 
             elif model.startswith('gemini'):
@@ -147,9 +147,9 @@ if __name__ == "__main__":
             return error_msg
 
 
-    def AI_clip(LLM_res, dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state,
-                output_dir):
+    def AI_clip(LLM_res, dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
         timestamp_list = extract_timestamps(LLM_res)
+        logging.info(f"timestamp_list= {timestamp_list}.")
         output_dir = output_dir.strip()
         if not len(output_dir):
             output_dir = None
@@ -164,8 +164,9 @@ if __name__ == "__main__":
                 dest_spk=video_spk_input,
                 output_dir=output_dir,
                 timestamp_list=timestamp_list)
-
-            return segment_files, combined_file, message, clip_srt
+            
+            segment_gallery = [(f, f"Segment {i+1}") for i, f in enumerate(segment_files)] if segment_files else None
+            return segment_gallery, combined_file, message, clip_srt
 
         if audio_state is not None:
             (sr, res_audio), message, clip_srt = audio_clipper.clip(
@@ -247,7 +248,7 @@ if __name__ == "__main__":
                                         # Minimax 模型
                                         "minimax-abab5.5"
                                     ],
-                                    value="qwen-plus",
+                                    value="deepseek-chat",
                                     label="LLM Model Name",
                                     allow_custom_value=True)
                                 apikey_input = gr.Textbox(label="APIKEY")
