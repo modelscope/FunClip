@@ -117,10 +117,10 @@ if __name__ == "__main__":
             )
         
     def llm_inference(system_content, user_content, srt_text, model, apikey):
-        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot']
+        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'deepseek']
         if model.startswith('qwen'):
             return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
-        if model.startswith('gpt') or model.startswith('moonshot'):
+        if model.startswith('gpt') or model.startswith('moonshot') or model.startswith('deepseek'):
             return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
         elif model.startswith('g4f'):
             model = "-".join(model.split('-')[1:])
@@ -210,12 +210,14 @@ if __name__ == "__main__":
                         with gr.Column():
                             with gr.Row():
                                 llm_model = gr.Dropdown(
-                                    choices=["qwen-plus",
+                                    choices=[
+                                        "deepseek-chat"
+                                        "qwen-plus",
                                              "gpt-3.5-turbo", 
                                              "gpt-3.5-turbo-0125", 
                                              "gpt-4-turbo",
                                              "g4f-gpt-3.5-turbo"], 
-                                    value="qwen-plus",
+                                    value="deepseek-chat",
                                     label="LLM Model Name",
                                     allow_custom_value=True)
                                 apikey_input = gr.Textbox(label="APIKEY")
