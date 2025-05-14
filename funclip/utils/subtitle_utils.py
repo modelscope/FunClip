@@ -15,7 +15,7 @@ def time_convert(ms):
     h = "00" if h == 0 else str(h)
     mi = "00" if mi == 0 else str(mi)
     s = "00" if s == 0 else str(s)
-    tail = str(tail)
+    tail = str(tail).zfill(3)
     if len(h) == 1: h = '0' + h
     if len(mi) == 1: mi = '0' + mi
     if len(s) == 1: s = '0' + s
@@ -36,7 +36,7 @@ class Text2SRT():
         self.end_time = time_convert(end)
     def text(self):
         if isinstance(self.token_list, str):
-            return self.token_list
+            return self.token_list.rstrip("、。，")
         else:
             res = ""
             for word in self.token_list:
@@ -44,7 +44,7 @@ class Text2SRT():
                     res += word
                 else:
                     res += " " + word
-            return res.lstrip()
+            return res.lstrip().rstrip("、。，")
     def srt(self, acc_ost=0.0):
         return "{} --> {}\n{}\n".format(
             time_convert(self.start_sec+acc_ost*1000),
@@ -59,9 +59,9 @@ def generate_srt(sentence_list):
     for i, sent in enumerate(sentence_list):
         t2s = Text2SRT(sent['text'], sent['timestamp'])
         if 'spk' in sent:
-            srt_total += "{}  spk{}\n{}".format(i, sent['spk'], t2s.srt())
+            srt_total += "{}  spk{}\n{}".format(i + 1, sent['spk'], t2s.srt())
         else:
-            srt_total += "{}\n{}".format(i, t2s.srt())
+            srt_total += "{}\n{}\n".format(i + 1, t2s.srt())
     return srt_total
 
 def generate_srt_clip(sentence_list, start, end, begin_index=0, time_acc_ost=0.0):
