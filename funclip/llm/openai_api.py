@@ -26,9 +26,15 @@ def openai_call(apikey,
                 model="gpt-3.5-turbo", 
                 user_content="如何做西红柿炖牛腩？", 
                 system_content=None):
+    base_url = None
+    if model.startswith("deepseek"):
+        base_url = "https://api.deepseek.com"
+    elif model.startswith("gpt-3.5-turbo"):
+        base_url = "https://api.moonshot.cn/v1"
     client = OpenAI(
         # This is the default and can be omitted
         api_key=apikey,
+        base_url=base_url
     )
     if system_content is not None and len(system_content.strip()):
         messages = [
