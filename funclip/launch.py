@@ -115,6 +115,9 @@ if __name__ == "__main__":
             font_size=font_size, font_color=font_color, 
             add_sub=True, dest_spk=video_spk_input, output_dir=output_dir
             )
+    def hellfunClip(){
+        print("hello fun")
+    }
         
     def llm_inference(system_content, user_content, srt_text, model, apikey):
         SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'deepseek']
