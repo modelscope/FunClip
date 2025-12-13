@@ -51,7 +51,8 @@ if __name__ == "__main__":
             return None
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"result_{timestamp}.{extension}"
-        if output_dir and os.path.exists(output_dir):
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
             file_path = os.path.join(output_dir, filename)
         else:
             # Create a temporary file
