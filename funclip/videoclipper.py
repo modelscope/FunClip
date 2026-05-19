@@ -128,7 +128,7 @@ class VideoClipper():
                 start = min(max(0, start+start_ost*16), len(data))
                 end = min(max(0, end+end_ost*16), len(data))
                 start_end_info += ", from {} to {}".format(start, end)
-                res_audio = np.concatenate([res_audio, data[start+start_ost*16:end+end_ost*16]], -1)
+                res_audio = np.concatenate([res_audio, data[start:end]], -1)
                 srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index-1)
                 clip_srt += srt_clip
         if len(ts):
@@ -238,7 +238,7 @@ class VideoClipper():
                 subtitles = SubtitlesClip(subs, generator)
                 video_clip = CompositeVideoClip([video_clip, subtitles.set_pos(('center','bottom'))])
             concate_clip = [video_clip]
-            time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
+            time_acc_ost += end - start
             for _ts in ts[1:]:
                 start, end = _ts[0] / 16000, _ts[1] / 16000
                 srt_clip, subs, srt_index = generate_srt_clip(sentences, start, end, begin_index=srt_index-1, time_acc_ost=time_acc_ost)
@@ -258,7 +258,7 @@ class VideoClipper():
                     _video_clip = CompositeVideoClip([_video_clip, subtitles.set_pos(('center','bottom'))])
                     # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
                 concate_clip.append(copy.copy(_video_clip))
-                time_acc_ost += end+end_ost/1000.0 - (start+start_ost/1000.0)
+                time_acc_ost += end - start
             message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
             logging.warning("Concating...")
             if len(concate_clip) > 1:
