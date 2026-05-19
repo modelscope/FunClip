@@ -7,6 +7,8 @@ from http import server
 import os
 import logging
 import argparse
+import tempfile
+from datetime import datetime
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
@@ -44,7 +46,22 @@ if __name__ == "__main__":
     if args.listen:
         server_name = '0.0.0.0'
         
-        
+    def save_text_to_file(content, extension, output_dir=None):
+        if not content:
+            return None
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"result_{timestamp}.{extension}"
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            file_path = os.path.join(output_dir, filename)
+        else:
+            # Create a temporary file
+            temp_dir = tempfile.gettempdir()
+            file_path = os.path.join(temp_dir, filename)
+            
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return file_path
 
     def audio_recog(audio_input, sd_switch, hotwords, output_dir):
         return audio_clipper.recog(audio_input, sd_switch, None, hotwords, output_dir=output_dir)
@@ -67,11 +84,15 @@ if __name__ == "__main__":
         if video_input is not None:
             res_text, res_srt, video_state = video_recog(
                 video_input, 'No', hotwords, output_dir=output_dir)
-            return res_text, res_srt, video_state, None
+            text_file = save_text_to_file(res_text, 'txt', output_dir)
+            srt_file = save_text_to_file(res_srt, 'srt', output_dir)
+            return res_text, res_srt, video_state, None, text_file, srt_file
         if audio_input is not None:
             res_text, res_srt, audio_state = audio_recog(
                 audio_input, 'No', hotwords, output_dir=output_dir)
-            return res_text, res_srt, None, audio_state
+            text_file = save_text_to_file(res_text, 'txt', output_dir)
+            srt_file = save_text_to_file(res_srt, 'srt', output_dir)
+            return res_text, res_srt, None, audio_state, text_file, srt_file
     
     def mix_recog_speaker(video_input, audio_input, hotwords, output_dir):
         output_dir = output_dir.strip()
@@ -83,11 +104,15 @@ if __name__ == "__main__":
         if video_input is not None:
             res_text, res_srt, video_state = video_recog(
                 video_input, 'Yes', hotwords, output_dir=output_dir)
-            return res_text, res_srt, video_state, None
+            text_file = save_text_to_file(res_text, 'txt', output_dir)
+            srt_file = save_text_to_file(res_srt, 'srt', output_dir)
+            return res_text, res_srt, video_state, None, text_file, srt_file
         if audio_input is not None:
             res_text, res_srt, audio_state = audio_recog(
                 audio_input, 'Yes', hotwords, output_dir=output_dir)
-            return res_text, res_srt, None, audio_state
+            text_file = save_text_to_file(res_text, 'txt', output_dir)
+            srt_file = save_text_to_file(res_srt, 'srt', output_dir)
+            return res_text, res_srt, None, audio_state, text_file, srt_file
     
     def mix_clip(dest_text, video_spk_input, start_ost, end_ost, video_state, audio_state, output_dir):
         output_dir = output_dir.strip()
@@ -200,6 +225,9 @@ if __name__ == "__main__":
                             recog_button2 = gr.Button("👂👫 识别+区分说话人 | ASR+SD")
                 video_text_output = gr.Textbox(label="✏️ 识别结果 | Recognition Result")
                 video_srt_output = gr.Textbox(label="📖 SRT字幕内容 | RST Subtitles")
+                with gr.Row():
+                    video_text_file = gr.File(label="⬇️ 下载识别结果 | Download Recognition Result", interactive=False)
+                    video_srt_file = gr.File(label="⬇️ 下载SRT字幕 | Download SRT Subtitles", interactive=False)
             with gr.Column():
                 with gr.Tab("🧠 LLM智能裁剪 | LLM Clipping"):
                     with gr.Column():
@@ -250,14 +278,14 @@ if __name__ == "__main__":
                                     hotwords_input, 
                                     output_dir,
                                     ], 
-                            outputs=[video_text_output, video_srt_output, video_state, audio_state])
+                            outputs=[video_text_output, video_srt_output, video_state, audio_state, video_text_file, video_srt_file])
         recog_button2.click(mix_recog_speaker, 
                             inputs=[video_input, 
                                     audio_input, 
                                     hotwords_input, 
                                     output_dir,
                                     ], 
-                            outputs=[video_text_output, video_srt_output, video_state, audio_state])
+                            outputs=[video_text_output, video_srt_output, video_state, audio_state, video_text_file, video_srt_file])
         clip_button.click(mix_clip, 
                            inputs=[video_text_input, 
                                    video_spk_input, 
