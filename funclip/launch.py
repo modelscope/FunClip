@@ -22,17 +22,29 @@ from introduction import top_md_1, top_md_3, top_md_4
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='argparse testing')
     parser.add_argument('--lang', '-l', type=str, default = "zh", help="language")
+    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano"], help="ASR model: paraformer or fun-asr-nano")
     parser.add_argument('--share', '-s', action='store_true', help="if to establish gradio share link")
     parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
     parser.add_argument('--listen', action='store_true', help="if to listen to all hosts")
     args = parser.parse_args()
     
     if args.lang == 'zh':
-        funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                                )
+        if hasattr(args, 'model') and args.model == 'fun-asr-nano':
+            funasr_model = AutoModel(model="FunAudioLLM/Fun-ASR-Nano-2512",
+                                    trust_remote_code=True,
+                                    remote_code="./model.py",
+                                    vad_model="fsmn-vad",
+                                    vad_kwargs={"max_single_segment_time": 30000},
+                                    punc_model="ct-punc",
+                                    spk_model="cam++",
+                                    hub="hf",
+                                    )
+        else:
+            funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
+                                    vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+                                    punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+                                    spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+                                    )
     else:
         funasr_model = AutoModel(model="iic/speech_paraformer_asr-en-16k-vocab4199-pytorch",
                                 vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
