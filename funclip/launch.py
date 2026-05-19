@@ -22,7 +22,7 @@ from introduction import top_md_1, top_md_3, top_md_4
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='argparse testing')
     parser.add_argument('--lang', '-l', type=str, default = "zh", help="language")
-    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano"], help="ASR model: paraformer or fun-asr-nano")
+    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano", "sensevoice"], help="ASR model: paraformer, fun-asr-nano, or sensevoice")
     parser.add_argument('--share', '-s', action='store_true', help="if to establish gradio share link")
     parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
     parser.add_argument('--listen', action='store_true', help="if to listen to all hosts")
@@ -38,6 +38,13 @@ if __name__ == "__main__":
                                     punc_model="ct-punc",
                                     spk_model="cam++",
                                     hub="hf",
+                                    )
+        elif hasattr(args, 'model') and args.model == 'sensevoice':
+            funasr_model = AutoModel(model="iic/SenseVoiceSmall",
+                                    vad_model="fsmn-vad",
+                                    vad_kwargs={"max_single_segment_time": 30000},
+                                    punc_model="ct-punc",
+                                    spk_model="cam++",
                                     )
         else:
             funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
