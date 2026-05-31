@@ -176,3 +176,7 @@ FunClip is part of the **FunAudioLLM** family:
 
 📚FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
 📚SeACo-Paraformer Paper: <a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a>
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunClip&Date)
