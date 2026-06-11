@@ -35,7 +35,6 @@ if __name__ == "__main__":
                                     remote_code="./model.py",
                                     vad_model="fsmn-vad",
                                     vad_kwargs={"max_single_segment_time": 30000},
-                                    punc_model="ct-punc",
                                     spk_model="cam++",
                                     hub="hf",
                                     )
@@ -43,7 +42,6 @@ if __name__ == "__main__":
             funasr_model = AutoModel(model="iic/SenseVoiceSmall",
                                     vad_model="fsmn-vad",
                                     vad_kwargs={"max_single_segment_time": 30000},
-                                    punc_model="ct-punc",
                                     spk_model="cam++",
                                     )
         else:

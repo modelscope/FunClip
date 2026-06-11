@@ -22,6 +22,31 @@ from utils.argparse_tools import ArgumentParser, get_commandline_args
 from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
 
 
+def _is_valid_timestamp(timestamp):
+    return (
+        isinstance(timestamp, list)
+        and len(timestamp) > 0
+        and timestamp[0] is not None
+        and timestamp[-1] is not None
+    )
+
+
+def _normalize_recognition_result(result):
+    text = result.get("text") or result.get("text_tn") or result.get("raw_text") or ""
+    raw_text = result.get("raw_text") or result.get("text_tn") or text
+    timestamp = result.get("timestamp") or []
+
+    sentence_info = []
+    for sent in result.get("sentence_info") or []:
+        if _is_valid_timestamp(sent.get("timestamp")):
+            sentence_info.append(sent)
+
+    if not sentence_info and text and _is_valid_timestamp(timestamp):
+        sentence_info = [{"text": text, "timestamp": timestamp}]
+
+    return text, raw_text, timestamp, sentence_info
+
+
 class VideoClipper():
     def __init__(self, funasr_model):
         logging.warning("Initializing VideoClipper.")
@@ -53,8 +78,9 @@ class VideoClipper():
                                                     pred_timestamp=self.lang=='en',
                                                     en_post_proc=self.lang=='en',
                                                     cache={})
-            res_srt = generate_srt(rec_result[0]['sentence_info'])
-            state['sd_sentences'] = rec_result[0]['sentence_info']
+            res_text, raw_text, timestamp, sentence_info = _normalize_recognition_result(rec_result[0])
+            res_srt = generate_srt(sentence_info)
+            state['sd_sentences'] = sentence_info
         else:
             rec_result = self.funasr_model.generate(data, 
                                                     return_spk_res=False, 
@@ -66,11 +92,11 @@ class VideoClipper():
                                                     pred_timestamp=self.lang=='en',
                                                     en_post_proc=self.lang=='en',
                                                     cache={})
-            res_srt = generate_srt(rec_result[0]['sentence_info'])
-        state['recog_res_raw'] = rec_result[0]['raw_text']
-        state['timestamp'] = rec_result[0]['timestamp']
-        state['sentences'] = rec_result[0]['sentence_info']
-        res_text = rec_result[0]['text']
+            res_text, raw_text, timestamp, sentence_info = _normalize_recognition_result(rec_result[0])
+            res_srt = generate_srt(sentence_info)
+        state['recog_res_raw'] = raw_text
+        state['timestamp'] = timestamp
+        state['sentences'] = sentence_info
         return res_text, res_srt, state
 
     def clip(self, dest_text, start_ost, end_ost, state, dest_spk=None, output_dir=None, timestamp_list=None):

@@ -57,6 +57,8 @@ class Text2SRT():
 def generate_srt(sentence_list):
     srt_total = ''
     for i, sent in enumerate(sentence_list):
+        if not sent.get('timestamp'):
+            continue
         t2s = Text2SRT(sent['text'], sent['timestamp'])
         if 'spk' in sent:
             srt_total += "{}  spk{}\n{}".format(i + 1, sent['spk'], t2s.srt())
