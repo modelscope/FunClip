@@ -17,9 +17,14 @@ import moviepy.editor as mpy
 from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from utils.subtitle_utils import generate_srt, generate_srt_clip
+from utils.subtitle_utils import generate_srt, generate_srt_clip, str2list
 from utils.argparse_tools import ArgumentParser, get_commandline_args
 from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
+
+
+MAX_SUBTITLE_DURATION_MS = 8000
+MAX_SUBTITLE_TOKENS = 30
+SENSEVOICE_TAG_RE = re.compile(r"<\|[^|>]+\|>")
 
 
 def _is_valid_timestamp(timestamp):
@@ -31,18 +36,75 @@ def _is_valid_timestamp(timestamp):
     )
 
 
+def _clean_recognition_text(text):
+    if text is None:
+        return ""
+    text = SENSEVOICE_TAG_RE.sub("", str(text))
+    text = re.sub(r"\s+", " ", text).strip()
+    return text.strip("“”")
+
+
+def _split_long_sentence(sent):
+    timestamp = sent.get("timestamp")
+    if not _is_valid_timestamp(timestamp):
+        return []
+
+    cleaned_text = _clean_recognition_text(sent.get("text"))
+    normalized = dict(sent)
+    normalized["text"] = cleaned_text
+    normalized["timestamp"] = timestamp
+
+    tokens = str2list(cleaned_text)
+    if len(timestamp) <= 1 or len(tokens) != len(timestamp):
+        return [normalized]
+
+    chunks = []
+    start = 0
+    for idx in range(len(tokens)):
+        duration = timestamp[idx][1] - timestamp[start][0]
+        token_count = idx - start + 1
+        should_split = (
+            idx > start
+            and (
+                duration >= MAX_SUBTITLE_DURATION_MS
+                or token_count >= MAX_SUBTITLE_TOKENS
+            )
+        )
+        if should_split:
+            chunk = dict(normalized)
+            chunk["text"] = tokens[start : idx + 1]
+            chunk["timestamp"] = timestamp[start : idx + 1]
+            chunks.append(chunk)
+            start = idx + 1
+
+    if not chunks:
+        return [normalized]
+
+    if start < len(tokens):
+        chunk = dict(normalized)
+        chunk["text"] = tokens[start:]
+        chunk["timestamp"] = timestamp[start:]
+        chunks.append(chunk)
+
+    return chunks
+
+
 def _normalize_recognition_result(result):
-    text = result.get("text") or result.get("text_tn") or result.get("raw_text") or ""
-    raw_text = result.get("raw_text") or result.get("text_tn") or text
-    timestamp = result.get("timestamp") or []
+    text = _clean_recognition_text(
+        result.get("text") or result.get("text_tn") or result.get("raw_text") or ""
+    )
+    raw_text = _clean_recognition_text(
+        result.get("raw_text") or result.get("text_tn") or text
+    )
+    timestamp = result.get("timestamp") or result.get("timestamps") or []
 
     sentence_info = []
     for sent in result.get("sentence_info") or []:
         if _is_valid_timestamp(sent.get("timestamp")):
-            sentence_info.append(sent)
+            sentence_info.extend(_split_long_sentence(sent))
 
     if not sentence_info and text and _is_valid_timestamp(timestamp):
-        sentence_info = [{"text": text, "timestamp": timestamp}]
+        sentence_info = _split_long_sentence({"text": text, "timestamp": timestamp})
 
     return text, raw_text, timestamp, sentence_info
 
