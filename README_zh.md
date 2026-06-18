@@ -127,6 +127,10 @@ python funclip/launch.py
 
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
+# 下载下面命令用到的示例视频
+mkdir -p examples
+wget "https://huggingface.co/spaces/R1ckShi/FunClip/resolve/main/examples/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B5.mp4" -O "examples/2022云栖大会_片段.mp4"
+
 # 步骤一：识别
 python funclip/videoclipper.py --stage 1 \
                        --file examples/2022云栖大会_片段.mp4 \

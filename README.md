@@ -137,6 +137,10 @@ Follow the guide below to explore LLM based clipping:
 
 FunClip supports you to recognize and clip with commands:
 ```shell
+# download the example video used in the commands below
+mkdir -p examples
+wget "https://huggingface.co/spaces/R1ckShi/FunClip/resolve/main/examples/2022%E4%BA%91%E6%A0%96%E5%A4%A7%E4%BC%9A_%E7%89%87%E6%AE%B5.mp4" -O "examples/2022云栖大会_片段.mp4"
+
 # step1: Recognize
 python funclip/videoclipper.py --stage 1 \
                        --file examples/2022云栖大会_片段.mp4 \
