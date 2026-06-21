@@ -86,7 +86,7 @@ sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
 - MacOS
 ```shell
 brew install imagemagick
-sed -i 's/none/read,write/g' /usr/local/Cellar/imagemagick/7.1.1-8_1/etc/ImageMagick-7/policy.xml 
+sed -i '' 's/none/read,write/g' "$(brew --prefix imagemagick)/etc/ImageMagick-7/policy.xml" 
 ```
 - Windows
 
