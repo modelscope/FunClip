@@ -15,6 +15,7 @@ from videoclipper import VideoClipper
 from llm.openai_api import openai_call
 from llm.qwen_api import call_qwen_model
 from llm.g4f_openai_api import g4f_openai_call
+from llm.twelvelabs_api import call_twelvelabs_pegasus
 from utils.trans_utils import extract_timestamps
 from introduction import top_md_1, top_md_3, top_md_4
 
@@ -158,8 +159,15 @@ if __name__ == "__main__":
             add_sub=True, dest_spk=video_spk_input, output_dir=output_dir
             )
         
-    def llm_inference(system_content, user_content, srt_text, model, apikey):
-        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'deepseek']
+    def llm_inference(system_content, user_content, srt_text, model, apikey, video_input=None):
+        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'deepseek', 'pegasus']
+        if model.startswith('pegasus'):
+            # TwelveLabs Pegasus reasons over the actual video (visuals + audio)
+            # rather than the ASR transcript, so it needs the video source.
+            if video_input is None:
+                logging.error("Pegasus requires a video input; please upload a video first.")
+                return "Please upload a video before running Pegasus inference."
+            return call_twelvelabs_pegasus(apikey, video_input, model=model, prompt=system_content)
         if model.startswith('qwen'):
             return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
         if model.startswith('gpt') or model.startswith('moonshot') or model.startswith('deepseek'):
@@ -261,7 +269,8 @@ if __name__ == "__main__":
                                              "gpt-3.5-turbo", 
                                              "gpt-3.5-turbo-0125", 
                                              "gpt-4-turbo",
-                                             "g4f-gpt-3.5-turbo"], 
+                                             "g4f-gpt-3.5-turbo",
+                                             "pegasus1.5"],
                                     value="deepseek-chat",
                                     label="LLM Model Name",
                                     allow_custom_value=True)
@@ -325,7 +334,7 @@ if __name__ == "__main__":
                                    ], 
                            outputs=[video_output, clip_message, srt_clipped])
         llm_button.click(llm_inference,
-                         inputs=[prompt_head, prompt_head2, video_srt_output, llm_model, apikey_input],
+                         inputs=[prompt_head, prompt_head2, video_srt_output, llm_model, apikey_input, video_input],
                          outputs=[llm_result])
         llm_clip_button.click(AI_clip, 
                            inputs=[llm_result,

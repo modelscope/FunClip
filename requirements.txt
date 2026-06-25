@@ -12,3 +12,4 @@ openai
 g4f
 dashscope
 curl_cffi
+twelvelabs>=1.2.8
