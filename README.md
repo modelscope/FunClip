@@ -114,6 +114,16 @@ python funclip/launch.py
 # '-p xxx' for setting port number
 # '-s True' for establishing service for public accessing
 ```
+
+#### Model selection quick start
+
+| Scenario | Command |
+| --- | --- |
+| Default Chinese video clipping with Paraformer | `python funclip/launch.py` |
+| 31-language ASR with Fun-ASR-Nano | `python funclip/launch.py -m fun-asr-nano` |
+| Multilingual ASR with emotion and audio event tags | `python funclip/launch.py -m sensevoice` |
+| English video clipping with the Paraformer English model | `python funclip/launch.py -l en` |
+
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 
 - Step1: Upload your video file (or try the example videos below)
