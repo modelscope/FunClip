@@ -1,12 +1,12 @@
 top_md_1 = ("""
     <div align="center">
     <div style="display:flex; gap: 0.25rem;" align="center">
-    FunClip: <a href='https://github.com/alibaba-damo-academy/FunClip'><img src='https://img.shields.io/badge/Github-Code-blue'></a> 
-    🌟支持我们: <a href='https://github.com/alibaba-damo-academy/FunClip/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunClip.svg?style=social'></a>
+    FunClip: <a href='https://github.com/modelscope/FunClip'><img src='https://img.shields.io/badge/Github-Code-blue'></a>
+    🌟支持我们: <a href='https://github.com/modelscope/FunClip/stargazers'><img src='https://img.shields.io/github/stars/modelscope/FunClip.svg?style=social'></a>
     </div>
     </div>
     
-    基于阿里巴巴通义实验室自研并开源的[FunASR](https://github.com/alibaba-damo-academy/FunASR)工具包及Paraformer系列模型及语音识别、端点检测、标点预测、时间戳预测、说话人区分、热词定制化开源链路
+    基于阿里巴巴通义实验室自研并开源的[FunASR](https://github.com/modelscope/FunASR)工具包及Paraformer系列模型及语音识别、端点检测、标点预测、时间戳预测、说话人区分、热词定制化开源链路
 
     准确识别，自由复制所需段落，或者设置说话人标识，一键裁剪、添加字幕
 
@@ -20,9 +20,9 @@ top_md_1 = ("""
 top_md_3 = ("""访问FunASR项目与论文能够帮助您深入了解ParaClipper中所使用的语音处理相关模型：
     <div align="center">
     <div style="display:flex; gap: 0.25rem;" align="center">
-        FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR'><img src='https://img.shields.io/badge/Github-Code-blue'></a> 
+        FunASR: <a href='https://github.com/modelscope/FunASR'><img src='https://img.shields.io/badge/Github-Code-blue'></a>
         FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
-        🌟Star FunASR: <a href='https://github.com/alibaba-damo-academy/FunASR/stargazers'><img src='https://img.shields.io/github/stars/alibaba-damo-academy/FunASR.svg?style=social'></a>
+        🌟Star FunASR: <a href='https://github.com/modelscope/FunASR/stargazers'><img src='https://img.shields.io/github/stars/modelscope/FunASR.svg?style=social'></a>
     </div>
     </div>
     """)
