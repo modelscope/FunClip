@@ -8,7 +8,7 @@
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
 <p align="center" class="trendshift">
-<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="alibaba-damo-academy%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="modelscope%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </p>
 
 <div align="center">  
@@ -69,7 +69,7 @@
 FunClip的运行仅依赖于一个Python环境，若您是一个小白开发者，可以先了解下如何使用Python，pip等~
 ```shell
 # 克隆funclip仓库
-git clone https://github.com/alibaba-damo-academy/FunClip.git
+git clone https://github.com/modelscope/FunClip.git
 cd FunClip
 # 安装相关Python依赖
 pip install -r ./requirements.txt
