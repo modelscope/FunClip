@@ -8,7 +8,7 @@
 <p align="center"> <img src="docs/images/interface.jpg" width=444/></p>
 
 <p align="center" class="trendshift">
-<a href="https://trendshift.io/repositories/10126" target="_blank"><img src="https://trendshift.io/api/badge/repositories/10126" alt="modelscope%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="300" height="55"/></a>
+<a href="https://trendshift.io/repositories/20318" target="_blank"><img src="https://trendshift.io/api/badge/repositories/20318" alt="modelscope%2FFunClip | Trendshift" style="width: 250px; height: 55px;" width="300" height="55"/></a>
 </p>
 
 <div align="center">  
