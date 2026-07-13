@@ -21,7 +21,7 @@
 </h4>
 </div>
 
-**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/modelscope/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video clip corresponding to the selected segments (Quick Experience [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) [HuggingFace🤗](https://huggingface.co/spaces/R1ckShi/FunClip)).
+**FunClip** is a fully open-source, locally deployed automated video clipping tool. It leverages Alibaba TONGYI speech lab's open-source [FunASR](https://github.com/modelscope/FunASR) Paraformer series models to perform speech recognition on videos. Then, users can freely choose text segments or speakers from the recognition results and click the clip button to obtain the video clip corresponding to the selected segments (Quick Experience [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary) [HuggingFace🤗](https://huggingface.co/spaces/FunAudioLLM/FunClip)).
 
 ## Highlights🎨
 
@@ -145,7 +145,7 @@ Besides the transcript-based LLMs above, FunClip can optionally use [TwelveLabs]
 
 [FunClip@Modelscope Space⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
 
-[FunClip@HuggingFace Space🤗](https://huggingface.co/spaces/R1ckShi/FunClip)
+[FunClip@HuggingFace Space🤗](https://huggingface.co/spaces/FunAudioLLM/FunClip)
 
 ### C. Use FunClip in command line
 

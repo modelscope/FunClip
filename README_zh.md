@@ -20,7 +20,7 @@
 </h4>
 </div>
 
-**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/modelscope/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（快速体验 [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)  [HuggingFace🤗](https://huggingface.co/spaces/R1ckShi/FunClip)）。
+**FunClip**是一款完全开源、本地部署的自动化视频剪辑工具，通过调用阿里巴巴通义实验室开源的[FunASR](https://github.com/modelscope/FunASR) Paraformer系列模型进行视频的语音识别，随后用户可以自由选择识别结果中的文本片段或说话人，点击裁剪按钮即可获取对应片段的视频（快速体验 [Modelscope⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)  [HuggingFace🤗](https://huggingface.co/spaces/FunAudioLLM/FunClip)）。
 
 ## 热点&特性🎨
 
@@ -162,7 +162,7 @@ python funclip/videoclipper.py --stage 2 \
 
 [FunClip@Modelscope创空间⭐](https://modelscope.cn/studios/iic/funasr_app_clipvideo/summary)
 
-[FunClip@HuggingFace Space🤗](https://huggingface.co/spaces/R1ckShi/FunClip)
+[FunClip@HuggingFace Space🤗](https://huggingface.co/spaces/FunAudioLLM/FunClip)
 
 
 <a name="社区交流"></a>
