@@ -1,6 +1,11 @@
 import os
 import time
 import logging
+import re
+from decimal import Decimal, ROUND_HALF_UP
+
+
+_PEGASUS_SECONDS_RANGE_RE = re.compile(r"\[(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\]")
 
 
 # Default instruction asking Pegasus to return segments in the same
@@ -15,6 +20,42 @@ PEGASUS_SYSTEM_PROMPT = (
     "where start_time and end_time are seconds from the start of the video "
     "(e.g. 12.5), the connector is '-', and description is a short summary."
 )
+
+
+def _seconds_to_milliseconds(seconds):
+    return int(
+        (Decimal(seconds) * 1000).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    )
+
+
+def _format_srt_timestamp(milliseconds):
+    hours, remainder = divmod(milliseconds, 60 * 60 * 1000)
+    minutes, remainder = divmod(remainder, 60 * 1000)
+    seconds, milliseconds = divmod(remainder, 1000)
+    return "{:02d}:{:02d}:{:02d},{:03d}".format(
+        hours, minutes, seconds, milliseconds
+    )
+
+
+def _normalize_pegasus_timestamps(text):
+    """Convert Pegasus decimal-second ranges to FunClip's SRT range format."""
+    if not isinstance(text, str):
+        return text
+
+    def replace_range(match):
+        start_millis = _seconds_to_milliseconds(match.group(1))
+        end_millis = _seconds_to_milliseconds(match.group(2))
+        if end_millis <= start_millis or end_millis >= 100 * 60 * 60 * 1000:
+            logging.warning(
+                "Ignoring invalid Pegasus timestamp range: %s", match.group(0)
+            )
+            return match.group(0)
+        return "[{}-{}]".format(
+            _format_srt_timestamp(start_millis),
+            _format_srt_timestamp(end_millis),
+        )
+
+    return _PEGASUS_SECONDS_RANGE_RE.sub(replace_range, text)
 
 
 def _resolve_video_context(client, video):
@@ -80,7 +121,7 @@ def call_twelvelabs_pegasus(apikey,
         max_tokens=max_tokens,
     )
     logging.info("TwelveLabs Pegasus inference done.")
-    return response.data
+    return _normalize_pegasus_timestamps(response.data)
 
 
 if __name__ == '__main__':
