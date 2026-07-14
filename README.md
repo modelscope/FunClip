@@ -195,6 +195,11 @@ FunClip is part of the **FunAudioLLM** family:
 📚FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
 📚SeACo-Paraformer Paper: <a href="https://arxiv.org/abs/2308.03266"><img src="https://img.shields.io/badge/Arxiv-2308.03266-orange"></a>
 
+## License
+
+- FunClip source code is licensed under the [MIT License](./LICENSE).
+- Model weights are downloaded separately and are governed by the terms on their model pages. The default [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), [SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary), and [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) pages currently list Apache License 2.0; check the applicable model page before redistribution.
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunClip&Date)
