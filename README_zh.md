@@ -164,6 +164,11 @@ python funclip/videoclipper.py --stage 2 \
 
 [FunClip@HuggingFace Space🤗](https://huggingface.co/spaces/FunAudioLLM/FunClip)
 
+## 许可证
+
+- FunClip 源码采用 [MIT License](./LICENSE)。
+- 模型权重单独下载，并遵循各模型页面标注的条款。默认使用的 [Paraformer-Large](https://modelscope.cn/models/iic/speech_paraformer-large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary)、[SeACo-Paraformer](https://modelscope.cn/models/iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch/summary) 与 [CAM++](https://modelscope.cn/models/iic/speech_campplus_sv_zh-cn_16k-common/summary) 页面目前均标注 Apache License 2.0；重新分发前请核对适用的模型页面。
+
 
 <a name="社区交流"></a>
 ## 社区交流🍟
