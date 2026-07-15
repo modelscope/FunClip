@@ -20,43 +20,48 @@ from utils.trans_utils import extract_timestamps
 from introduction import top_md_1, top_md_3, top_md_4
 
 
+def create_asr_model(model_name, lang, auto_model_cls=AutoModel):
+    if model_name == "fun-asr-nano":
+        return auto_model_cls(
+            model="FunAudioLLM/Fun-ASR-Nano-2512",
+            trust_remote_code=True,
+            remote_code="./model.py",
+            vad_model="fsmn-vad",
+            vad_kwargs={"max_single_segment_time": 30000},
+            spk_model="cam++",
+            hub="hf",
+        )
+    if model_name == "sensevoice":
+        return auto_model_cls(
+            model="iic/SenseVoiceSmall",
+            vad_model="fsmn-vad",
+            vad_kwargs={"max_single_segment_time": 30000},
+            spk_model="cam++",
+        )
+
+    paraformer_model = (
+        "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
+        if lang == "zh"
+        else "iic/speech_paraformer_asr-en-16k-vocab4199-pytorch"
+    )
+    return auto_model_cls(
+        model=paraformer_model,
+        vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
+        punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
+        spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='argparse testing')
-    parser.add_argument('--lang', '-l', type=str, default = "zh", help="language")
-    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano", "sensevoice"], help="ASR model: paraformer, fun-asr-nano, or sensevoice")
+    parser.add_argument('--lang', '-l', type=str, default = "zh", help="language mode; selects the Paraformer checkpoint but does not override --model")
+    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano", "sensevoice"], help="ASR model: paraformer, fun-asr-nano, or sensevoice (takes precedence over --lang)")
     parser.add_argument('--share', '-s', action='store_true', help="if to establish gradio share link")
     parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
     parser.add_argument('--listen', action='store_true', help="if to listen to all hosts")
     args = parser.parse_args()
     
-    if args.lang == 'zh':
-        if hasattr(args, 'model') and args.model == 'fun-asr-nano':
-            funasr_model = AutoModel(model="FunAudioLLM/Fun-ASR-Nano-2512",
-                                    trust_remote_code=True,
-                                    remote_code="./model.py",
-                                    vad_model="fsmn-vad",
-                                    vad_kwargs={"max_single_segment_time": 30000},
-                                    spk_model="cam++",
-                                    hub="hf",
-                                    )
-        elif hasattr(args, 'model') and args.model == 'sensevoice':
-            funasr_model = AutoModel(model="iic/SenseVoiceSmall",
-                                    vad_model="fsmn-vad",
-                                    vad_kwargs={"max_single_segment_time": 30000},
-                                    spk_model="cam++",
-                                    )
-        else:
-            funasr_model = AutoModel(model="iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch",
-                                    vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                                    punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                                    spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                                    )
-    else:
-        funasr_model = AutoModel(model="iic/speech_paraformer_asr-en-16k-vocab4199-pytorch",
-                                vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-                                punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-                                spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
-                                )
+    funasr_model = create_asr_model(args.model, args.lang)
     audio_clipper = VideoClipper(funasr_model)
     audio_clipper.lang = args.lang
     

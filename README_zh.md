@@ -36,7 +36,7 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
-- 2026/05/20 FunClip 现在支持 Fun-ASR-Nano 与 SenseVoice 模型。Fun-ASR-Nano 支持 31 种语言的高精度识别；SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。
+- 2026/05/20 FunClip 现在支持 Fun-ASR-Nano 与 SenseVoice 模型。`fun-asr-nano` 选项加载旗舰版 Fun-ASR-Nano-2512，支持普通话、英语、日语、7 类中文方言和 26 种地域口音；该选项不会加载独立的 31 语种 Fun-ASR-MLT-Nano-2512。SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。需要精确按文本裁剪时请使用 Paraformer，因为当前发布的 Nano checkpoint 不提供可靠的字符级时间戳。
 - 2024/06/12 FunClip现在支持识别与裁剪英文视频，通过`python funclip/launch.py -l en`来启动英文版本服务。
 - 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
   1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
@@ -108,7 +108,8 @@ wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMed
 
 ```shell
 python funclip/launch.py
-# '-m fun-asr-nano' 使用 Fun-ASR-Nano 模型（更高精度，支持 31 种语言）
+# '-m fun-asr-nano' 使用旗舰版 Fun-ASR-Nano（普通话、英语、日语、
+# 7 类中文方言和 26 种地域口音）
 # '-m sensevoice' 使用 SenseVoice 模型（多语种 ASR + 情绪识别 + 音频事件检测）
 # '-l en' for English audio recognize
 # '-p xxx' for setting port number
@@ -119,7 +120,7 @@ python funclip/launch.py
 | 场景 | 启动命令 |
 | --- | --- |
 | 默认中文视频裁剪，使用 Paraformer | `python funclip/launch.py` |
-| 使用 Fun-ASR-Nano 进行 31 种语言识别 | `python funclip/launch.py -m fun-asr-nano` |
+| 使用旗舰版 Fun-ASR-Nano 进行高精度转写（精确按文本裁剪请使用 Paraformer） | `python funclip/launch.py -m fun-asr-nano` |
 | 使用 SenseVoice 进行多语种识别、情绪识别和音频事件检测 | `python funclip/launch.py -m sensevoice` |
 | 使用 Paraformer 英文模型裁剪英文视频 | `python funclip/launch.py -l en` |
 
