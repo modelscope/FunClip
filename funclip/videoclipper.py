@@ -170,33 +170,41 @@ class VideoClipper():
         sr, data = audio_input
         data = data.astype(np.float64)
 
+        log_append = ""
         if timestamp_list is None:
             all_ts = []
+            warning_messages = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
-                for _dest_text in dest_text.split('#'):
+                for text_index, _dest_text in enumerate(dest_text.split('#'), start=1):
+                    offset_match = None
                     if '[' in _dest_text:
-                        match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
-                        if match:
-                            offset_b, offset_e = map(int, match.groups())
-                            log_append = ""
+                        offset_match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                        if offset_match:
+                            offset_b, offset_e = map(int, offset_match.groups())
                         else:
                             offset_b, offset_e = 0, 0
-                            log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                            warning_messages.append(
+                                "(Bracket detected in dest_text but offset time matching failed)"
+                            )
                         _dest_text = _dest_text[:_dest_text.find('[')]
                     else:
-                        log_append = ""
                         offset_b, offset_e = 0, 0
                     _dest_text = pre_proc(_dest_text)
                     ts = proc(recog_res_raw, timestamp, _dest_text)
                     for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
-                    if len(ts) > 1 and match:
-                        log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
-                            offsets are applied to all periods)'
+                    if len(ts) > 1 and offset_match:
+                        warning_messages.append(
+                            "(offsets detected but No.{} sub-sentence matched to {} "
+                            "periods in audio, offsets are applied to all periods)".format(
+                                text_index, len(ts)
+                            )
+                        )
             else:
                 for _dest_spk in dest_spk.split('#'):
                     ts = proc_spk(_dest_spk, state['sd_sentences'])
                     for _ts in ts: all_ts.append(_ts)
-                log_append = ""
+            if warning_messages:
+                log_append = " " + " ".join(warning_messages)
         else:
             all_ts = timestamp_list
         ts = all_ts
@@ -222,7 +230,7 @@ class VideoClipper():
         if len(ts):
             message = "{} periods found in the speech: ".format(len(ts)) + start_end_info + log_append
         else:
-            message = "No period found in the speech, return raw speech. You may check the recognition result and try other destination text."
+            message = "No period found in the speech, return raw speech. You may check the recognition result and try other destination text." + log_append
             res_audio = data
         return (sr, res_audio), message, clip_srt
 
@@ -277,33 +285,42 @@ class VideoClipper():
         clip_video_file = state['clip_video_file']
         video_filename = state['video_filename']
         
+        log_append = ""
         if timestamp_list is None:
             all_ts = []
+            warning_messages = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
-                for _dest_text in dest_text.split('#'):
+                for text_index, _dest_text in enumerate(dest_text.split('#'), start=1):
+                    offset_match = None
                     if '[' in _dest_text:
-                        match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
-                        if match:
-                            offset_b, offset_e = map(int, match.groups())
-                            log_append = ""
+                        offset_match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
+                        if offset_match:
+                            offset_b, offset_e = map(int, offset_match.groups())
                         else:
                             offset_b, offset_e = 0, 0
-                            log_append = "(Bracket detected in dest_text but offset time matching failed)"
+                            warning_messages.append(
+                                "(Bracket detected in dest_text but offset time matching failed)"
+                            )
                         _dest_text = _dest_text[:_dest_text.find('[')]
                     else:
                         offset_b, offset_e = 0, 0
-                        log_append = ""
                     # import pdb; pdb.set_trace()
                     _dest_text = pre_proc(_dest_text)
                     ts = proc(recog_res_raw, timestamp, _dest_text.lower())
                     for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
-                    if len(ts) > 1 and match:
-                        log_append += '(offsets detected but No.{} sub-sentence matched to {} periods in audio, \
-                            offsets are applied to all periods)'
+                    if len(ts) > 1 and offset_match:
+                        warning_messages.append(
+                            "(offsets detected but No.{} sub-sentence matched to {} "
+                            "periods in audio, offsets are applied to all periods)".format(
+                                text_index, len(ts)
+                            )
+                        )
             else:
                 for _dest_spk in dest_spk.split('#'):
                     ts = proc_spk(_dest_spk, state['sd_sentences'])
                     for _ts in ts: all_ts.append(_ts)
+            if warning_messages:
+                log_append = " " + " ".join(warning_messages)
         else:  # AI clip pass timestamp as input directly
             all_ts = [[i[0]*16.0, i[1]*16.0] for i in timestamp_list]
         
@@ -347,7 +364,7 @@ class VideoClipper():
                     # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
                 concate_clip.append(copy.copy(_video_clip))
                 time_acc_ost += end - start
-            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info
+            message = "{} periods found in the audio: ".format(len(ts)) + start_end_info + log_append
             logging.warning("Concating...")
             if len(concate_clip) > 1:
                 video_clip = concatenate_videoclips(concate_clip)
@@ -366,7 +383,7 @@ class VideoClipper():
             self.GLOBAL_COUNT += 1
         else:
             clip_video_file = video_filename
-            message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text."
+            message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text." + log_append
             srt_clip = ''
         return clip_video_file, message, clip_srt
 
