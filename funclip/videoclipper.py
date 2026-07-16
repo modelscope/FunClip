@@ -174,6 +174,7 @@ class VideoClipper():
             all_ts = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
                 for _dest_text in dest_text.split('#'):
+                    match = None
                     if '[' in _dest_text:
                         match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
                         if match:
@@ -281,6 +282,7 @@ class VideoClipper():
             all_ts = []
             if dest_spk is None or dest_spk == '' or 'sd_sentences' not in state:
                 for _dest_text in dest_text.split('#'):
+                    match = None
                     if '[' in _dest_text:
                         match = re.search(r'\[(\d+),\s*(\d+)\]', _dest_text)
                         if match:
