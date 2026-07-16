@@ -32,6 +32,10 @@ class TestDuplicateTextMatching(unittest.TestCase):
     def setUp(self):
         self.raw_text = "重 复 其 他 重 复"
         self.timestamps = [[i * 100, (i + 1) * 100] for i in range(6)]
+        self.offset_warning = (
+            "(offsets detected but No.1 sub-sentence matched to 2 periods in audio, "
+            "offsets are applied to all periods)"
+        )
 
     @patch("videoclipper.generate_srt_clip", return_value=("", [], 0))
     def test_audio_clip_keeps_all_repeated_matches_without_offsets(self, _generate_srt):
@@ -81,6 +85,66 @@ class TestDuplicateTextMatching(unittest.TestCase):
         self.assertEqual(len(concatenate.call_args.args[0]), 2)
         self.assertEqual(len(output_clip.write_calls), 1)
         self.assertIn("2 periods found", message)
+
+    @patch("videoclipper.generate_srt_clip", return_value=("", [], 0))
+    def test_audio_clip_formats_offset_warning_for_repeated_matches(
+        self, _generate_srt
+    ):
+        clipper = VideoClipper(None)
+        state = {
+            "audio_input": (16000, np.arange(10000, dtype=np.float32)),
+            "recog_res_raw": self.raw_text,
+            "timestamp": self.timestamps,
+            "sentences": [],
+        }
+
+        _, message, _ = clipper.clip("重复[10, 20]", 0, 0, state)
+
+        self.assertIn(self.offset_warning, message)
+        self.assertNotIn("No.{}", message)
+
+    @patch("videoclipper.generate_srt_clip", return_value=("", [], 0))
+    def test_audio_clip_accepts_explicit_timestamps_without_text_matching(
+        self, _generate_srt
+    ):
+        clipper = VideoClipper(None)
+        state = {
+            "audio_input": (16000, np.arange(10000, dtype=np.float32)),
+            "recog_res_raw": self.raw_text,
+            "timestamp": self.timestamps,
+            "sentences": [],
+        }
+
+        (_, clipped), message, _ = clipper.clip(
+            "", 0, 0, state, timestamp_list=[[0, 1600]]
+        )
+
+        self.assertEqual(len(clipped), 1600)
+        self.assertIn("1 periods found", message)
+
+    @patch(
+        "videoclipper.generate_srt_clip",
+        return_value=("", [((0.0, 0.2), "重复")], 1),
+    )
+    def test_video_clip_includes_offset_warning_for_repeated_matches(
+        self, _generate_srt
+    ):
+        clipper = VideoClipper(None)
+        clipper.lang = "zh"
+        output_clip = DummyVideoClip()
+        state = {
+            "recog_res_raw": self.raw_text,
+            "timestamp": self.timestamps,
+            "sentences": [],
+            "video": DummyVideo(),
+            "clip_video_file": "/tmp/duplicate_clip.mp4",
+            "video_filename": "/tmp/duplicate.mp4",
+        }
+
+        with patch("videoclipper.concatenate_videoclips", return_value=output_clip):
+            _, message, _ = clipper.video_clip("重复[10, 20]", 0, 0, state)
+
+        self.assertIn(self.offset_warning, message)
 
 
 if __name__ == "__main__":
