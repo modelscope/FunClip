@@ -1,16 +1,28 @@
 import logging
 
 
+def _import_litellm():
+    try:
+        import litellm
+        return litellm
+    except ImportError:
+        raise ImportError(
+            "litellm is required for the litellm provider. "
+            "Install it with: pip install 'litellm>=1.83.0'"
+        )
+
+
 def litellm_call(apikey,
                  model="openai/gpt-3.5-turbo",
                  user_content="How to make tomato beef stew?",
                  system_content=None):
-    import litellm
+    litellm = _import_litellm()
 
-    # Strip the "litellm/" prefix if present so the model name
-    # follows litellm's provider/model format (e.g. "anthropic/claude-sonnet-4-6")
     if model.startswith("litellm/"):
         model = model[len("litellm/"):]
+
+    if not model:
+        raise ValueError("Model name is empty after stripping litellm/ prefix")
 
     messages = []
     if system_content is not None and len(system_content.strip()):
@@ -26,6 +38,33 @@ def litellm_call(apikey,
     if apikey:
         kwargs['api_key'] = apikey
 
-    response = litellm.completion(**kwargs)
+    try:
+        response = litellm.completion(**kwargs)
+    except litellm.AuthenticationError as e:
+        logging.error(f"LiteLLM authentication failed: {e}")
+        raise
+    except litellm.NotFoundError as e:
+        logging.error(f"LiteLLM model not found: {e}")
+        raise
+    except litellm.RateLimitError as e:
+        logging.warning(f"LiteLLM rate limited: {e}")
+        raise
+    except litellm.Timeout as e:
+        logging.error(f"LiteLLM request timed out: {e}")
+        raise
+    except litellm.APIConnectionError as e:
+        logging.error(f"LiteLLM connection error: {e}")
+        raise
+
+    choices = getattr(response, 'choices', None)
+    if not choices:
+        logging.error("LiteLLM returned empty choices")
+        return ""
+
+    content = getattr(choices[0].message, 'content', None)
+    if content is None:
+        logging.warning("LiteLLM returned null content")
+        return ""
+
     logging.info("LiteLLM model inference done.")
-    return response.choices[0].message.content
+    return content
