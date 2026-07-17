@@ -1,4 +1,5 @@
 import logging
+import os
 
 
 def _import_litellm():
@@ -17,6 +18,7 @@ def litellm_call(apikey,
                  user_content="How to make tomato beef stew?",
                  system_content=None):
     litellm = _import_litellm()
+    api_base = os.environ.get("LITELLM_API_BASE", "").strip()
 
     if model.startswith("litellm/"):
         model = model[len("litellm/"):]
@@ -37,6 +39,8 @@ def litellm_call(apikey,
     }
     if apikey:
         kwargs['api_key'] = apikey
+    if api_base:
+        kwargs['api_base'] = api_base
 
     try:
         response = litellm.completion(**kwargs)
