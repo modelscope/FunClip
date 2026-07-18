@@ -15,6 +15,7 @@ from videoclipper import VideoClipper
 from llm.openai_api import openai_call
 from llm.qwen_api import call_qwen_model
 from llm.g4f_openai_api import g4f_openai_call
+from llm.litellm_api import litellm_call
 from llm.twelvelabs_api import call_twelvelabs_pegasus
 from utils.trans_utils import extract_timestamps
 from introduction import top_md_1, top_md_3, top_md_4
@@ -165,7 +166,9 @@ if __name__ == "__main__":
             )
         
     def llm_inference(system_content, user_content, srt_text, model, apikey, video_input=None):
-        SUPPORT_LLM_PREFIX = ['qwen', 'gpt', 'g4f', 'moonshot', 'deepseek', 'pegasus']
+        SUPPORT_LLM_PREFIX = ['litellm', 'qwen', 'gpt', 'g4f', 'moonshot', 'deepseek', 'pegasus']
+        if model.startswith('litellm/'):
+            return litellm_call(apikey, model, user_content+'\n'+srt_text, system_content)
         if model.startswith('pegasus'):
             # TwelveLabs Pegasus reasons over the actual video (visuals + audio)
             # rather than the ASR transcript, so it needs the video source.
@@ -271,10 +274,12 @@ if __name__ == "__main__":
                                     choices=[
                                         "deepseek-chat",
                                         "qwen-plus",
-                                             "gpt-3.5-turbo", 
-                                             "gpt-3.5-turbo-0125", 
+                                             "gpt-3.5-turbo",
+                                             "gpt-3.5-turbo-0125",
                                              "gpt-4-turbo",
                                              "g4f-gpt-3.5-turbo",
+                                             "litellm/openai/gpt-4o",
+                                             "litellm/anthropic/claude-sonnet-4-6",
                                              "pegasus1.5"],
                                     value="deepseek-chat",
                                     label="LLM Model Name",
