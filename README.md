@@ -34,7 +34,7 @@
 
 <a name="What's New"></a>
 ## What's New🚀
-- 2026/05/20 FunClip now supports Fun-ASR-Nano and SenseVoice models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
+- 2026/05/20 FunClip now supports [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) and [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
 - 2024/06/12 FunClip supports recognize and clip English audio files now. Run `python funclip/launch.py -l en` to try.
 - 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
   1. After the recognition, select the name of the large model and configure your own apikey;
@@ -189,8 +189,8 @@ FunClip is part of the **FunAudioLLM** family:
 | Project | Description | Stars |
 |---------|-------------|-------|
 | [FunASR](https://github.com/modelscope/FunASR) | Industrial speech recognition toolkit — VAD, ASR, punctuation, diarization | [![](https://img.shields.io/github/stars/modelscope/FunASR?style=social)](https://github.com/modelscope/FunASR) |
-| [Fun-ASR-Nano](https://github.com/FunAudioLLM/Fun-ASR) | End-to-end LLM-based ASR — flagship and separate 31-language MLT checkpoints, streaming, hotwords | [![](https://img.shields.io/github/stars/FunAudioLLM/Fun-ASR?style=social)](https://github.com/FunAudioLLM/Fun-ASR) |
-| [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) | Multilingual speech understanding — ASR + emotion + audio events | [![](https://img.shields.io/github/stars/FunAudioLLM/SenseVoice?style=social)](https://github.com/FunAudioLLM/SenseVoice) |
+| [Fun-ASR-Nano](https://github.com/FunAudioLLM/Fun-ASR) | End-to-end LLM-based ASR — flagship and separate 31-language MLT checkpoints, streaming, hotwords ([HF model](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512)) | [![](https://img.shields.io/github/stars/FunAudioLLM/Fun-ASR?style=social)](https://github.com/FunAudioLLM/Fun-ASR) |
+| [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) | Multilingual speech understanding — ASR + emotion + audio events ([HF model](https://huggingface.co/FunAudioLLM/SenseVoiceSmall)) | [![](https://img.shields.io/github/stars/FunAudioLLM/SenseVoice?style=social)](https://github.com/FunAudioLLM/SenseVoice) |
 | [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) | Natural speech generation — multi-language, zero-shot cloning | [![](https://img.shields.io/github/stars/FunAudioLLM/CosyVoice?style=social)](https://github.com/FunAudioLLM/CosyVoice) |
 
 📚FunASR Paper: <a href="https://arxiv.org/abs/2305.11013"><img src="https://img.shields.io/badge/Arxiv-2305.11013-orange"></a> 
