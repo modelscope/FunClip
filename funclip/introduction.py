@@ -6,7 +6,7 @@ top_md_1 = ("""
     </div>
     </div>
     
-    基于阿里巴巴通义实验室自研并开源的[FunASR](https://github.com/modelscope/FunASR)工具包及Paraformer系列模型及语音识别、端点检测、标点预测、时间戳预测、说话人区分、热词定制化开源链路
+    基于阿里巴巴通义实验室自研并开源的[FunASR](https://github.com/modelscope/FunASR)工具包及Paraformer、[Fun-ASR-Nano](https://github.com/FunAudioLLM/Fun-ASR)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)系列模型及语音识别、端点检测、标点预测、时间戳预测、说话人区分、热词定制化开源链路
 
     准确识别，自由复制所需段落，或者设置说话人标识，一键裁剪、添加字幕
 
