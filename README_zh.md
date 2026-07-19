@@ -75,6 +75,8 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
+FunClip 的 Fun-ASR-Nano、SenseVoice 与字幕兼容路径需要 `funasr>=1.3.19`。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.3.19"`，再启动 Gradio 服务。
+
 ### 安装imagemagick（可选）
 
 1. 如果你希望使用自动生成字幕的视频裁剪功能，需要安装imagemagick
