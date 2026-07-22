@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: FunASR documentation
+    url: https://modelscope.github.io/FunASR/
+    about: Read the upstream ASR toolkit documentation.
+  - name: FunASR GitHub discussions
+    url: https://github.com/modelscope/FunASR/discussions
+    about: Ask broader ASR, deployment, or model-selection questions.
