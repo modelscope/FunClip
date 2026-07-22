@@ -18,6 +18,18 @@ def test_readmes_explain_upgrade_for_existing_installs():
         assert "funasr>=1.3.23" not in text
 
 
+def test_readmes_route_edge_asr_users_to_gguf_runtime():
+    required_links = [
+        "https://www.funasr.com/llama-cpp.html",
+        "https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF",
+        "https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF",
+    ]
+    for readme in ["README.md", "README_zh.md"]:
+        text = (ROOT / readme).read_text()
+        for link in required_links:
+            assert link in text
+
+
 def test_english_readme_avoids_visible_typo_regressions():
     text = (ROOT / "README.md").read_text()
     assert "langage" not in text

@@ -127,6 +127,8 @@ python funclip/launch.py
 | Multilingual ASR with emotion and audio event tags | `python funclip/launch.py -m sensevoice` |
 | English video clipping with the Paraformer English model | `python funclip/launch.py -l en` |
 
+If you only need offline speech transcription on CPU or edge devices and do not need FunClip's video clipping UI, use the FunASR llama.cpp / GGUF runtime instead: [funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Fun-ASR-Nano-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [SenseVoiceSmall-GGUF](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF).
+
 then visit ```localhost:7860``` you will get a Gradio service like below and you can use FunClip following the steps:
 
 - Step1: Upload your video file (or try the example videos below)
