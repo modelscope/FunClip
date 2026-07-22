@@ -43,3 +43,20 @@ def test_pull_request_template_keeps_validation_visible():
     ]
     for marker in required:
         assert marker in text
+
+
+def test_contributing_guide_documents_local_validation_path():
+    guide = ROOT / "CONTRIBUTING.md"
+    assert guide.exists()
+
+    text = guide.read_text()
+    required = [
+        "pip install -r requirements.txt",
+        "python3 -m pytest -q tests/test_github_templates.py tests/test_funasr_requirement.py tests/test_openai_api.py",
+        "python3 -m py_compile funclip/launch.py funclip/videoclipper.py funclip/utils/subtitle_utils.py",
+        "Audio or video input",
+        "Screenshots or clips",
+        "litellm",
+    ]
+    for marker in required:
+        assert marker in text
