@@ -74,7 +74,7 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.19`. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.19"` before starting the Gradio service.
+FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.23`. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.23"` before starting the Gradio service.
 
 ### imagemagick install (Optional)
 
