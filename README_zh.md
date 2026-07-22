@@ -126,6 +126,8 @@ python funclip/launch.py
 | 使用 SenseVoice 进行多语种识别、情绪识别和音频事件检测 | `python funclip/launch.py -m sensevoice` |
 | 使用 Paraformer 英文模型裁剪英文视频 | `python funclip/launch.py -l en` |
 
+如果你只需要在 CPU 或边缘设备上离线转写语音，而不需要 FunClip 的视频剪辑界面，请优先使用 FunASR llama.cpp / GGUF 运行时：[funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Fun-ASR-Nano-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [SenseVoiceSmall-GGUF](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF)。
+
 随后在浏览器中访问```localhost:7860```即可看到如下图所示的界面，按如下步骤即可进行视频剪辑
 1. 上传你的视频（或使用下方的视频用例）
 2. （可选）设置热词，设置文件输出路径（保存识别结果、视频等）
