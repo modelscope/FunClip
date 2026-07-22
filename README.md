@@ -35,7 +35,7 @@
 <a name="What's New"></a>
 ## What's New🚀
 - 2026/05/20 FunClip now supports [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) and [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
-- 2024/06/12 FunClip supports recognize and clip English audio files now. Run `python funclip/launch.py -l en` to try.
+- 2024/06/12 FunClip now supports recognizing and clipping English audio files. Run `python funclip/launch.py -l en` to try.
 - 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
   1. After the recognition, select the name of the large model and configure your own apikey;
   2. Click on the 'LLM Inference' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
@@ -56,7 +56,7 @@
 ## On Going🌵
 
 - [x] FunClip will support Whisper model for English users, coming soon (ASR using Whisper with timestamp requires massive GPU memory, we support timestamp prediction for vanilla Paraformer in FunASR to achieving this).
-- [x] FunClip will further explore the abilities of large langage model based AI clipping, welcome to discuss about prompt setting and clipping, etc.
+- [x] FunClip will further explore large language model based AI clipping. Feedback and prompt-setting tips are welcome.
 - [ ] Reverse periods choosing while clipping.
 - [ ] Removing silence periods.
 
@@ -176,7 +176,7 @@ python funclip/videoclipper.py --stage 2 \
 <a name="Community"></a>
 ## Community Communication🍟
 
-FunClip is firstly open-sourced bu FunASR team, any useful PR is welcomed.
+FunClip was first open-sourced by the FunASR team, and useful PRs are welcome.
 
 You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication.
 
