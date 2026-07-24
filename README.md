@@ -74,7 +74,7 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.27`. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.27"` before starting the Gradio service.
+FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.28`. This release preserves stable final text after VAD-locked regressions and decodes short trailing speech on `STOP`, improving the final subtitle segment. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.28"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.3.28) · [subtitle guide](https://www.funasr.com/en/blog/funasr-v1-3-28-realtime-websocket-subtitles.html)
 
 ### imagemagick install (Optional)
 

@@ -75,7 +75,7 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-FunClip 的 Fun-ASR-Nano、SenseVoice 与字幕兼容路径需要 `funasr>=1.3.27`。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.3.27"`，再启动 Gradio 服务。
+FunClip 的 Fun-ASR-Nano、SenseVoice 与字幕兼容路径需要 `funasr>=1.3.28`。该版本会在 VAD 锁定后的最终解码发生退化时保留稳定文本，并在收到 `STOP` 后解码短尾语音，改善最后一段字幕。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.3.28"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.3.28) · [字幕指南](https://www.funasr.com/blog/funasr-v1-3-28-realtime-websocket-subtitles.html)
 
 ### 安装imagemagick（可选）
 
