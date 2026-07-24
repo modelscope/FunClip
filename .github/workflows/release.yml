@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install release-test dependency
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5
+
+      - name: Verify tag and release notes
+        shell: bash
+        run: |
+          version="$(<VERSION)"
+          test "$GITHUB_REF_NAME" = "v${version}"
+          test -f "docs/releases/${GITHUB_REF_NAME}.md"
+
+      - name: Test release contract
+        run: python -m pytest -q tests/test_release_contract.py
+
+      - name: Build release archives
+        run: python scripts/build_release_assets.py --ref "$GITHUB_SHA" --output-dir dist
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -u
+          release_assets=(dist/FunClip-*.tar.gz dist/FunClip-*.zip dist/SHA256SUMS)
+
+          if ! release_state="$(
+            gh release view "$GITHUB_REF_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json apiUrl,isDraft,isImmutable 2>/dev/null
+          )"; then
+            gh release create "$GITHUB_REF_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --draft \
+              --title "FunClip ${GITHUB_REF_NAME}" \
+              --notes-file "docs/releases/${GITHUB_REF_NAME}.md"
+            release_state="$(
+              gh release view "$GITHUB_REF_NAME" \
+                --repo "$GITHUB_REPOSITORY" \
+                --json apiUrl,isDraft,isImmutable
+            )"
+          fi
+
+          release_api="$(jq -r '.apiUrl' <<<"$release_state")"
+          draft="$(jq -r '.isDraft' <<<"$release_state")"
+          immutable="$(jq -r '.isImmutable' <<<"$release_state")"
+
+          verify_release_assets() {
+            local actual expected
+            expected="$(
+              for asset in "${release_assets[@]}"; do
+                printf '%s\t%s\tsha256:%s\n' \
+                  "$(basename "$asset")" \
+                  "$(wc -c < "$asset")" \
+                  "$(sha256sum "$asset" | cut -d ' ' -f 1)"
+              done | sort
+            )"
+            actual="$(
+              gh api "$release_api" \
+                --jq '.assets[] | [.name, (.size | tostring), .digest] | @tsv' | sort
+            )"
+            if [[ "$actual" != "$expected" ]]; then
+              printf 'Expected release assets:\n%s\nActual release assets:\n%s\n' \
+                "$expected" "$actual" >&2
+              return 1
+            fi
+          }
+
+          if [[ "$draft" == "false" ]]; then
+            verify_release_assets
+            echo "Release is already published and verified (immutable=${immutable})."
+            exit 0
+          fi
+
+          gh release edit "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --title "FunClip ${GITHUB_REF_NAME}" \
+            --notes-file "docs/releases/${GITHUB_REF_NAME}.md"
+          gh release upload "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber \
+            "${release_assets[@]}"
+
+          verified=false
+          for _attempt in 1 2 3 4 5; do
+            if verify_release_assets; then
+              verified=true
+              break
+            fi
+            sleep 2
+          done
+          test "$verified" = true
+
+          gh release edit "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft=false \
+            --latest
+          test "$(
+            gh release view "$GITHUB_REF_NAME" \
+              --repo "$GITHUB_REPOSITORY" \
+              --json isDraft \
+              --jq '.isDraft'
+          )" = false

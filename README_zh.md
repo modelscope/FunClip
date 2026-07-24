@@ -36,6 +36,7 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
+- 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) 是首个带版本号的 GitHub Release，将当前支持 Fun-ASR-Nano、SenseVoice、Paraformer 与大模型智能剪辑的应用打包为带 SHA-256 校验的源码归档，提供稳定的下载与回退节点。
 - 2026/05/20 FunClip 现在支持 [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) 与 [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) 模型。`fun-asr-nano` 选项加载旗舰版 Fun-ASR-Nano-2512，支持普通话、英语、日语、7 类中文方言和 26 种地域口音；该选项不会加载独立的 31 语种 Fun-ASR-MLT-Nano-2512。SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。需要精确按文本裁剪时请使用 Paraformer，因为当前发布的 Nano checkpoint 不提供可靠的字符级时间戳。
 - 2024/06/12 FunClip现在支持识别与裁剪英文视频，通过`python funclip/launch.py -l en`来启动英文版本服务。
 - 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
@@ -74,6 +75,8 @@ cd FunClip
 # 安装相关Python依赖
 pip install -r ./requirements.txt
 ```
+
+如需固定版本，可下载 [FunClip-2.1.0.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.1.0/FunClip-2.1.0.tar.gz) 或 [FunClip-2.1.0.zip](https://github.com/modelscope/FunClip/releases/download/v2.1.0/FunClip-2.1.0.zip)，并使用发布页提供的 [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.1.0/SHA256SUMS) 校验文件。模型权重会在 FunClip 启动时单独下载，不包含在源码归档中。
 
 FunClip 的 Fun-ASR-Nano、SenseVoice 与字幕兼容路径需要 `funasr>=1.3.29`。当 SenseVoice 没有 token 时间戳时，该版本会通过 `sentence_info` 返回每个 VAD 语音区域，让智能剪辑与字幕客户端获得分段边界，而不再收到空时间线；同时包含 1.3.28 的实时最终文本和短尾语音修复。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.3.29"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.3.29) · [PyPI](https://pypi.org/project/funasr/1.3.29/)
 
