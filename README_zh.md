@@ -183,6 +183,8 @@ python funclip/videoclipper.py --stage 2 \
 
 FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。
 
+群二维码可能过期；如果无法扫码，请通过 [GitHub Discussions](https://github.com/modelscope/FunClip/discussions) 提问、交流想法或分享社区项目。
+
 |                              钉钉群                                |                     微信群                      |
 |:-------------------------------------------------------------------:|:-----------------------------------------------------:|
 | <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
