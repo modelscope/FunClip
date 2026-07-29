@@ -5,6 +5,13 @@ from openai import OpenAI
 ATLASCLOUD_API_BASE = "https://api.atlascloud.ai/v1"
 ATLASCLOUD_MODEL_PREFIX = "atlascloud/"
 
+# MiniMax exposes an OpenAI-compatible chat completions endpoint. The global
+# endpoint is used by default; set MINIMAX_API_BASE to the mainland China host
+# (https://api.minimaxi.com/v1) to route requests through the cn_zh region.
+MINIMAX_API_BASE = "https://api.minimax.io/v1"
+MINIMAX_API_BASE_CN = "https://api.minimaxi.com/v1"
+MINIMAX_MODEL_PREFIX = "minimax/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -20,6 +27,16 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = ATLASCLOUD_API_BASE
         api_key_env = "ATLASCLOUD_API_KEY"
+    elif model.startswith(MINIMAX_MODEL_PREFIX):
+        model = model[len(MINIMAX_MODEL_PREFIX):]
+        if not model:
+            raise ValueError(
+                "Model name is empty after stripping minimax/ prefix"
+            )
+        base_url = os.environ.get("MINIMAX_API_BASE", MINIMAX_API_BASE).strip()
+        if not base_url:
+            base_url = MINIMAX_API_BASE
+        api_key_env = "MINIMAX_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):
@@ -53,7 +70,11 @@ def openai_call(apikey,
                 system_content=None):
     model, base_url, api_key_env = _resolve_model_config(model)
     if not apikey and api_key_env:
-        apikey = os.environ.get(api_key_env)
+        apikey = os.environ.get(api_key_env, "").strip()
+        if not apikey:
+            raise ValueError(
+                f"Missing API key: pass apikey or set {api_key_env}"
+            )
 
     client = OpenAI(
         # This is the default and can be omitted
