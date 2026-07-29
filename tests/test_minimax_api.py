@@ -71,6 +71,18 @@ class TestMiniMaxRouting(unittest.TestCase):
         with self.assertRaises(ValueError):
             openai_call("key", "minimax/", "text")
 
+    def test_missing_minimax_key_does_not_fall_back_to_openai_key(self):
+        with patch.dict(
+            os.environ,
+            {"OPENAI_API_KEY": "openai-only-key"},
+            clear=True,
+        ):
+            with patch("funclip.llm.openai_api.OpenAI") as openai_cls:
+                with self.assertRaisesRegex(ValueError, "MINIMAX_API_KEY"):
+                    openai_call("", "minimax/MiniMax-M2.7", "text")
+
+        openai_cls.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -70,7 +70,11 @@ def openai_call(apikey,
                 system_content=None):
     model, base_url, api_key_env = _resolve_model_config(model)
     if not apikey and api_key_env:
-        apikey = os.environ.get(api_key_env)
+        apikey = os.environ.get(api_key_env, "").strip()
+        if not apikey:
+            raise ValueError(
+                f"Missing API key: pass apikey or set {api_key_env}"
+            )
 
     client = OpenAI(
         # This is the default and can be omitted

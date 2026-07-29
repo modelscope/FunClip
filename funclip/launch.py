@@ -179,10 +179,10 @@ if __name__ == "__main__":
         if model.startswith('qwen'):
             return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
         if model.startswith('gpt') or model.startswith('moonshot') or model.startswith('deepseek') or model.startswith('atlascloud/') or model.startswith('minimax/'):
-            return openai_call(apikey, model, system_content, user_content+'\n'+srt_text)
+            return openai_call(apikey, model, user_content+'\n'+srt_text, system_content)
         elif model.startswith('g4f'):
             model = "-".join(model.split('-')[1:])
-            return g4f_openai_call(model, system_content, user_content+'\n'+srt_text)
+            return g4f_openai_call(model, user_content+'\n'+srt_text, system_content)
         else:
             logging.error("LLM name error, only {} are supported as LLM name prefix."
                           .format(SUPPORT_LLM_PREFIX))
@@ -282,8 +282,8 @@ if __name__ == "__main__":
                                              "litellm/anthropic/claude-sonnet-4-6",
                                              "atlascloud/qwen/qwen3.5-flash",
                                              "atlascloud/deepseek-ai/deepseek-v4-pro",
-                                             "minimax/MiniMax-M3",
                                              "minimax/MiniMax-M2.7",
+                                             "minimax/MiniMax-M2.7-highspeed",
                                              "pegasus1.5"],
                                     value="deepseek-chat",
                                     label="LLM Model Name",
