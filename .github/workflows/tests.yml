@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gradio-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install Gradio runtime test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            pytest==8.3.5 \
+            "gradio==4.44.1" \
+            "huggingface_hub<1.0" \
+            "starlette<1.0"
+          python -m pip check
+
+      - name: Test Gradio runtime compatibility
+        run: python -m pytest -q tests/test_gradio_runtime_compat.py

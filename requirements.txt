@@ -7,6 +7,7 @@ huggingface_hub>=0.19.3,<1.0
 moviepy==1.0.3
 numpy==1.26.4
 gradio>=4.31.3,<5.0
+starlette<1.0
 modelscope
 torch>=1.13
 torchaudio

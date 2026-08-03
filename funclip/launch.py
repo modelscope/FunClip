@@ -19,57 +19,7 @@ from llm.litellm_api import litellm_call
 from llm.twelvelabs_api import call_twelvelabs_pegasus
 from utils.trans_utils import extract_timestamps
 from introduction import top_md_1, top_md_3, top_md_4
-
-# Workaround: Jinja2 LRU cache key becomes unhashable (dict) due to
-# Starlette/FastAPI/Jinja2 version mismatch. Disabling the Jinja2 template
-# cache avoids "TypeError: unhashable type: 'dict'" when rendering the
-# Gradio frontend index.html template via starlette Jinja2Templates.
-#
-# Workaround 2: Starlette >= 1.0 changed the Jinja2Templates.TemplateResponse
-# signature from (name, context) to (request, name, context). Gradio 4.44.1
-# still uses the old signature, causing AttributeError: 'dict' has no
-# attribute 'split'. Wrap TemplateResponse to accept both call styles.
-try:
-    import gradio.routes as _routes
-    from starlette.requests import Request as _Request
-
-    if hasattr(_routes, "templates") and hasattr(_routes.templates, "env"):
-        _routes.templates.env.cache = None
-        _routes.templates.env.cache_size = 0
-
-        # Monkey-patch TemplateResponse to support both signatures
-        _original_tr = _routes.templates.TemplateResponse
-
-        def _compatible_template_response(
-            *args,
-            **kwargs,
-        ):
-            # Try to detect call style
-            if len(args) >= 1 and isinstance(args[0], _Request):
-                # New Starlette 1.x signature: (request, name, context, ...)
-                return _original_tr(*args, **kwargs)
-            if len(args) >= 1 and isinstance(args[0], (str, bytes, os.PathLike)):
-                # Old Gradio signature: (name, context, ...) - extract request from context
-                name = args[0]
-                context = args[1] if len(args) > 1 else kwargs.get("context") or {}
-                request = context.get("request") if isinstance(context, dict) else kwargs.get("request")
-                status_code = kwargs.get("status_code") or (args[2] if len(args) > 2 else 200)
-                headers = kwargs.get("headers")
-                media_type = kwargs.get("media_type")
-                background = kwargs.get("background")
-                return _original_tr(
-                    request, name, context,
-                    status_code=status_code,
-                    headers=headers,
-                    media_type=media_type,
-                    background=background,
-                )
-            # Fallback: try original
-            return _original_tr(*args, **kwargs)
-
-        _routes.templates.TemplateResponse = _compatible_template_response
-except Exception:  # pragma: no cover - defensive, never break launch on this
-    pass
+from launch_config import build_launch_kwargs
 
 
 def create_asr_model(model_name, lang, auto_model_cls=AutoModel):
@@ -117,10 +67,6 @@ if __name__ == "__main__":
     audio_clipper = VideoClipper(funasr_model)
     audio_clipper.lang = args.lang
     
-    server_name='127.0.0.1'
-    if args.listen:
-        server_name = '0.0.0.0'
-        
     def save_text_to_file(content, extension, output_dir=None):
         if not content:
             return None
@@ -424,16 +370,6 @@ if __name__ == "__main__":
                                    ],
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
     
-    # start gradio service in local or share
-    launch_kwargs = dict(share=args.share, server_port=args.port, server_name=server_name, show_error=True)
-    if args.listen:
-        launch_kwargs["inbrowser"] = False
-    try:
-        funclip_service.launch(**launch_kwargs, _frontend=False)
-    except ValueError as e:
-        if "localhost is not accessible" in str(e):
-            print("⚠️  Localhost is not accessible. Retrying with share=True...")
-            launch_kwargs["share"] = True
-            funclip_service.launch(**launch_kwargs)
-        else:
-            raise
+    funclip_service.launch(
+        **build_launch_kwargs(share=args.share, port=args.port, listen=args.listen)
+    )
