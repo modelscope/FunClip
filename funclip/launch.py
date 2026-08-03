@@ -19,6 +19,7 @@ from llm.litellm_api import litellm_call
 from llm.twelvelabs_api import call_twelvelabs_pegasus
 from utils.trans_utils import extract_timestamps
 from introduction import top_md_1, top_md_3, top_md_4
+from launch_config import build_launch_kwargs
 
 
 def create_asr_model(model_name, lang, auto_model_cls=AutoModel):
@@ -66,10 +67,6 @@ if __name__ == "__main__":
     audio_clipper = VideoClipper(funasr_model)
     audio_clipper.lang = args.lang
     
-    server_name='127.0.0.1'
-    if args.listen:
-        server_name = '0.0.0.0'
-        
     def save_text_to_file(content, extension, output_dir=None):
         if not content:
             return None
@@ -373,8 +370,6 @@ if __name__ == "__main__":
                                    ],
                            outputs=[video_output, audio_output, clip_message, srt_clipped])
     
-    # start gradio service in local or share
-    if args.listen:
-        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name, inbrowser=False)
-    else:
-        funclip_service.launch(share=args.share, server_port=args.port, server_name=server_name)
+    funclip_service.launch(
+        **build_launch_kwargs(share=args.share, port=args.port, listen=args.listen)
+    )
