@@ -306,7 +306,7 @@ class VideoClipper():
                         offset_b, offset_e = 0, 0
                     # import pdb; pdb.set_trace()
                     _dest_text = pre_proc(_dest_text)
-                    ts = proc(recog_res_raw, timestamp, _dest_text.lower())
+                    ts = proc(recog_res_raw, timestamp, _dest_text)
                     for _ts in ts: all_ts.append([_ts[0]+offset_b*16, _ts[1]+offset_e*16])
                     if len(ts) > 1 and offset_match:
                         warning_messages.append(
@@ -382,8 +382,9 @@ class VideoClipper():
             video_clip.write_videofile(clip_video_file, audio_codec="aac", temp_audiofile=temp_audio_file)
             self.GLOBAL_COUNT += 1
         else:
-            clip_video_file = video_filename
-            message = "No period found in the audio, return raw speech. You may check the recognition result and try other destination text." + log_append
+            clip_video_file = None
+            message = "No period found in the video; no output was generated. You may check the recognition result and try other destination text." + log_append
+            logging.warning(message)
             srt_clip = ''
         return clip_video_file, message, clip_srt
 
