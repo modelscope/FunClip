@@ -34,6 +34,7 @@
 
 <a name="What's New"></a>
 ## What's New🚀
+- 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) fixes fresh Gradio 4 installations by constraining the incompatible Starlette 1.x runtime, keeps `--listen` container startup private unless `--share` is explicitly requested, makes transcript matching case-insensitive, and adds MiniMax M2.7 provider routes.
 - 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) is the first versioned GitHub release. It packages the current Fun-ASR-Nano, SenseVoice, Paraformer, and LLM-assisted clipping application as checksum-protected source archives for a stable rollback point.
 - 2026/05/20 FunClip now supports [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) and [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
 - 2024/06/12 FunClip now supports recognizing and clipping English audio files. Run `python funclip/launch.py -l en` to try.
@@ -75,7 +76,9 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-For a versioned snapshot, download [FunClip-2.1.0.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.1.0/FunClip-2.1.0.tar.gz) or [FunClip-2.1.0.zip](https://github.com/modelscope/FunClip/releases/download/v2.1.0/FunClip-2.1.0.zip), then verify it with the published [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.1.0/SHA256SUMS). Model weights are downloaded separately when FunClip starts and are not included in these source archives.
+For a versioned snapshot, download [FunClip-2.1.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.tar.gz) or [FunClip-2.1.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.zip), then verify it with the published [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.1.1/SHA256SUMS). Model weights are downloaded separately when FunClip starts and are not included in these source archives.
+
+FunClip v2.1.1 supports Gradio 4 with `starlette<1.0`. Existing installations should run `pip install -U -r requirements.txt` before restarting. Container users can pass `--listen` to bind all interfaces; a public Gradio sharing tunnel is created only when `--share` is also supplied.
 
 FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.29`. This release returns every SenseVoice VAD region through `sentence_info` when token timestamps are unavailable, so clipping and subtitle clients receive segment boundaries instead of an empty timeline. It also includes the real-time final-text and short-tail fixes from 1.3.28. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.29"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.3.29) · [PyPI](https://pypi.org/project/funasr/1.3.29/)
 

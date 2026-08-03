@@ -52,7 +52,7 @@ def _create_fixture_repository(repository):
 
 def test_release_version_and_public_download_routes_are_in_sync():
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    assert version == "2.1.0"
+    assert version == "2.1.1"
     assert VERSION_PATTERN.fullmatch(version)
 
     release_url = f"https://github.com/modelscope/FunClip/releases/tag/v{version}"
@@ -65,13 +65,16 @@ def test_release_version_and_public_download_routes_are_in_sync():
 
 
 def test_release_notes_define_installation_and_asset_boundaries():
-    notes = (ROOT / "docs/releases/v2.1.0.md").read_text(encoding="utf-8")
+    notes = (ROOT / "docs/releases/v2.1.1.md").read_text(encoding="utf-8")
     assert "funasr>=1.3.29" in notes
+    assert "starlette<1.0" in notes
     assert "Fun-ASR-Nano" in notes
     assert "SenseVoice" in notes
+    assert "case-insensitive" in notes
+    assert "MiniMax" in notes
     assert "TwelveLabs" in notes
-    assert "FunClip-2.1.0.tar.gz" in notes
-    assert "FunClip-2.1.0.zip" in notes
+    assert "FunClip-2.1.1.tar.gz" in notes
+    assert "FunClip-2.1.1.zip" in notes
     assert "SHA256SUMS" in notes
     assert "model weights are not bundled" in notes
 
