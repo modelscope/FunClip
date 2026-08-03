@@ -8,6 +8,9 @@ import re
 import numpy as np  
 
 PUNC_LIST = ['，', '。', '！', '？', '、', ',', '.', '?', '!']
+ASCII_LOWER_TABLE = str.maketrans(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"
+)
 
 def pre_proc(text):
     res = ''
@@ -28,14 +31,18 @@ def pre_proc(text):
 def proc(raw_text, timestamp, dest_text, lang='zh'):
     # simple matching
     ld = len(dest_text.split())
+    normalized_raw_text = raw_text.translate(ASCII_LOWER_TABLE)
+    normalized_dest_text = dest_text.translate(ASCII_LOWER_TABLE)
     mi, ts = [], []
     offset = 0
     while True:
-        fi = raw_text.find(dest_text, offset, len(raw_text))
+        fi = normalized_raw_text.find(
+            normalized_dest_text, offset, len(normalized_raw_text)
+        )
         ti = raw_text[:fi].count(' ')
         if fi == -1:
             break
-        offset = fi + ld
+        offset = fi + len(normalized_dest_text)
         mi.append(fi)
         ts.append([timestamp[ti][0]*16, timestamp[ti+ld-1][1]*16])
     return ts

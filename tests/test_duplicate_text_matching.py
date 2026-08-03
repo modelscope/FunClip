@@ -86,6 +86,49 @@ class TestDuplicateTextMatching(unittest.TestCase):
         self.assertEqual(len(output_clip.write_calls), 1)
         self.assertIn("2 periods found", message)
 
+    @patch(
+        "videoclipper.generate_srt_clip",
+        return_value=("", [((0.0, 0.2), "HELLO WORLD")], 1),
+    )
+    def test_video_clip_matches_ascii_case_insensitively(self, _generate_srt):
+        clipper = VideoClipper(None)
+        clipper.lang = "en"
+        video = DummyVideo()
+        state = {
+            "recog_res_raw": "HELLO WORLD",
+            "timestamp": [[0, 100], [100, 200]],
+            "sentences": [],
+            "video": video,
+            "clip_video_file": "/tmp/case_clip.mp4",
+            "video_filename": "/tmp/case.mp4",
+        }
+
+        output_path, message, _ = clipper.video_clip("hello world", 0, 0, state)
+
+        self.assertIsNotNone(output_path)
+        self.assertEqual(video.subclip_calls, [(0.0, 0.2)])
+        self.assertIn("1 periods found", message)
+
+    def test_video_clip_returns_no_output_when_text_does_not_match(self):
+        clipper = VideoClipper(None)
+        clipper.lang = "en"
+        video = DummyVideo()
+        state = {
+            "recog_res_raw": "HELLO WORLD",
+            "timestamp": [[0, 100], [100, 200]],
+            "sentences": [],
+            "video": video,
+            "clip_video_file": "/tmp/no_match_clip.mp4",
+            "video_filename": "/tmp/no_match.mp4",
+        }
+
+        output_path, message, subtitle = clipper.video_clip("missing", 0, 0, state)
+
+        self.assertIsNone(output_path)
+        self.assertEqual(video.subclip_calls, [])
+        self.assertEqual(subtitle, "")
+        self.assertIn("No period found", message)
+
     @patch("videoclipper.generate_srt_clip", return_value=("", [], 0))
     def test_audio_clip_formats_offset_warning_for_repeated_matches(
         self, _generate_srt
