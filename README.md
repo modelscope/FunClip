@@ -215,4 +215,4 @@ FunClip is part of the **FunAudioLLM** family:
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=modelscope/FunClip&type=Date)](https://star-history.com/#modelscope/FunClip&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=modelscope/FunClip&type=Date)](https://star-history.dera.page/#modelscope/FunClip&Date)
