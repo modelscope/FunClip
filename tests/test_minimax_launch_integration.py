@@ -47,9 +47,9 @@ class TestMiniMaxLaunchIntegration(unittest.TestCase):
             if isinstance(node, ast.Constant) and isinstance(node.value, str)
         }
 
+        self.assertIn("minimax/MiniMax-M3", string_literals)
         self.assertIn("minimax/MiniMax-M2.7", string_literals)
         self.assertIn("minimax/MiniMax-M2.7-highspeed", string_literals)
-        self.assertNotIn("minimax/MiniMax-M3", string_literals)
 
 
 if __name__ == "__main__":

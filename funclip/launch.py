@@ -279,6 +279,7 @@ if __name__ == "__main__":
                                              "litellm/anthropic/claude-sonnet-4-6",
                                              "atlascloud/qwen/qwen3.5-flash",
                                              "atlascloud/deepseek-ai/deepseek-v4-pro",
+                                             "minimax/MiniMax-M3",
                                              "minimax/MiniMax-M2.7",
                                              "minimax/MiniMax-M2.7-highspeed",
                                              "pegasus1.5"],
