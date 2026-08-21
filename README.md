@@ -148,6 +148,14 @@ Follow the guide below to explore LLM based clipping:
 
 <img src="docs/images/LLM_guide.png" width=360/>
 
+#### Using OrcaRouter as your LLM gateway (optional)
+
+Besides the transcript-based LLMs above, FunClip can route LLM-assisted clipping through [OrcaRouter](https://www.orcarouter.ai), an OpenAI-compatible smart-routing gateway. Select any `orcarouter/` model in the **LLM Model Name** dropdown (`orcarouter/auto` routes each request to the best model for the task), paste an OrcaRouter API key in the **APIKEY** box, and click 'LLM Inference' — FunClip sends the transcript and prompts to `https://api.orcarouter.ai/v1/chat/completions`, and the returned segments work with the existing 'AI Clip' button unchanged.
+
+OrcaRouter exposes one endpoint for all frontier and open-weight models, so you can switch routing targets without changing FunClip. It also runs gateway-level, zero-trust security for AI agents on the same endpoint — screening every prompt/response and governing every tool call on a default-deny basis, with no application code changes.
+
+Set `ORCAROUTER_API_KEY` (and optionally `ORCAROUTER_API_BASE`, which defaults to `https://api.orcarouter.ai/v1`) instead of pasting the key into the UI if you prefer environment-based configuration. A key is available at https://www.orcarouter.ai.
+
 #### Content-aware clipping with TwelveLabs Pegasus (optional)
 
 Besides the transcript-based LLMs above, FunClip can optionally use [TwelveLabs](https://twelvelabs.io) Pegasus, a video understanding model that reasons over the actual video (visuals + audio) rather than only the ASR transcript. This helps pick highlight segments even when the transcript alone is ambiguous (e.g. action, scene changes, on-screen events). To use it, select the `pegasus1.5` model name, paste your TwelveLabs API key, upload a video, and click 'LLM Inference' — Pegasus returns segments in the same `N. [start-end] text` format, so the existing 'AI Clip' button works unchanged. It needs `pip install twelvelabs`, and a free API key is available at https://twelvelabs.io.

@@ -12,6 +12,13 @@ MINIMAX_API_BASE = "https://api.minimax.io/v1"
 MINIMAX_API_BASE_CN = "https://api.minimaxi.com/v1"
 MINIMAX_MODEL_PREFIX = "minimax/"
 
+# OrcaRouter is an OpenAI-compatible smart-routing gateway: one chat
+# completions endpoint that routes each request to the best model for the
+# task. Model IDs carry an `orcarouter/` prefix (e.g. `orcarouter/auto`) and
+# must be sent to the gateway verbatim — a bare `auto` is not routable.
+ORCAROUTER_API_BASE = "https://api.orcarouter.ai/v1"
+ORCAROUTER_MODEL_PREFIX = "orcarouter/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -37,6 +44,15 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = MINIMAX_API_BASE
         api_key_env = "MINIMAX_API_KEY"
+    elif model.startswith(ORCAROUTER_MODEL_PREFIX):
+        if len(model) <= len(ORCAROUTER_MODEL_PREFIX):
+            raise ValueError(
+                "Model name is empty after stripping orcarouter/ prefix"
+            )
+        base_url = os.environ.get("ORCAROUTER_API_BASE", ORCAROUTER_API_BASE).strip()
+        if not base_url:
+            base_url = ORCAROUTER_API_BASE
+        api_key_env = "ORCAROUTER_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):

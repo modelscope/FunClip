@@ -163,7 +163,7 @@ if __name__ == "__main__":
             )
         
     def llm_inference(system_content, user_content, srt_text, model, apikey, video_input=None):
-        SUPPORT_LLM_PREFIX = ['litellm', 'qwen', 'gpt', 'g4f', 'moonshot', 'deepseek', 'atlascloud', 'minimax', 'pegasus']
+        SUPPORT_LLM_PREFIX = ['litellm', 'qwen', 'gpt', 'g4f', 'moonshot', 'deepseek', 'atlascloud', 'minimax', 'orcarouter', 'pegasus']
         if model.startswith('litellm/'):
             return litellm_call(apikey, model, user_content+'\n'+srt_text, system_content)
         if model.startswith('pegasus'):
@@ -175,7 +175,7 @@ if __name__ == "__main__":
             return call_twelvelabs_pegasus(apikey, video_input, model=model, prompt=system_content)
         if model.startswith('qwen'):
             return call_qwen_model(apikey, model, user_content+'\n'+srt_text, system_content)
-        if model.startswith('gpt') or model.startswith('moonshot') or model.startswith('deepseek') or model.startswith('atlascloud/') or model.startswith('minimax/'):
+        if model.startswith('gpt') or model.startswith('moonshot') or model.startswith('deepseek') or model.startswith('atlascloud/') or model.startswith('minimax/') or model.startswith('orcarouter/'):
             return openai_call(apikey, model, user_content+'\n'+srt_text, system_content)
         elif model.startswith('g4f'):
             model = "-".join(model.split('-')[1:])
@@ -282,6 +282,10 @@ if __name__ == "__main__":
                                              "minimax/MiniMax-M3",
                                              "minimax/MiniMax-M2.7",
                                              "minimax/MiniMax-M2.7-highspeed",
+                                             "orcarouter/auto",
+                                             "orcarouter/fusion",
+                                             "orcarouter/fusion-flash",
+                                             "orcarouter/fusion-mini",
                                              "pegasus1.5"],
                                     value="deepseek-chat",
                                     label="LLM Model Name",

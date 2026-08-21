@@ -148,6 +148,14 @@ python funclip/launch.py
 
 <img src="docs/images/LLM_guide.png" width=360/>
 
+#### 使用 OrcaRouter 作为 LLM 网关（可选）
+
+除基于字幕的 LLM 外，FunClip 也可以将 LLM 智能裁剪路由到 [OrcaRouter](https://www.orcarouter.ai)——一个 OpenAI 兼容的智能路由网关。在 **LLM Model Name** 下拉框选择任意 `orcarouter/` 模型（`orcarouter/auto` 会自动为任务选择最佳模型），在 **APIKEY** 输入框粘贴 OrcaRouter API key，点击“LLM推理”——FunClip 会把字幕与 prompt 发送到 `https://api.orcarouter.ai/v1/chat/completions`，返回的分段与现有“AI Clip”按钮完全兼容。
+
+OrcaRouter 用单一端点接入所有前沿与开源模型，无需修改 FunClip 即可切换路由目标。它还在同一端点上为 AI agent 提供网关级零信任安全防护——在默认拒绝（default-deny）基础上审查每一条 prompt/response 并管控每一次工具调用，且无需任何应用代码改动。
+
+也可以不填 UI，而是设置 `ORCAROUTER_API_KEY` 环境变量（可选 `ORCAROUTER_API_BASE`，默认为 `https://api.orcarouter.ai/v1`）。Key 可在 https://www.orcarouter.ai 获取。
+
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
 # 下载下面命令用到的示例视频
