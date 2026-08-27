@@ -152,7 +152,7 @@ python funclip/launch.py
 
 除基于字幕的 LLM 外，FunClip 也可以将 LLM 智能裁剪路由到 [OrcaRouter](https://www.orcarouter.ai)——一个 OpenAI 兼容的智能路由网关。在 **LLM Model Name** 下拉框选择任意 `orcarouter/` 模型（`orcarouter/auto` 会自动为任务选择最佳模型），在 **APIKEY** 输入框粘贴 OrcaRouter API key，点击“LLM推理”——FunClip 会把字幕与 prompt 发送到 `https://api.orcarouter.ai/v1/chat/completions`，返回的分段与现有“AI Clip”按钮完全兼容。
 
-OrcaRouter 用单一端点接入所有前沿与开源模型，无需修改 FunClip 即可切换路由目标。它还可以在同一端点上为 AI agent 提供网关级零信任安全防护——在附加策略后，审查 prompt/response 并以默认拒绝（default-deny）原则管控经网关转发的工具调用，且无需任何应用代码改动。该防护为可选开启：本集成只提供 base URL、API key 与模型，本身不会附加 Guardrail 或 Firewall 策略。请按 [security quickstart](https://docs.orcarouter.ai/security/concepts/quickstart) 应用策略；覆盖范围详见 [Guardrails](https://docs.orcarouter.ai/features/guardrails#scoping-and-the-workspace-default) 与 [Firewall](https://docs.orcarouter.ai/features/firewall#scoping-and-resolution)。
+OrcaRouter 用单一端点接入所有前沿与开源模型，无需修改 FunClip 即可切换路由目标。它还可以在同一端点上为 AI agent 提供网关级零信任控制。对经网关转发的 prompt、response 与工具调用，实际执行方式由相关作用域附加的 Guardrail 或 Firewall 策略决定；选择文档中的 `tight` posture 才会启用默认拒绝（default-deny）。该防护为可选开启：本集成只提供 base URL、API key 与模型，本身不会附加策略。请按 [security quickstart](https://docs.orcarouter.ai/security/concepts/quickstart) 应用策略；覆盖范围详见 [Guardrails](https://docs.orcarouter.ai/features/guardrails#scoping-and-the-workspace-default) 与 [Firewall](https://docs.orcarouter.ai/features/firewall#scoping-and-resolution)。
 
 也可以不填 UI，而是设置 `ORCAROUTER_API_KEY` 环境变量（可选 `ORCAROUTER_API_BASE`，默认为 `https://api.orcarouter.ai/v1`）。Key 可在 https://www.orcarouter.ai 获取。
 
