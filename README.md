@@ -34,6 +34,7 @@
 
 <a name="What's New"></a>
 ## What's New🚀
+- 2026/08/30 FunClip adds the third-party [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) model as an opt-in `moss` path. It provides long-form ASR, speaker identity, and segment timestamps without external `vad_model` or `spk_model`, through FunASR's vLLM adapter. OpenMOSS owns and maintains the model; FunClip only integrates its published contract.
 - 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) fixes fresh Gradio 4 installations by constraining the incompatible Starlette 1.x runtime, keeps `--listen` container startup private unless `--share` is explicitly requested, makes transcript matching case-insensitive, and adds MiniMax M2.7 provider routes.
 - 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) is the first versioned GitHub release. It packages the current Fun-ASR-Nano, SenseVoice, Paraformer, and LLM-assisted clipping application as checksum-protected source archives for a stable rollback point.
 - 2026/05/20 FunClip now supports [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) and [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
@@ -80,7 +81,7 @@ For a versioned snapshot, download [FunClip-2.1.1.tar.gz](https://github.com/mod
 
 FunClip v2.1.1 supports Gradio 4 with `starlette<1.0`. Existing installations should run `pip install -U -r requirements.txt` before restarting. Container users can pass `--listen` to bind all interfaces; a public Gradio sharing tunnel is created only when `--share` is also supplied.
 
-FunClip's Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.29`. This release returns every SenseVoice VAD region through `sentence_info` when token timestamps are unavailable, so clipping and subtitle clients receive segment boundaries instead of an empty timeline. It also includes the real-time final-text and short-tail fixes from 1.3.28. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.3.29"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.3.29) · [PyPI](https://pypi.org/project/funasr/1.3.29/)
+FunClip's current model and subtitle compatibility paths require `funasr>=1.4.9`. This includes the MOSS vLLM adapter, long-audio generation controls, normalized `sentence_info` speaker segments, and the earlier SenseVoice and realtime fixes. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.4.9"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
 ### imagemagick install (Optional)
 
@@ -119,6 +120,7 @@ python funclip/launch.py
 # '-m fun-asr-nano' for the flagship Fun-ASR-Nano model (Mandarin, English,
 # Japanese, 7 Chinese dialect groups, and 26 regional accents)
 # '-m sensevoice' for SenseVoice model (multilingual ASR + emotion + audio event detection)
+# '--model moss' for OpenMOSS long-form ASR + speaker identity + timestamps
 # '-l en' for English audio recognize
 # '-p xxx' for setting port number
 # '-s True' for establishing service for public accessing
@@ -131,7 +133,22 @@ python funclip/launch.py
 | Default Chinese video clipping with Paraformer | `python funclip/launch.py` |
 | High-accuracy transcription with the flagship Fun-ASR-Nano checkpoint (use Paraformer for precise text-based clipping) | `python funclip/launch.py -m fun-asr-nano` |
 | Multilingual ASR with emotion and audio event tags | `python funclip/launch.py -m sensevoice` |
+| MOSS through a local vLLM transcription service | `python funclip/launch.py --model moss --moss-backend vllm` |
 | English video clipping with the Paraformer English model | `python funclip/launch.py -l en` |
+
+#### MOSS-Transcribe-Diarize backend
+
+[MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) is a third-party OpenMOSS model, not a FunASR or FunClip model. FunClip pins the published Hugging Face object `OpenMOSS-Team/MOSS-Transcribe-Diarize` at revision `e8681d68e7042738ffca8ac8212bc8fcb1131ab8`. Start and verify the vLLM service using the [bilingual production guide](https://www.funasr.com/en/deploy/moss-transcribe-diarize.html), then run:
+
+```shell
+# vLLM is the default MOSS backend and defaults to http://127.0.0.1:8898/v1
+python funclip/launch.py --model moss --moss-backend vllm
+
+# Optional bearer credentials are read from the environment, not the command line
+MOSS_API_KEY=replace-me python funclip/launch.py --model moss
+```
+
+MOSS performs segmentation and speaker diarization end to end. Do not attach an external `vad_model` or `spk_model`, because chunking would break global speaker identity. Its timestamps are segment-level: SRT, speaker clipping (`spkS01`, `spkS02`, ...), and LLM timestamp clipping are supported, while precise arbitrary text clipping still requires Paraformer's token timestamps. FunClip currently exposes the vLLM path because it is compatible with the standard Transformers 4.x environment and has an end-to-end tested OpenAI transcription contract.
 
 If you only need offline speech transcription on CPU or edge devices and do not need FunClip's video clipping UI, use the FunASR llama.cpp / GGUF runtime instead: [funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Fun-ASR-Nano-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [SenseVoiceSmall-GGUF](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF).
 
