@@ -36,6 +36,7 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
+- 2026/08/30 FunClip 新增第三方 [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) 可选路径。它通过 FunASR 的 vLLM 适配器提供长音频 ASR、说话人身份和分段时间戳，不需要外部 `vad_model` 或 `spk_model`。模型归 OpenMOSS 所有并由其维护，FunClip 只集成公开接口。
 - 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) 修复 Gradio 4 新安装环境与 Starlette 1.x 的不兼容问题；容器使用 `--listen` 时不会自动创建公网分享链接；文本匹配改为大小写不敏感，并新增 MiniMax M2.7 模型路由。
 - 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) 是首个带版本号的 GitHub Release，将当前支持 Fun-ASR-Nano、SenseVoice、Paraformer 与大模型智能剪辑的应用打包为带 SHA-256 校验的源码归档，提供稳定的下载与回退节点。
 - 2026/05/20 FunClip 现在支持 [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) 与 [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) 模型。`fun-asr-nano` 选项加载旗舰版 Fun-ASR-Nano-2512，支持普通话、英语、日语、7 类中文方言和 26 种地域口音；该选项不会加载独立的 31 语种 Fun-ASR-MLT-Nano-2512。SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。需要精确按文本裁剪时请使用 Paraformer，因为当前发布的 Nano checkpoint 不提供可靠的字符级时间戳。
@@ -81,7 +82,7 @@ pip install -r ./requirements.txt
 
 FunClip v2.1.1 在 Gradio 4 环境中要求 `starlette<1.0`。已有安装请在重启前执行 `pip install -U -r requirements.txt`。容器用户可用 `--listen` 监听全部网卡；只有同时显式传入 `--share` 才会创建 Gradio 公网分享链接。
 
-FunClip 的 Fun-ASR-Nano、SenseVoice 与字幕兼容路径需要 `funasr>=1.3.29`。当 SenseVoice 没有 token 时间戳时，该版本会通过 `sentence_info` 返回每个 VAD 语音区域，让智能剪辑与字幕客户端获得分段边界，而不再收到空时间线；同时包含 1.3.28 的实时最终文本和短尾语音修复。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.3.29"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.3.29) · [PyPI](https://pypi.org/project/funasr/1.3.29/)
+FunClip 当前模型与字幕兼容路径需要 `funasr>=1.4.9`，其中包括 MOSS 的 vLLM 适配器、长音频生成上限、归一化的 `sentence_info` 说话人分段，以及此前的 SenseVoice 和实时修复。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.4.9"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
 ### 安装imagemagick（可选）
 
@@ -119,6 +120,7 @@ python funclip/launch.py
 # '-m fun-asr-nano' 使用旗舰版 Fun-ASR-Nano（普通话、英语、日语、
 # 7 类中文方言和 26 种地域口音）
 # '-m sensevoice' 使用 SenseVoice 模型（多语种 ASR + 情绪识别 + 音频事件检测）
+# '--model moss' 使用 OpenMOSS 长音频 ASR + 说话人身份 + 时间戳
 # '-l en' for English audio recognize
 # '-p xxx' for setting port number
 # '-s True' for establishing service for public accessing
@@ -130,7 +132,22 @@ python funclip/launch.py
 | 默认中文视频裁剪，使用 Paraformer | `python funclip/launch.py` |
 | 使用旗舰版 Fun-ASR-Nano 进行高精度转写（精确按文本裁剪请使用 Paraformer） | `python funclip/launch.py -m fun-asr-nano` |
 | 使用 SenseVoice 进行多语种识别、情绪识别和音频事件检测 | `python funclip/launch.py -m sensevoice` |
+| 通过本地 vLLM 转写服务使用 MOSS | `python funclip/launch.py --model moss --moss-backend vllm` |
 | 使用 Paraformer 英文模型裁剪英文视频 | `python funclip/launch.py -l en` |
+
+#### MOSS-Transcribe-Diarize 后端
+
+[MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) 是 OpenMOSS 维护的第三方模型，不属于 FunASR 或 FunClip。FunClip 固定使用 Hugging Face 模型 `OpenMOSS-Team/MOSS-Transcribe-Diarize` 的 revision `e8681d68e7042738ffca8ac8212bc8fcb1131ab8`。先按[双语生产部署指南](https://www.funasr.com/en/deploy/moss-transcribe-diarize.html)启动并验证 vLLM 服务，再运行：
+
+```shell
+# vLLM 是默认后端，默认地址为 http://127.0.0.1:8898/v1
+python funclip/launch.py --model moss --moss-backend vllm
+
+# 可选凭据只从环境变量读取，不放入命令行参数
+MOSS_API_KEY=replace-me python funclip/launch.py --model moss
+```
+
+MOSS 端到端完成分段与说话人识别，不要再配置外部 `vad_model` 或 `spk_model`，否则切块会破坏全局说话人身份。它提供段级时间戳，适合生成 SRT、按说话人（`spkS01`、`spkS02` 等）剪辑以及 LLM 按时间剪辑；任意文本的精确剪辑仍应使用带 token 时间戳的 Paraformer。FunClip 当前只开放 vLLM 路径，因为它兼容标准 Transformers 4.x 环境，并且已经通过 OpenAI 转写接口的端到端测试。
 
 如果你只需要在 CPU 或边缘设备上离线转写语音，而不需要 FunClip 的视频剪辑界面，请优先使用 FunASR llama.cpp / GGUF 运行时：[funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Fun-ASR-Nano-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [SenseVoiceSmall-GGUF](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF)。
 

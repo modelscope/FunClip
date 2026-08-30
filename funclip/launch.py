@@ -12,6 +12,7 @@ from datetime import datetime
 import gradio as gr
 from funasr import AutoModel
 from videoclipper import VideoClipper
+from model_selection import create_asr_model as _create_asr_model
 from llm.openai_api import openai_call
 from llm.qwen_api import call_qwen_model
 from llm.g4f_openai_api import g4f_openai_call
@@ -22,48 +23,34 @@ from introduction import top_md_1, top_md_3, top_md_4
 from launch_config import build_launch_kwargs
 
 
-def create_asr_model(model_name, lang, auto_model_cls=AutoModel):
-    if model_name == "fun-asr-nano":
-        return auto_model_cls(
-            model="FunAudioLLM/Fun-ASR-Nano-2512",
-            trust_remote_code=True,
-            remote_code="./model.py",
-            vad_model="fsmn-vad",
-            vad_kwargs={"max_single_segment_time": 30000},
-            spk_model="cam++",
-            hub="hf",
-        )
-    if model_name == "sensevoice":
-        return auto_model_cls(
-            model="iic/SenseVoiceSmall",
-            vad_model="fsmn-vad",
-            vad_kwargs={"max_single_segment_time": 30000},
-            spk_model="cam++",
-        )
-
-    paraformer_model = (
-        "iic/speech_seaco_paraformer_large_asr_nat-zh-cn-16k-common-vocab8404-pytorch"
-        if lang == "zh"
-        else "iic/speech_paraformer_asr-en-16k-vocab4199-pytorch"
-    )
-    return auto_model_cls(
-        model=paraformer_model,
-        vad_model="damo/speech_fsmn_vad_zh-cn-16k-common-pytorch",
-        punc_model="damo/punc_ct-transformer_zh-cn-common-vocab272727-pytorch",
-        spk_model="damo/speech_campplus_sv_zh-cn_16k-common",
+def create_asr_model(model_name, lang, auto_model_cls=AutoModel, **kwargs):
+    return _create_asr_model(
+        model_name, lang, auto_model_cls=auto_model_cls, **kwargs
     )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='argparse testing')
     parser.add_argument('--lang', '-l', type=str, default = "zh", help="language mode; selects the Paraformer checkpoint but does not override --model")
-    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano", "sensevoice"], help="ASR model: paraformer, fun-asr-nano, or sensevoice (takes precedence over --lang)")
+    parser.add_argument('--model', '-m', type=str, default="paraformer", choices=["paraformer", "fun-asr-nano", "sensevoice", "moss"], help="ASR model: paraformer, fun-asr-nano, sensevoice, or moss (takes precedence over --lang)")
+    parser.add_argument('--moss-backend', choices=["vllm"], default="vllm", help="MOSS runtime backed by an existing vLLM transcription service")
+    parser.add_argument('--moss-base-url', default="http://127.0.0.1:8898/v1", help="OpenAI-compatible base URL for the MOSS vLLM service")
+    parser.add_argument('--moss-api-key-env', default="MOSS_API_KEY", help="environment variable containing the optional MOSS service API key")
+    parser.add_argument('--moss-max-tokens', type=int, default=8192, help="MOSS generation limit for long recordings")
     parser.add_argument('--share', '-s', action='store_true', help="if to establish gradio share link")
     parser.add_argument('--port', '-p', type=int, default=7860, help='port number')
     parser.add_argument('--listen', action='store_true', help="if to listen to all hosts")
     args = parser.parse_args()
     
-    funasr_model = create_asr_model(args.model, args.lang)
+    moss_api_key = os.environ.get(args.moss_api_key_env) if args.moss_api_key_env else None
+    funasr_model = create_asr_model(
+        args.model,
+        args.lang,
+        moss_backend=args.moss_backend,
+        moss_base_url=args.moss_base_url,
+        moss_api_key=moss_api_key,
+        moss_max_tokens=args.moss_max_tokens,
+    )
     audio_clipper = VideoClipper(funasr_model)
     audio_clipper.lang = args.lang
     

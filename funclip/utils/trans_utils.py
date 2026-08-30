@@ -33,6 +33,8 @@ def proc(raw_text, timestamp, dest_text, lang='zh'):
     ld = len(dest_text.split())
     normalized_raw_text = raw_text.translate(ASCII_LOWER_TABLE)
     normalized_dest_text = dest_text.translate(ASCII_LOWER_TABLE)
+    if not normalized_dest_text or not timestamp:
+        return []
     mi, ts = [], []
     offset = 0
     while True:
@@ -43,8 +45,11 @@ def proc(raw_text, timestamp, dest_text, lang='zh'):
         if fi == -1:
             break
         offset = fi + len(normalized_dest_text)
+        end_index = ti + ld - 1
+        if ti >= len(timestamp) or end_index >= len(timestamp):
+            continue
         mi.append(fi)
-        ts.append([timestamp[ti][0]*16, timestamp[ti+ld-1][1]*16])
+        ts.append([timestamp[ti][0]*16, timestamp[end_index][1]*16])
     return ts
             
 
@@ -54,7 +59,7 @@ def proc_spk(dest_spk, sd_sentences):
         d_start = d['timestamp'][0][0]
         d_end = d['timestamp'][-1][1]
         spkid=dest_spk[3:]
-        if str(d['spk']) == spkid and d_end-d_start>999:
+        if str(d['spk']) == spkid and d_end > d_start:
             ts.append([d_start*16, d_end*16])
     return ts
 

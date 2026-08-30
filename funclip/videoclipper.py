@@ -25,6 +25,8 @@ from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk,
 MAX_SUBTITLE_DURATION_MS = 8000
 MAX_SUBTITLE_TOKENS = 30
 SENSEVOICE_TAG_RE = re.compile(r"<\|[^|>]+\|>")
+MOSS_SEGMENT_MARKER_RE = re.compile(r"\[\d+(?:\.\d+)?\]\[S\d+\]")
+MOSS_FINAL_TIMESTAMP_RE = re.compile(r"\[\d+(?:\.\d+)?\]\s*$")
 
 
 def _is_valid_timestamp(timestamp):
@@ -93,9 +95,14 @@ def _normalize_recognition_result(result):
     text = _clean_recognition_text(
         result.get("text") or result.get("text_tn") or result.get("raw_text") or ""
     )
-    raw_text = _clean_recognition_text(
-        result.get("raw_text") or result.get("text_tn") or text
-    )
+    raw_value = result.get("raw_text") or result.get("text_tn") or text
+    raw_text = _clean_recognition_text(raw_value)
+    if isinstance(raw_value, str) and MOSS_SEGMENT_MARKER_RE.search(raw_value):
+        if not MOSS_FINAL_TIMESTAMP_RE.search(raw_value):
+            raise RuntimeError(
+                "truncated MOSS transcript: increase --moss-max-tokens and retry"
+            )
+        raw_text = text
     timestamp = result.get("timestamp") or result.get("timestamps") or []
 
     sentence_info = []
