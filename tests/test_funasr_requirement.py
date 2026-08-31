@@ -46,6 +46,25 @@ def test_readmes_document_moss_ownership_backends_and_timestamp_boundary():
         assert "--moss-backend hf" not in text
 
 
+def test_readmes_describe_moss_speakers_as_anonymous_labels():
+    combined = "\n".join(
+        (ROOT / readme).read_text() for readme in ["README.md", "README_zh.md"]
+    )
+
+    for misleading_claim in (
+        "speaker identity",
+        "speaker identities",
+        "说话人身份",
+        "身份识别",
+    ):
+        assert misleading_claim not in combined
+
+    assert "anonymous speaker labels" in combined
+    assert "匿名说话人标签" in combined
+    assert "does not identify a known person" in combined
+    assert "不能识别已知人物" in combined
+
+
 def test_readmes_route_edge_asr_users_to_gguf_runtime():
     required_links = [
         "https://www.funasr.com/llama-cpp.html",
