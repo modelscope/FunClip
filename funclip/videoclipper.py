@@ -14,9 +14,13 @@ import numpy as np
 import soundfile as sf
 from moviepy.editor import *
 import moviepy.editor as mpy
-from moviepy.video.tools.subtitles import SubtitlesClip, TextClip
+from moviepy.video.tools.subtitles import SubtitlesClip
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
+try:
+    from .subtitle_renderer import make_text_clip
+except ImportError:
+    from subtitle_renderer import make_text_clip
 from utils.subtitle_utils import generate_srt, generate_srt_clip, str2list
 from utils.argparse_tools import ArgumentParser, get_commandline_args
 from utils.trans_utils import pre_proc, proc, write_state, load_state, proc_spk, convert_pcm_to_float
@@ -346,7 +350,9 @@ class VideoClipper():
             start_end_info = "from {} to {}".format(start, end)
             clip_srt += srt_clip
             if add_sub:
-                generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
+                generator = lambda txt: make_text_clip(
+                    txt, font_size=font_size, color=font_color
+                )
                 subtitles = SubtitlesClip(subs, generator)
                 video_clip = CompositeVideoClip([video_clip, subtitles.set_pos(('center','bottom'))])
             concate_clip = [video_clip]
@@ -365,7 +371,9 @@ class VideoClipper():
                 start_end_info += ", from {} to {}".format(str(start)[:5], str(end)[:5])
                 clip_srt += srt_clip
                 if add_sub:
-                    generator = lambda txt: TextClip(txt, font='./font/STHeitiMedium.ttc', fontsize=font_size, color=font_color)
+                    generator = lambda txt: make_text_clip(
+                        txt, font_size=font_size, color=font_color
+                    )
                     subtitles = SubtitlesClip(chi_subs, generator)
                     _video_clip = CompositeVideoClip([_video_clip, subtitles.set_pos(('center','bottom'))])
                     # _video_clip.write_videofile("debug.mp4", audio_codec="aac")
