@@ -36,7 +36,7 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
-- 2026/08/30 FunClip 新增第三方 [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) 可选路径。它通过 FunASR 的 vLLM 适配器提供长音频 ASR、说话人身份和分段时间戳，不需要外部 `vad_model` 或 `spk_model`。模型归 OpenMOSS 所有并由其维护，FunClip 只集成公开接口。
+- 2026/08/30 FunClip 新增第三方 [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) 可选路径。它通过 FunASR 的 vLLM 适配器提供长音频 ASR、匿名说话人标签和分段时间戳，不需要外部 `vad_model` 或 `spk_model`。模型归 OpenMOSS 所有并由其维护，FunClip 只集成公开接口。
 - 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) 修复 Gradio 4 新安装环境与 Starlette 1.x 的不兼容问题；容器使用 `--listen` 时不会自动创建公网分享链接；文本匹配改为大小写不敏感，并新增 MiniMax M2.7 模型路由。
 - 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) 是首个带版本号的 GitHub Release，将当前支持 Fun-ASR-Nano、SenseVoice、Paraformer 与大模型智能剪辑的应用打包为带 SHA-256 校验的源码归档，提供稳定的下载与回退节点。
 - 2026/05/20 FunClip 现在支持 [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) 与 [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) 模型。`fun-asr-nano` 选项加载旗舰版 Fun-ASR-Nano-2512，支持普通话、英语、日语、7 类中文方言和 26 种地域口音；该选项不会加载独立的 31 语种 Fun-ASR-MLT-Nano-2512。SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。需要精确按文本裁剪时请使用 Paraformer，因为当前发布的 Nano checkpoint 不提供可靠的字符级时间戳。
@@ -120,7 +120,7 @@ python funclip/launch.py
 # '-m fun-asr-nano' 使用旗舰版 Fun-ASR-Nano（普通话、英语、日语、
 # 7 类中文方言和 26 种地域口音）
 # '-m sensevoice' 使用 SenseVoice 模型（多语种 ASR + 情绪识别 + 音频事件检测）
-# '--model moss' 使用 OpenMOSS 长音频 ASR + 说话人身份 + 时间戳
+# '--model moss' 使用 OpenMOSS 长音频 ASR + 匿名说话人标签 + 时间戳
 # '-l en' for English audio recognize
 # '-p xxx' for setting port number
 # '-s True' for establishing service for public accessing
@@ -147,7 +147,7 @@ python funclip/launch.py --model moss --moss-backend vllm
 MOSS_API_KEY=replace-me python funclip/launch.py --model moss
 ```
 
-MOSS 端到端完成分段与说话人识别，不要再配置外部 `vad_model` 或 `spk_model`，否则切块会破坏全局说话人身份。它提供段级时间戳，适合生成 SRT、按说话人（`spkS01`、`spkS02` 等）剪辑以及 LLM 按时间剪辑；任意文本的精确剪辑仍应使用带 token 时间戳的 Paraformer。FunClip 当前只开放 vLLM 路径，因为它兼容标准 Transformers 4.x 环境，并且已经通过 OpenAI 转写接口的端到端测试。
+MOSS 端到端完成分段与说话人分离。`spkS01`、`spkS02` 等值只是当前录音内的匿名说话人标签，不能识别已知人物、验证已注册声纹，也不保证跨录音保持同一标签。不要再配置外部 `vad_model` 或 `spk_model`，否则切块会破坏单次录音内的标签一致性。它提供段级时间戳，适合生成 SRT、按说话人剪辑以及 LLM 按时间剪辑；任意文本的精确剪辑仍应使用带 token 时间戳的 Paraformer。FunClip 当前只开放 vLLM 路径，因为它兼容标准 Transformers 4.x 环境，并且已经通过 OpenAI 转写接口的端到端测试。
 
 如果你只需要在 CPU 或边缘设备上离线转写语音，而不需要 FunClip 的视频剪辑界面，请优先使用 FunASR llama.cpp / GGUF 运行时：[funasr.com/llama-cpp](https://www.funasr.com/llama-cpp.html) · [Fun-ASR-Nano-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF) · [SenseVoiceSmall-GGUF](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF)。
 
