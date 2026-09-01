@@ -13,6 +13,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")
+CURRENT_RELEASE = "2.2.1"
 
 
 def _git(repository, *args):
@@ -52,7 +53,7 @@ def _create_fixture_repository(repository):
 
 def test_release_version_and_public_download_routes_are_in_sync():
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    assert version == "2.1.1"
+    assert version == CURRENT_RELEASE
     assert VERSION_PATTERN.fullmatch(version)
 
     release_url = f"https://github.com/modelscope/FunClip/releases/tag/v{version}"
@@ -65,16 +66,16 @@ def test_release_version_and_public_download_routes_are_in_sync():
 
 
 def test_release_notes_define_installation_and_asset_boundaries():
-    notes = (ROOT / "docs/releases/v2.1.1.md").read_text(encoding="utf-8")
-    assert "funasr>=1.3.29" in notes
-    assert "starlette<1.0" in notes
-    assert "Fun-ASR-Nano" in notes
-    assert "SenseVoice" in notes
-    assert "case-insensitive" in notes
-    assert "MiniMax" in notes
-    assert "TwelveLabs" in notes
-    assert "FunClip-2.1.1.tar.gz" in notes
-    assert "FunClip-2.1.1.zip" in notes
+    notes = (ROOT / f"docs/releases/v{CURRENT_RELEASE}.md").read_text(
+        encoding="utf-8"
+    )
+    assert "funasr>=1.4.9" in notes
+    assert "selected subtitle colors" in notes
+    assert "Pillow" in notes
+    assert "MOSS-Transcribe-Diarize" in notes
+    assert "anonymous speaker labels" in notes
+    assert "FunClip-2.2.1.tar.gz" in notes
+    assert "FunClip-2.2.1.zip" in notes
     assert "SHA256SUMS" in notes
     assert "model weights are not bundled" in notes
 

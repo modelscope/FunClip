@@ -36,25 +36,11 @@
 <a name="近期更新"></a>
 ## 近期更新🚀
 
-- 2026/08/30 FunClip 新增第三方 [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) 可选路径。它通过 FunASR 的 vLLM 适配器提供长音频 ASR、匿名说话人标签和分段时间戳，不需要外部 `vad_model` 或 `spk_model`。模型归 OpenMOSS 所有并由其维护，FunClip 只集成公开接口。
-- 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) 修复 Gradio 4 新安装环境与 Starlette 1.x 的不兼容问题；容器使用 `--listen` 时不会自动创建公网分享链接；文本匹配改为大小写不敏感，并新增 MiniMax M2.7 模型路由。
-- 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) 是首个带版本号的 GitHub Release，将当前支持 Fun-ASR-Nano、SenseVoice、Paraformer 与大模型智能剪辑的应用打包为带 SHA-256 校验的源码归档，提供稳定的下载与回退节点。
-- 2026/05/20 FunClip 现在支持 [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) 与 [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) 模型。`fun-asr-nano` 选项加载旗舰版 Fun-ASR-Nano-2512，支持普通话、英语、日语、7 类中文方言和 26 种地域口音；该选项不会加载独立的 31 语种 Fun-ASR-MLT-Nano-2512。SenseVoice 支持多语种识别，并额外输出情绪识别与音频事件检测标签。可通过 `python funclip/launch.py -m fun-asr-nano` 或 `python funclip/launch.py -m sensevoice` 启动体验。需要精确按文本裁剪时请使用 Paraformer，因为当前发布的 Nano checkpoint 不提供可靠的字符级时间戳。
-- 2024/06/12 FunClip现在支持识别与裁剪英文视频，通过`python funclip/launch.py -l en`来启动英文版本服务。
-- 🔥2024/05/13 FunClip v2.0.0加入大语言模型智能裁剪功能，集成qwen系列，gpt系列等模型，提供默认prompt，您也可以探索并分享prompt的设置技巧，使用方法如下：
-  1. 在进行识别之后，选择大模型名称，配置你自己的apikey；
-  2. 点击'LLM智能段落选择'按钮，FunClip将自动组合两个prompt与视频的srt字幕；
-  3. 点击'LLM智能裁剪'按钮，基于前一步的大语言模型输出结果，FunClip将提取其中的时间戳进行裁剪；
-  4. 您可以尝试改变prompt来借助大语言模型的能力来获取您想要的结果；
-- 2024/05/09 FunClip更新至v1.1.0，包含如下更新与修复：
-  - 支持配置输出文件目录，保存ASR中间结果与视频裁剪中间文件；
-  - UI升级（见下方演示图例），视频与音频裁剪功能在同一页，按钮位置调整；
-  - 修复了由于FunASR接口升级引入的bug，该bug曾导致一些严重的剪辑错误；
-  - 支持为每一个段落配置不同的起止时间偏移；
-  - 代码优化等；
-- 2024/03/06 命令行调用方式更新与问题修复，相关功能可以正常使用。
-- 2024/02/28 FunClip升级到FunASR1.0模型调用方式，通过FunASR开源的SeACo-Paraformer模型在视频剪辑中进一步支持热词定制化功能。
-- 2024/02/28 原FunASR-APP/ClipVideo更名为FunClip。
+- 2026/09/01 [FunClip v2.2.1](https://github.com/modelscope/FunClip/releases/tag/v2.2.1) 支持选择字幕颜色，并明确 MOSS 匿名说话人标签的能力边界。
+- 2026/08/30 [FunClip v2.2.0](https://github.com/modelscope/FunClip/releases/tag/v2.2.0) 集成第三方 [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize)，提供长音频 ASR、匿名说话人标签和分段时间戳，无需外部 VAD 或说话人模型。
+- 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) 修复 Gradio 4 / Starlette 兼容问题，并改进容器公网分享与文本匹配行为。
+
+[查看全部版本](https://github.com/modelscope/FunClip/releases)
 
 <a name="施工中"></a>
 ## 施工中🌵
@@ -78,15 +64,15 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-如需固定版本，可下载 [FunClip-2.1.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.tar.gz) 或 [FunClip-2.1.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.zip)，并使用发布页提供的 [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.1.1/SHA256SUMS) 校验文件。模型权重会在 FunClip 启动时单独下载，不包含在源码归档中。
+如需固定版本，可下载 [FunClip-2.2.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.tar.gz) 或 [FunClip-2.2.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.zip)，并使用发布页提供的 [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.2.1/SHA256SUMS) 校验文件。模型权重会在 FunClip 启动时单独下载，不包含在源码归档中。
 
-FunClip v2.1.1 在 Gradio 4 环境中要求 `starlette<1.0`。已有安装请在重启前执行 `pip install -U -r requirements.txt`。容器用户可用 `--listen` 监听全部网卡；只有同时显式传入 `--share` 才会创建 Gradio 公网分享链接。
+FunClip v2.2.1 使用 Pillow 渲染可选字幕颜色，并继续在 Gradio 4 环境中要求 `starlette<1.0`。已有安装请在重启前执行 `pip install -U -r requirements.txt`。容器用户可用 `--listen` 监听全部网卡；只有同时显式传入 `--share` 才会创建 Gradio 公网分享链接。
 
 FunClip 当前模型与字幕兼容路径需要 `funasr>=1.4.9`，其中包括 MOSS 的 vLLM 适配器、长音频生成上限、归一化的 `sentence_info` 说话人分段，以及此前的 SenseVoice 和实时修复。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.4.9"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
-### 安装imagemagick（可选）
+### 安装 ImageMagick（可选）
 
-1. 如果你希望使用自动生成字幕的视频裁剪功能，需要安装imagemagick
+内置字幕渲染器使用 Pillow 和仓库自带字体，不要求安装 ImageMagick。只有使用旧版或自定义 MoviePy `TextClip` 工作流时才需要以下配置。
 
 - Ubuntu
 ```shell
