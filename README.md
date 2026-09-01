@@ -34,26 +34,11 @@
 
 <a name="What's New"></a>
 ## What's New🚀
-- 2026/08/30 FunClip adds the third-party [OpenMOSS/MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) model as an opt-in `moss` path. It provides long-form ASR, anonymous speaker labels, and segment timestamps without external `vad_model` or `spk_model`, through FunASR's vLLM adapter. OpenMOSS owns and maintains the model; FunClip only integrates its published contract.
-- 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) fixes fresh Gradio 4 installations by constraining the incompatible Starlette 1.x runtime, keeps `--listen` container startup private unless `--share` is explicitly requested, makes transcript matching case-insensitive, and adds MiniMax M2.7 provider routes.
-- 2026/07/24 [FunClip v2.1.0](https://github.com/modelscope/FunClip/releases/tag/v2.1.0) is the first versioned GitHub release. It packages the current Fun-ASR-Nano, SenseVoice, Paraformer, and LLM-assisted clipping application as checksum-protected source archives for a stable rollback point.
-- 2026/05/20 FunClip now supports [Fun-ASR-Nano](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512) and [SenseVoice](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) models. The `fun-asr-nano` option loads the flagship Fun-ASR-Nano-2512 checkpoint for Mandarin, English, Japanese, 7 Chinese dialect groups, and 26 regional accents; it does not load the separate 31-language Fun-ASR-MLT-Nano-2512 checkpoint. SenseVoice adds emotion recognition and audio event detection. Run `python funclip/launch.py -m fun-asr-nano` or `-m sensevoice` to try. For precise text-based clipping, use Paraformer because the released Nano checkpoint does not provide reliable character-level timestamps.
-- 2024/06/12 FunClip now supports recognizing and clipping English audio files. Run `python funclip/launch.py -l en` to try.
-- 🔥2024/05/13 FunClip v2.0.0 now supports smart clipping with large language models, integrating models from the qwen series, GPT series, etc., providing default prompts. You can also explore and share tips for setting prompts, the usage is as follows:
-  1. After the recognition, select the name of the large model and configure your own apikey;
-  2. Click on the 'LLM Inference' button, and FunClip will automatically combine two prompts with the video's srt subtitles;
-  3. Click on the 'AI Clip' button, and based on the output results of the large language model from the previous step, FunClip will extract the timestamps for clipping;
-  4. You can try changing the prompt to leverage the capabilities of the large language models to get the results you want;
-- 2024/05/09 FunClip updated to v1.1.0, including the following updates and fixes:
-  - Support configuration of output file directory, saving ASR intermediate results and video clipping intermediate files;
-  - UI upgrade (see guide picture below), video and audio cropping function are on the same page now, button position adjustment;
-  - Fixed a bug introduced due to FunASR interface upgrade, which has caused some serious clipping errors;
-  - Support configuring different start and end time offsets for each paragraph;
-  - Code update, etc;
-- 2024/03/06 Fix bugs in using FunClip with command line.
-- 2024/02/28 [FunASR](https://github.com/modelscope/FunASR) is updated to 1.0 version, use FunASR1.0 and SeACo-Paraformer to conduct ASR with hotword customization.
-- 2023/10/17 Fix bugs in multiple periods chosen, used to return video with wrong length.
-- 2023/10/10 FunClipper now supports recognizing with speaker diarization ability, choose 'yes' button in 'Recognize Speakers' and you will get recognition results with speaker id for each sentence. And then you can clip out the periods of one or some speakers (e.g. 'spk0' or 'spk0#spk3') using FunClipper.
+- 2026/09/01 [FunClip v2.2.1](https://github.com/modelscope/FunClip/releases/tag/v2.2.1) preserves selected subtitle colors with a Pillow renderer and publishes the latest MOSS speaker-label boundaries in checksum-protected source archives.
+- 2026/08/30 [FunClip v2.2.0](https://github.com/modelscope/FunClip/releases/tag/v2.2.0) adds the third-party [MOSS-Transcribe-Diarize](https://github.com/OpenMOSS/MOSS-Transcribe-Diarize) path for long-form ASR, timestamps, and anonymous speaker labels without external VAD or speaker models.
+- 2026/08/03 [FunClip v2.1.1](https://github.com/modelscope/FunClip/releases/tag/v2.1.1) improves fresh Gradio installs, private-by-default container startup, case-insensitive matching, and MiniMax routing.
+
+> See [GitHub Releases](https://github.com/modelscope/FunClip/releases) for the complete history and downloadable assets.
 
 <a name="On Going"></a>
 ## On Going🌵
@@ -77,39 +62,15 @@ cd FunClip
 pip install -r ./requirements.txt
 ```
 
-For a versioned snapshot, download [FunClip-2.1.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.tar.gz) or [FunClip-2.1.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.1.1/FunClip-2.1.1.zip), then verify it with the published [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.1.1/SHA256SUMS). Model weights are downloaded separately when FunClip starts and are not included in these source archives.
+For a versioned snapshot, download [FunClip-2.2.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.tar.gz) or [FunClip-2.2.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.zip), then verify it with the published [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.2.1/SHA256SUMS). Model weights are downloaded separately when FunClip starts and are not included in these source archives.
 
-FunClip v2.1.1 supports Gradio 4 with `starlette<1.0`. Existing installations should run `pip install -U -r requirements.txt` before restarting. Container users can pass `--listen` to bind all interfaces; a public Gradio sharing tunnel is created only when `--share` is also supplied.
+FunClip v2.2.1 keeps the supported Gradio 4 runtime and renders built-in subtitles with Pillow so the selected foreground color survives video encoding. Existing installations should run `pip install -U -r requirements.txt` before restarting.
 
 FunClip's current model and subtitle compatibility paths require `funasr>=1.4.9`. This includes the MOSS vLLM adapter, long-audio generation controls, normalized `sentence_info` speaker segments, and the earlier SenseVoice and realtime fixes. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.4.9"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
 ### imagemagick install (Optional)
 
-If you want to clip video file with embedded subtitles
-
-1. ffmpeg and imagemagick is required
-
-- On Ubuntu
-```shell
-apt-get -y update && apt-get -y install ffmpeg imagemagick
-sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml
-```
-- On MacOS
-```shell
-brew install imagemagick
-sed -i '' 's/none/read,write/g' "$(brew --prefix imagemagick)/etc/ImageMagick-7/policy.xml" 
-```
-- On Windows
-
-Download and install imagemagick https://imagemagick.org/script/download.php#windows
-
-Find your python install path and change the `IMAGEMAGICK_BINARY` to your imagemagick install path in file `site-packages\moviepy\config_defaults.py`
-
-2. Download font file to funclip/font
-
-```shell
-wget https://isv-data.oss-cn-hangzhou.aliyuncs.com/ics/MaaS/ClipVideo/STHeitiMedium.ttc -O font/STHeitiMedium.ttc
-```
+The built-in subtitle renderer in v2.2.1 uses Pillow and the bundled font, so standard subtitle clipping no longer requires ImageMagick. Install ImageMagick only for the legacy `funclip/test/imagemagick_test.py` example or your own MoviePy `TextClip` workflow.
 <a name="Usage"></a>
 ## Use FunClip
 
