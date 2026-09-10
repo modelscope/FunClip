@@ -34,4 +34,4 @@ jobs:
           python -m pip check
 
       - name: Test Gradio runtime compatibility
-        run: python -m pytest -q tests/test_gradio_runtime_compat.py
+        run: python -m pytest -q tests/test_gradio_runtime_compat.py tests/test_installation_docs.py

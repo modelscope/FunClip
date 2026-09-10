@@ -55,20 +55,24 @@
 
 ### Python环境安装
 
-FunClip的运行仅依赖于一个Python环境，若您是一个小白开发者，可以先了解下如何使用Python，pip等~
+为 FunClip 创建独立的 Python 环境。以下使用 Python 3.12；安装其余依赖前，请先安装适合当前平台且版本匹配的 PyTorch/torchaudio。[安装与排错指南](docs/installation.md#中文)提供 Linux CPU 示例、Windows 激活方式和证书错误的处理顺序。
 ```shell
-# 克隆funclip仓库
 git clone https://github.com/modelscope/FunClip.git
 cd FunClip
-# 安装相关Python依赖
-pip install -r ./requirements.txt
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pip check
+python funclip/launch.py --help
 ```
+
+此环境继续使用仓库要求的 **Transformers 4.x**。Nano 原生 **Transformers 5.x** 快速开始是另一条独立路径，不应直接用于升级已有 FunClip 环境。
 
 如需固定版本，可下载 [FunClip-2.2.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.tar.gz) 或 [FunClip-2.2.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.zip)，并使用发布页提供的 [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.2.1/SHA256SUMS) 校验文件。模型权重会在 FunClip 启动时单独下载，不包含在源码归档中。
 
-FunClip v2.2.1 使用 Pillow 渲染可选字幕颜色，并继续在 Gradio 4 环境中要求 `starlette<1.0`。已有安装请在重启前执行 `pip install -U -r requirements.txt`。容器用户可用 `--listen` 监听全部网卡；只有同时显式传入 `--share` 才会创建 Gradio 公网分享链接。
+FunClip v2.2.1 使用 Pillow 渲染可选字幕颜色，并继续在 Gradio 4 环境中要求 `starlette<1.0`。已有安装请在 FunClip 环境中执行 `python -m pip install -U -r requirements.txt` 后重启。容器用户可用 `--listen` 监听全部网卡；只有同时显式传入 `--share` 才会创建 Gradio 公网分享链接。
 
-FunClip 当前模型与字幕兼容路径需要 `funasr>=1.4.9`，其中包括 MOSS 的 vLLM 适配器、长音频生成上限、归一化的 `sentence_info` 说话人分段，以及此前的 SenseVoice 和实时修复。如果你之前已经安装过 FunClip，请先执行 `pip install -U "funasr>=1.4.9"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
+FunClip 当前模型与字幕兼容路径需要 `funasr>=1.4.9`，其中包括 MOSS 的 vLLM 适配器、长音频生成上限、归一化的 `sentence_info` 说话人分段，以及此前的 SenseVoice 和实时修复。如果你之前已经安装过 FunClip，请先执行 `python -m pip install -U "funasr>=1.4.9"`，再启动 Gradio 服务。[发布说明](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
 ### 安装 ImageMagick（可选）
 

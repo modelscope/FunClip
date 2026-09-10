@@ -35,19 +35,20 @@ When a fix needs a release, link the released version and ask the reporter to re
 ```bash
 git clone https://github.com/modelscope/FunClip.git
 cd FunClip
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+python -m pip check
 ```
 
-FunClip's current Fun-ASR-Nano, SenseVoice, and subtitle compatibility paths require `funasr>=1.3.26`.
+Install a matching PyTorch/torchaudio pair for your platform before the remaining requirements; see [installation and troubleshooting](docs/installation.md#english). Keep this environment separate from native Transformers 5.x examples. FunClip's current model and subtitle compatibility paths require `funasr>=1.4.9`.
 
 ## Validation
 
 Run the focused checks that match your change. For documentation, issue templates, package metadata, and provider-routing changes, start with:
 
 ```bash
-python3 -m pytest -q tests/test_github_templates.py tests/test_funasr_requirement.py tests/test_openai_api.py
+python -m pytest -q tests/test_github_templates.py tests/test_funasr_requirement.py tests/test_installation_docs.py tests/test_openai_api.py
 python3 -m py_compile funclip/launch.py funclip/videoclipper.py funclip/utils/subtitle_utils.py
 git diff --check
 ```

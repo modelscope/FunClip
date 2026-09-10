@@ -53,20 +53,24 @@
 
 ### Python env install
 
-FunClip basic functions rely on a python environment only.
+Use a separate Python environment for FunClip. The commands below use Python 3.12; install a matching PyTorch/torchaudio pair for your platform before the remaining requirements. See the [installation and troubleshooting guide](docs/installation.md#english) for the Linux CPU recipe, Windows activation and certificate errors.
 ```shell
-# clone funclip repo
 git clone https://github.com/modelscope/FunClip.git
 cd FunClip
-# install Python requirments
-pip install -r ./requirements.txt
+python3.12 -m venv .venv
+. .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pip check
+python funclip/launch.py --help
 ```
+
+Keep this environment on the repository's **Transformers 4.x** requirements. Nano's separate native **Transformers 5.x** quickstart is not an upgrade command for an existing FunClip installation.
 
 For a versioned snapshot, download [FunClip-2.2.1.tar.gz](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.tar.gz) or [FunClip-2.2.1.zip](https://github.com/modelscope/FunClip/releases/download/v2.2.1/FunClip-2.2.1.zip), then verify it with the published [SHA256SUMS](https://github.com/modelscope/FunClip/releases/download/v2.2.1/SHA256SUMS). Model weights are downloaded separately when FunClip starts and are not included in these source archives.
 
-FunClip v2.2.1 keeps the supported Gradio 4 runtime and renders built-in subtitles with Pillow so the selected foreground color survives video encoding. Existing installations should run `pip install -U -r requirements.txt` before restarting.
+FunClip v2.2.1 keeps the supported Gradio 4 runtime and renders built-in subtitles with Pillow so the selected foreground color survives video encoding. Existing installations should run `python -m pip install -U -r requirements.txt` inside their FunClip environment before restarting.
 
-FunClip's current model and subtitle compatibility paths require `funasr>=1.4.9`. This includes the MOSS vLLM adapter, long-audio generation controls, normalized `sentence_info` speaker segments, and the earlier SenseVoice and realtime fixes. If you installed FunClip before this requirement was updated, run `pip install -U "funasr>=1.4.9"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
+FunClip's current model and subtitle compatibility paths require `funasr>=1.4.9`. This includes the MOSS vLLM adapter, long-audio generation controls, normalized `sentence_info` speaker segments, and the earlier SenseVoice and realtime fixes. If you installed FunClip before this requirement was updated, run `python -m pip install -U "funasr>=1.4.9"` before starting the Gradio service. [Release notes](https://github.com/modelscope/FunASR/releases/tag/v1.4.9) · [PyPI](https://pypi.org/project/funasr/1.4.9/)
 
 ### imagemagick install (Optional)
 
