@@ -169,6 +169,17 @@ FunClip 也可以将 LLM 智能裁剪发送到 [Cheaper Inference](https://cheap
 
 也可以不填 UI，而是设置 `CHEAPER_INFERENCE_API_KEY` 环境变量（可选 `CHEAPER_INFERENCE_API_BASE`，默认为 `https://api.cheaperinference.com/v1`）。Key 可在 https://cheaperinference.com/signup 获取。
 
+#### 使用 API Route 作为 LLM 网关（可选）
+
+在 **LLM Model Name** 中选择 `api-route/gpt-6.1-sol`，在 **APIKEY** 中填写你的
+API Route key，再点击“LLM推理”。也可以输入 `api-route/` 加上鉴权模型目录中的
+可用聊天模型 ID。FunClip 只去掉 `api-route/` 前缀，将字幕与 prompt 发送到
+`https://global.api-route.com/v1/chat/completions`，沿用现有智能裁剪流程。
+
+也可以设置 `API_ROUTE_API_KEY` 环境变量；可选的 `API_ROUTE_API_BASE` 用于覆盖
+默认地址。模型权限取决于 key，下拉框中的模型只是示例。鉴权与 `GET /v1/models`
+发现方式见 [API Route API 文档](https://github.com/DennyHo0917/api-route/blob/main/API.md)。
+
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
 # 下载下面命令用到的示例视频

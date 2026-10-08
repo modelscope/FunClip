@@ -144,6 +144,19 @@ FunClip can also send LLM-assisted clipping through [Cheaper Inference](https://
 
 Set `CHEAPER_INFERENCE_API_KEY` (and optionally `CHEAPER_INFERENCE_API_BASE`, which defaults to `https://api.cheaperinference.com/v1`) instead of pasting the key into the UI if you prefer environment-based configuration. A key is available at https://cheaperinference.com/signup.
 
+#### Using API Route as your LLM gateway (optional)
+
+Select `api-route/gpt-6.1-sol` in **LLM Model Name**, enter your API Route key in
+**APIKEY**, and click **LLM Inference**. You can also enter `api-route/` followed
+by an available chat model ID from your authenticated catalog. FunClip removes
+only the `api-route/` prefix and sends the transcript and prompts to
+`https://global.api-route.com/v1/chat/completions` using its existing clipping flow.
+
+Set `API_ROUTE_API_KEY` instead of entering the key in the UI. Optional
+`API_ROUTE_API_BASE` overrides the endpoint. Model access depends on your key;
+the dropdown model is an example. See the [API Route API documentation](https://github.com/DennyHo0917/api-route/blob/main/API.md)
+for authentication and `GET /v1/models` discovery.
+
 #### Content-aware clipping with TwelveLabs Pegasus (optional)
 
 Besides the transcript-based LLMs above, FunClip can optionally use [TwelveLabs](https://twelvelabs.io) Pegasus, a video understanding model that reasons over the actual video (visuals + audio) rather than only the ASR transcript. This helps pick highlight segments even when the transcript alone is ambiguous (e.g. action, scene changes, on-screen events). To use it, select the `pegasus1.5` model name, paste your TwelveLabs API key, upload a video, and click 'LLM Inference' — Pegasus returns segments in the same `N. [start-end] text` format, so the existing 'AI Clip' button works unchanged. It needs `pip install twelvelabs`, and a free API key is available at https://twelvelabs.io.

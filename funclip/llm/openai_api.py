@@ -24,6 +24,10 @@ ORCAROUTER_MODEL_PREFIX = "orcarouter/"
 CHEAPER_INFERENCE_API_BASE = "https://api.cheaperinference.com/v1"
 CHEAPER_INFERENCE_MODEL_PREFIX = "cheaperinference/"
 
+# API Route uses exact gateway model IDs; the launcher prefix is local only.
+API_ROUTE_API_BASE = "https://global.api-route.com/v1"
+API_ROUTE_MODEL_PREFIX = "api-route/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -68,6 +72,14 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = CHEAPER_INFERENCE_API_BASE
         api_key_env = "CHEAPER_INFERENCE_API_KEY"
+    elif model.startswith(API_ROUTE_MODEL_PREFIX):
+        model = model[len(API_ROUTE_MODEL_PREFIX):]
+        if not model:
+            raise ValueError("Model name is empty after stripping api-route/ prefix")
+        base_url = os.environ.get("API_ROUTE_API_BASE", API_ROUTE_API_BASE).strip()
+        if not base_url:
+            base_url = API_ROUTE_API_BASE
+        api_key_env = "API_ROUTE_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):
