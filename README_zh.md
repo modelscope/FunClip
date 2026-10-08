@@ -163,6 +163,12 @@ OrcaRouter 用单一端点接入所有前沿与开源模型，无需修改 FunCl
 
 也可以不填 UI，而是设置 `ORCAROUTER_API_KEY` 环境变量（可选 `ORCAROUTER_API_BASE`，默认为 `https://api.orcarouter.ai/v1`）。Key 可在 https://www.orcarouter.ai 获取。
 
+#### 使用 Cheaper Inference 作为 LLM 网关（可选）
+
+FunClip 也可以将 LLM 智能裁剪发送到 [Cheaper Inference](https://cheaperinference.com)——一个 OpenAI 兼容的 LLM 网关。一个 API key 即可使用多家厂商的模型。在 **LLM Model Name** 下拉框选择任意 `cheaperinference/` 模型，在 **APIKEY** 输入框粘贴 Cheaper Inference API key，点击“LLM推理”。FunClip 会去掉 `cheaperinference/` 前缀，把字幕与 prompt 发送到 `https://api.cheaperinference.com/v1/chat/completions`，返回的分段与现有“AI Clip”按钮兼容。
+
+也可以不填 UI，而是设置 `CHEAPER_INFERENCE_API_KEY` 环境变量（可选 `CHEAPER_INFERENCE_API_BASE`，默认为 `https://api.cheaperinference.com/v1`）。Key 可在 https://cheaperinference.com/signup 获取。
+
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
 # 下载下面命令用到的示例视频

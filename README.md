@@ -138,6 +138,12 @@ OrcaRouter exposes one endpoint for all frontier and open-weight models, so you 
 
 Set `ORCAROUTER_API_KEY` (and optionally `ORCAROUTER_API_BASE`, which defaults to `https://api.orcarouter.ai/v1`) instead of pasting the key into the UI if you prefer environment-based configuration. A key is available at https://www.orcarouter.ai.
 
+#### Using Cheaper Inference as your LLM gateway (optional)
+
+FunClip can also send LLM-assisted clipping through [Cheaper Inference](https://cheaperinference.com), an OpenAI-compatible LLM gateway. One API key gives access to models from several labs. Select any `cheaperinference/` model in the **LLM Model Name** dropdown, paste a Cheaper Inference API key in the **APIKEY** box, and click 'LLM Inference'. FunClip removes the `cheaperinference/` prefix and sends the transcript and prompts to `https://api.cheaperinference.com/v1/chat/completions`. The returned segments work with the existing 'AI Clip' button.
+
+Set `CHEAPER_INFERENCE_API_KEY` (and optionally `CHEAPER_INFERENCE_API_BASE`, which defaults to `https://api.cheaperinference.com/v1`) instead of pasting the key into the UI if you prefer environment-based configuration. A key is available at https://cheaperinference.com/signup.
+
 #### Content-aware clipping with TwelveLabs Pegasus (optional)
 
 Besides the transcript-based LLMs above, FunClip can optionally use [TwelveLabs](https://twelvelabs.io) Pegasus, a video understanding model that reasons over the actual video (visuals + audio) rather than only the ASR transcript. This helps pick highlight segments even when the transcript alone is ambiguous (e.g. action, scene changes, on-screen events). To use it, select the `pegasus1.5` model name, paste your TwelveLabs API key, upload a video, and click 'LLM Inference' — Pegasus returns segments in the same `N. [start-end] text` format, so the existing 'AI Clip' button works unchanged. It needs `pip install twelvelabs`, and a free API key is available at https://twelvelabs.io.

@@ -19,6 +19,11 @@ MINIMAX_MODEL_PREFIX = "minimax/"
 ORCAROUTER_API_BASE = "https://api.orcarouter.ai/v1"
 ORCAROUTER_MODEL_PREFIX = "orcarouter/"
 
+# Cheaper Inference is an OpenAI-compatible LLM gateway. Its model IDs are
+# bare (e.g. `gpt-5.4-mini`), so the `cheaperinference/` prefix is stripped.
+CHEAPER_INFERENCE_API_BASE = "https://api.cheaperinference.com/v1"
+CHEAPER_INFERENCE_MODEL_PREFIX = "cheaperinference/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -53,6 +58,16 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = ORCAROUTER_API_BASE
         api_key_env = "ORCAROUTER_API_KEY"
+    elif model.startswith(CHEAPER_INFERENCE_MODEL_PREFIX):
+        model = model[len(CHEAPER_INFERENCE_MODEL_PREFIX):]
+        if not model:
+            raise ValueError(
+                "Model name is empty after stripping cheaperinference/ prefix"
+            )
+        base_url = os.environ.get("CHEAPER_INFERENCE_API_BASE", CHEAPER_INFERENCE_API_BASE).strip()
+        if not base_url:
+            base_url = CHEAPER_INFERENCE_API_BASE
+        api_key_env = "CHEAPER_INFERENCE_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):
