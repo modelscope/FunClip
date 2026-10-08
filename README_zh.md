@@ -169,6 +169,12 @@ FunClip 也可以将 LLM 智能裁剪发送到 [Cheaper Inference](https://cheap
 
 也可以不填 UI，而是设置 `CHEAPER_INFERENCE_API_KEY` 环境变量（可选 `CHEAPER_INFERENCE_API_BASE`，默认为 `https://api.cheaperinference.com/v1`）。Key 可在 https://cheaperinference.com/signup 获取。
 
+#### 使用 Opper 作为 LLM 网关（可选）
+
+FunClip 也可以将 LLM 智能裁剪发送到 [Opper](https://opper.ai)，一个部署在欧盟、兼容 OpenAI 的 AI 网关。一个 API key 即可使用 50+ 家厂商的 700+ 个模型。在 **LLM Model Name** 下拉框选择任意 `opper/` 模型，在 **APIKEY** 输入框粘贴 Opper API key，点击“LLM推理”。FunClip 会去掉 `opper/` 前缀，把字幕与 prompt 发送到 `https://api.opper.ai/v3/compat/chat/completions`，返回的分段与现有“AI Clip”按钮兼容。`opper/claude-sonnet-4-6` 这类不带厂商前缀的名称会在提供该模型的多家厂商之间路由，`opper/anthropic/claude-sonnet-4-6` 则固定使用一条路由。
+
+也可以不填 UI，而是设置 `OPPER_API_KEY` 环境变量（可选 `OPPER_API_BASE`，默认为 `https://api.opper.ai/v3/compat`）。Key 可在 https://platform.opper.ai 获取。
+
 ### B.通过命令行调用使用FunClip的相关功能
 ```shell
 # 下载下面命令用到的示例视频

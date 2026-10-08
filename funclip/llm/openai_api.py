@@ -24,6 +24,12 @@ ORCAROUTER_MODEL_PREFIX = "orcarouter/"
 CHEAPER_INFERENCE_API_BASE = "https://api.cheaperinference.com/v1"
 CHEAPER_INFERENCE_MODEL_PREFIX = "cheaperinference/"
 
+# Opper is an EU-hosted, OpenAI-compatible AI gateway. Its model IDs are pool
+# names (e.g. `claude-sonnet-4-6`) or `provider/model` routes, so only the
+# `opper/` prefix is stripped.
+OPPER_API_BASE = "https://api.opper.ai/v3/compat"
+OPPER_MODEL_PREFIX = "opper/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -68,6 +74,16 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = CHEAPER_INFERENCE_API_BASE
         api_key_env = "CHEAPER_INFERENCE_API_KEY"
+    elif model.startswith(OPPER_MODEL_PREFIX):
+        model = model[len(OPPER_MODEL_PREFIX):]
+        if not model:
+            raise ValueError(
+                "Model name is empty after stripping opper/ prefix"
+            )
+        base_url = os.environ.get("OPPER_API_BASE", OPPER_API_BASE).strip()
+        if not base_url:
+            base_url = OPPER_API_BASE
+        api_key_env = "OPPER_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):
