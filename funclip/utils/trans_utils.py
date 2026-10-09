@@ -24,35 +24,44 @@ def pre_proc(text):
                 res += text[i]+' '
         else:
             res += text[i]
-    if res[-1] == ' ':
+    if res.endswith(' '):
         res = res[:-1]
     return res
 
+
+def _matching_tokens(text):
+    """Normalize transcript text into the same token space used by timestamps."""
+    return pre_proc(text).translate(ASCII_LOWER_TABLE).split()
+
+
 def proc(raw_text, timestamp, dest_text, lang='zh'):
-    # simple matching
-    ld = len(dest_text.split())
-    normalized_raw_text = raw_text.translate(ASCII_LOWER_TABLE)
-    normalized_dest_text = dest_text.translate(ASCII_LOWER_TABLE)
-    if not normalized_dest_text or not timestamp:
+    # Match in token space so contiguous Chinese text stays aligned with
+    # token-level timestamps while preserving the existing ASCII case behavior.
+    raw_tokens = _matching_tokens(raw_text)
+    dest_tokens = dest_text.translate(ASCII_LOWER_TABLE).split()
+    if not dest_tokens or not timestamp:
         return []
-    mi, ts = [], []
-    offset = 0
-    while True:
-        fi = normalized_raw_text.find(
-            normalized_dest_text, offset, len(normalized_raw_text)
-        )
-        ti = raw_text[:fi].count(' ')
-        if fi == -1:
-            break
-        offset = fi + len(normalized_dest_text)
-        end_index = ti + ld - 1
-        if ti >= len(timestamp) or end_index >= len(timestamp):
-            continue
-        mi.append(fi)
-        ts.append([timestamp[ti][0]*16, timestamp[end_index][1]*16])
+
+    if len(raw_tokens) > len(timestamp):
+        # Keep timestamp indexing safe if a model returns non-timestamped tokens.
+        raw_tokens = raw_tokens[:len(timestamp)]
+
+    ts = []
+    match_len = len(dest_tokens)
+    start = 0
+    last_start = len(raw_tokens) - match_len
+    while start <= last_start:
+        end = start + match_len
+        if raw_tokens[start:end] == dest_tokens and end <= len(timestamp):
+            ts.append([timestamp[start][0] * 16, timestamp[end - 1][1] * 16])
+            # Preserve the previous string-search policy: after a successful
+            # match, continue after the whole matched range so repeated output
+            # does not duplicate overlapping source audio.
+            start = end
+        else:
+            start += 1
     return ts
             
-
 def proc_spk(dest_spk, sd_sentences):
     ts = []
     for d in sd_sentences:
@@ -94,7 +103,7 @@ def load_state(output_dir):
     if os.path.exists(output_dir+'/sd_sentences'):
         with open(output_dir+'/sd_sentences') as fin:
             line = fin.read()
-            state['sd_sentences'] = eval(line)
+        state['sd_sentences'] = eval(line)
     return state
 
 def convert_pcm_to_float(data):
