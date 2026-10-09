@@ -134,12 +134,16 @@ class VideoClipper():
         # Convert to float64 consistently (includes data type checking)
         data = convert_pcm_to_float(data)
 
-        # assert sr == 16000, "16kHz sample rate required, {} given.".format(sr)
-        if sr != 16000: # resample with librosa
-            data = librosa.resample(data, orig_sr=sr, target_sr=16000)
+        # Gradio stereo audio is shaped (samples, channels). Select the
+        # supported first channel before resampling so librosa operates on the
+        # sample axis rather than the channel axis.
         if len(data.shape) == 2:  # multi-channel wav input
             logging.warning("Input wav shape: {}, only first channel reserved.".format(data.shape))
             data = data[:,0]
+
+        if sr != 16000: # resample with librosa
+            data = librosa.resample(data, orig_sr=sr, target_sr=16000)
+            sr = 16000
         state['audio_input'] = (sr, data)
         if sd_switch == 'Yes':
             rec_result = self.funasr_model.generate(data, 
