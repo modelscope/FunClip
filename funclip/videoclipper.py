@@ -221,6 +221,9 @@ class VideoClipper():
         ts = all_ts
         # ts.sort()
         srt_index = 0
+        # Output position in samples; kept as an integer and converted per call so
+        # summing float durations cannot drift a cue below its millisecond.
+        acc_samples = 0
         clip_srt = ""
         if len(ts):
             start, end = ts[0]
@@ -228,16 +231,22 @@ class VideoClipper():
             end = min(max(0, end+end_ost*16), len(data))
             res_audio = data[start:end]
             start_end_info = "from {} to {}".format(start/16000, end/16000)
-            srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index)
+            srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index, time_acc_ost=acc_samples / 16000.0)
             clip_srt += srt_clip
+            # Each later region is appended after the audio already concatenated,
+            # so its subtitles start at that output time, not at zero. Count the
+            # samples actually appended: offsets can clamp a region to start > end,
+            # which appends nothing.
+            acc_samples += len(data[start:end])
             for _ts in ts[1:]:  # multiple sentence input or multiple output matched
                 start, end = _ts
                 start = min(max(0, start+start_ost*16), len(data))
                 end = min(max(0, end+end_ost*16), len(data))
                 start_end_info += ", from {} to {}".format(start, end)
                 res_audio = np.concatenate([res_audio, data[start:end]], -1)
-                srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index-1)
+                srt_clip, _, srt_index = generate_srt_clip(sentences, start/16000.0, end/16000.0, begin_index=srt_index-1, time_acc_ost=acc_samples / 16000.0)
                 clip_srt += srt_clip
+                acc_samples += len(data[start:end])
         if len(ts):
             message = "{} periods found in the speech: ".format(len(ts)) + start_end_info + log_append
         else:
