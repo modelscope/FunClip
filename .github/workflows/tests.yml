@@ -28,6 +28,7 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check \
             pytest==8.3.5 \
+            openai \
             "gradio==4.44.1" \
             "huggingface_hub<1.0" \
             "starlette<1.0"
@@ -35,3 +36,8 @@ jobs:
 
       - name: Test runtime, installation, and CLI help
         run: python -m pytest -q tests/test_gradio_runtime_compat.py tests/test_installation_docs.py tests/test_cli_stage_help.py
+
+      - name: Test MiniMax presets and offline SDK requests
+        env:
+          GRADIO_ANALYTICS_ENABLED: "False"
+        run: python -m pytest -q tests/test_minimax_api.py tests/test_minimax_launch_integration.py tests/test_minimax_http.py
