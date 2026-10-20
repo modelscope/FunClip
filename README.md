@@ -130,6 +130,10 @@ Follow the guide below to explore LLM based clipping:
 
 <img src="docs/images/LLM_guide.png" width=360/>
 
+#### Using MiniMax for transcript-based clipping (optional)
+
+The **LLM Model Name** dropdown lists `minimax/MiniMax-M3.1-Flash` first among the MiniMax presets, followed by `minimax/MiniMax-M3`. Select a model and enter your API key in **APIKEY**, or set `MINIMAX_API_KEY`. Requests use `https://api.minimax.io/v1` by default; set `MINIMAX_API_BASE=https://api.minimaxi.com/v1` for the mainland China endpoint. You can still enter an explicit legacy or custom `minimax/` model ID in the dropdown; FunClip passes it through without replacing it. See the [MiniMax model guide](https://platform.minimax.io/docs/guides/models-intro.md) for availability.
+
 #### Using OrcaRouter as your LLM gateway (optional)
 
 Besides the transcript-based LLMs above, FunClip can route LLM-assisted clipping through [OrcaRouter](https://www.orcarouter.ai), an OpenAI-compatible smart-routing gateway. Select any `orcarouter/` model in the **LLM Model Name** dropdown (`orcarouter/auto` routes each request to the best model for the task), paste an OrcaRouter API key in the **APIKEY** box, and click 'LLM Inference' — FunClip sends the transcript and prompts to `https://api.orcarouter.ai/v1/chat/completions`, and the returned segments work with the existing 'AI Clip' button unchanged.
