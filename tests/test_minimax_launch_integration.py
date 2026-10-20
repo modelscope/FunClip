@@ -41,15 +41,21 @@ class TestMiniMaxLaunchIntegration(unittest.TestCase):
         self.assertEqual(ast.unparse(g4f_call.args[2]), "system_content")
 
     def test_dropdown_only_lists_documented_minimax_models(self):
-        string_literals = {
+        dropdown = next(
             node.value
             for node in ast.walk(self.tree)
-            if isinstance(node, ast.Constant) and isinstance(node.value, str)
-        }
-
-        self.assertIn("minimax/MiniMax-M3", string_literals)
-        self.assertIn("minimax/MiniMax-M2.7", string_literals)
-        self.assertIn("minimax/MiniMax-M2.7-highspeed", string_literals)
+            if isinstance(node, ast.Assign)
+            and any(isinstance(target, ast.Name) and target.id == "llm_model"
+                    for target in node.targets)
+        )
+        options = {keyword.arg: ast.literal_eval(keyword.value)
+                   for keyword in dropdown.keywords}
+        self.assertEqual(
+            [model for model in options["choices"] if model.startswith("minimax/")],
+            ["minimax/MiniMax-M3.1-Flash", "minimax/MiniMax-M3"],
+        )
+        self.assertTrue(options["allow_custom_value"])
+        self.assertEqual(options["value"], "deepseek-chat")
 
 
 if __name__ == "__main__":
