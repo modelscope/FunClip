@@ -24,6 +24,12 @@ ORCAROUTER_MODEL_PREFIX = "orcarouter/"
 CHEAPER_INFERENCE_API_BASE = "https://api.cheaperinference.com/v1"
 CHEAPER_INFERENCE_MODEL_PREFIX = "cheaperinference/"
 
+# Runcrate serves open models on an OpenAI-compatible API. Its model IDs carry
+# the vendor (e.g. `deepseek-ai/DeepSeek-V4.1-Flash`), so only the `runcrate/`
+# prefix is stripped.
+RUNCRATE_API_BASE = "https://api.runcrate.ai/v1"
+RUNCRATE_MODEL_PREFIX = "runcrate/"
+
 
 def _resolve_model_config(model):
     base_url = None
@@ -68,6 +74,16 @@ def _resolve_model_config(model):
         if not base_url:
             base_url = CHEAPER_INFERENCE_API_BASE
         api_key_env = "CHEAPER_INFERENCE_API_KEY"
+    elif model.startswith(RUNCRATE_MODEL_PREFIX):
+        model = model[len(RUNCRATE_MODEL_PREFIX):]
+        if not model:
+            raise ValueError(
+                "Model name is empty after stripping runcrate/ prefix"
+            )
+        base_url = os.environ.get("RUNCRATE_API_BASE", RUNCRATE_API_BASE).strip()
+        if not base_url:
+            base_url = RUNCRATE_API_BASE
+        api_key_env = "RUNCRATE_API_KEY"
     elif model.startswith("deepseek"):
         base_url = "https://api.deepseek.com"
     elif model.startswith("gpt-3.5-turbo"):

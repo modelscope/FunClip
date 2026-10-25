@@ -163,6 +163,12 @@ OrcaRouter 用单一端点接入所有前沿与开源模型，无需修改 FunCl
 
 也可以不填 UI，而是设置 `ORCAROUTER_API_KEY` 环境变量（可选 `ORCAROUTER_API_BASE`，默认为 `https://api.orcarouter.ai/v1`）。Key 可在 https://www.orcarouter.ai 获取。
 
+#### 使用 Runcrate 作为 LLM 提供方（可选）
+
+FunClip 也可以将 LLM 智能裁剪发送到 [Runcrate](https://www.runcrate.ai/inference?utm_source=funclip&utm_medium=directory&utm_campaign=gpu_pricing) 上的开放模型，Runcrate 提供 OpenAI 兼容 API。开放模型可通过 GitHub 账号免费使用。在 **LLM Model Name** 下拉框选择 `runcrate/` 模型（例如 `runcrate/deepseek-ai/DeepSeek-V4.1-Flash` 或 `runcrate/openai/gpt-oss-120b`），在 **APIKEY** 输入框粘贴 Runcrate API key，点击“LLM推理”。FunClip 会去掉 `runcrate/` 前缀，把字幕与 prompt 发送到 `https://api.runcrate.ai/v1/chat/completions`，返回的分段与现有“AI Clip”按钮兼容。
+
+也可以不填 UI，而是设置 `RUNCRATE_API_KEY` 环境变量（可选 `RUNCRATE_API_BASE`，默认为 `https://api.runcrate.ai/v1`）。
+
 #### 使用 Cheaper Inference 作为 LLM 网关（可选）
 
 FunClip 也可以将 LLM 智能裁剪发送到 [Cheaper Inference](https://cheaperinference.com)——一个 OpenAI 兼容的 LLM 网关。一个 API key 即可使用多家厂商的模型。在 **LLM Model Name** 下拉框选择任意 `cheaperinference/` 模型，在 **APIKEY** 输入框粘贴 Cheaper Inference API key，点击“LLM推理”。FunClip 会去掉 `cheaperinference/` 前缀，把字幕与 prompt 发送到 `https://api.cheaperinference.com/v1/chat/completions`，返回的分段与现有“AI Clip”按钮兼容。
