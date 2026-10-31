@@ -34,6 +34,39 @@ py -3.12 -m venv .venv
 
 `--help` checks imports and argument parsing without downloading a model or starting a public service. It does not verify transcription or video export. A successful `pip check` only checks declared dependency compatibility, not native-library loading, model downloads or inference.
 
+### Conda Alternative (Linux x86-64 CPU)
+
+Conda is also supported; uv is not required. With Conda already installed, run
+the following from the repository root instead of creating the `.venv` above.
+Use a new environment name if `funclip` already belongs to another application.
+
+```bash
+conda create -n funclip --override-channels -c conda-forge python=3.12 pip -y
+conda run -n funclip python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.10.0" "torchaudio==2.10.0"
+conda run -n funclip python -m pip install --no-compile -r requirements.txt
+conda run -n funclip python -m pip check
+conda run --no-capture-output -n funclip python funclip/launch.py --help
+```
+
+`conda run -n funclip` keeps installation and execution in the same environment
+without depending on shell activation. `--no-compile` skips Python bytecode
+precompilation, not dependencies or compatibility checks. If installation is
+interrupted, inspect its final error and `python -m pip check` in this environment
+before continuing; an installer report or a downloaded wheel alone is not proof
+that the package was installed successfully.
+
+The isolated CPU setup was checked with Conda 26.9.4, Python 3.12.16 and
+torch/torchaudio 2.10.0+cpu; see the [validation scope and environment caveat in
+#230](https://github.com/modelscope/FunClip/issues/230#issuecomment-6550482593).
+This is not a CUDA, Windows or macOS recipe. The installation, native imports,
+CLI/Gradio checks and synthetic media I/O do not establish pretrained ASR quality
+or a complete recognition-to-clipping workflow.
+
+After the checks pass, launch with
+`conda run --no-capture-output -n funclip python funclip/launch.py`. Unlike
+`--help`, normal startup may download models and start the configured service.
+Confirm `ffmpeg -version` also works; install FFmpeg for your platform if absent.
+
 ### If Installation Or Startup Fails
 
 **`CERTIFICATE_VERIFY_FAILED` during pip install:** fix the HTTPS trust failure first. It means the package download did not complete, so a later `No module named 'funasr'` is not evidence that requirements omitted the package. Check the failing hostname, system clock, proxy and configured package indexes. Use certificates supplied by your OS/Python distribution or an approved corporate CA; never disable certificate verification or make arbitrary hosts trusted to get an install through. Pip supports an approved CA bundle through `--cert`/`PIP_CERT`; see its [certificate documentation](https://pip.pypa.io/en/stable/topics/https-certificates/).
@@ -48,6 +81,19 @@ python -m pip check
 ```
 
 Use that same `python` to launch FunClip. An IDE, notebook or shell may otherwise use another interpreter even if a bare `pip` command succeeded.
+
+**A fresh environment still loads another PyTorch installation's libraries:**
+preconfigured Linux deep-learning images may inject a system `torch/lib` path
+through `LD_LIBRARY_PATH`. Even when `pip check` passes and the Python package
+path is correct, this can mix an environment's CPU wheel with host CUDA libraries
+and fail with errors such as a missing `torch._C._dlpack_exchange_api`.
+Compare the Python executable/package path and the shared libraries actually
+loaded by that process. If a foreign PyTorch library directory is confirmed,
+exclude only that conflicting entry from the affected launch command's child
+environment, after Conda activation. Do not globally clear `LD_LIBRARY_PATH`:
+other entries may be needed by FFmpeg or unrelated services. Then recheck native
+imports, `ffmpeg -version` and `--help`; this diagnosis does not imply every
+import error has the same cause.
 
 **The traceback already enters `site-packages/funasr`:** the package was found. Capture the complete exception, especially its final line; do not keep installing packages based only on intermediate `pkgutil` or import-stack frames. Check the import separately, then the application:
 
@@ -74,11 +120,42 @@ Windows 可以使用上面的完整 `.venv\Scripts\python.exe` 路径，不必�
 
 `python funclip/launch.py --help` 只检查导入与参数解析，不下载模型、不启动公网服务，也不证明识别或视频导出成功。`pip check` 只检查依赖声明是否兼容，不能代替动态库加载、模型下载或真实推理测试。
 
+### 使用 Conda（Linux x86-64 CPU）
+
+不需要安装 uv。已有 Conda 时，可以在仓库根目录执行上面的
+[Conda 命令](#conda-alternative-linux-x86-64-cpu)，替代 `.venv` 方案。
+如果 `funclip` 环境名已被其他应用使用，请换一个新名字，并同步修改全部
+`conda run -n` 命令，避免覆盖原有服务环境。
+
+这条路径使用 Python 3.12，先从官方 CPU 索引安装匹配的 torch/torchaudio
+2.10.0，再安装仓库依赖。`conda run -n funclip` 保证安装、检查和启动使用
+同一个解释器，不依赖当前 shell 是否激活了环境。`--no-compile` 只省略
+Python 字节码预编译，不跳过依赖或兼容性检查。安装中断后，应先查看最后
+的异常并在同一环境运行 `python -m pip check`；下载完成或生成安装报告
+不等于安装成功。
+
+实际验证使用 Conda 26.9.4 / Python 3.12.16 / torch、torchaudio
+2.10.0+cpu；范围及验证机的动态库注意事项见 [#230 的实测回复](https://github.com/modelscope/FunClip/issues/230#issuecomment-6550482593)。
+安装、导入、CLI/Gradio 和合成媒体读写通过，不代表预训练 ASR 质量或完整
+识别到剪辑流程已经验收；GPU、Windows、macOS 需要各自的平台配置与验证。
+检查通过后可用 `conda run --no-capture-output -n funclip python funclip/launch.py`
+启动，正常启动可能下载模型并启动配置的服务。还应确认 `ffmpeg -version`
+成功，缺失时先安装对应平台的 FFmpeg。
+
 ### 按报错阶段处理
 
 **安装时出现 `CERTIFICATE_VERIFY_FAILED`：** 先处理 HTTPS 证书信任问题。下载未完成，后续出现 `No module named 'funasr'` 并不说明依赖清单漏了这个包。检查失败域名、系统时间、代理和 pip 源；使用操作系统/Python 发行版提供的证书，企业代理则使用经管理员认可的 CA。不要通过关闭校验或随意信任主机绕过错误。受信任 CA 的 `--cert`/`PIP_CERT` 配置见 [pip 官方证书说明](https://pip.pypa.io/en/stable/topics/https-certificates/)。
 
 **安装成功却找不到模块：** 运行英文部分的解释器和版本检查命令。确认 `sys.executable`、`python -m pip --version` 指向同一个虚拟环境，再用相同的 `python` 启动。不要把另一个 shell、IDE 或 notebook 的安装结果当成当前环境已经装好。
+
+**新环境仍加载了另一套 PyTorch 动态库：** Linux 深度学习预装镜像可能通过
+`LD_LIBRARY_PATH` 注入系统 `torch/lib`。即使 `pip check` 通过、Python 包路径
+也正确，CPU wheel 仍可能错载宿主 CUDA 库，出现
+`torch._C._dlpack_exchange_api` 缺失等错误。先核对解释器、包路径和进程实际
+加载的动态库；确认是外部 PyTorch 目录冲突后，只在受影响启动命令的子进程
+环境中、Conda 激活之后排除该条目录。不要全局清空 `LD_LIBRARY_PATH`，其他
+目录可能供 FFmpeg 或其他服务使用。随后重新检查真实导入、`ffmpeg -version`
+和 `--help`，不能把所有导入错误都归为这个原因。
 
 **调用栈已经进入 `site-packages/funasr`：** 包已经被找到，不能仅凭中间的 `pkgutil`/导入堆栈判断缺少哪个依赖。先运行上面的独立 `AutoModel` 导入检查，再执行 `--help`，保留包含最后一行异常的完整 traceback。[#147](https://github.com/modelscope/FunClip/issues/147) 的两张截图分别属于证书失败和已进入 FunASR 的导入失败，不能当作同一个问题。
 
