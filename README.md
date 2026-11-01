@@ -140,7 +140,7 @@ Set `ORCAROUTER_API_KEY` (and optionally `ORCAROUTER_API_BASE`, which defaults t
 
 #### Using Runcrate as your LLM provider (optional)
 
-FunClip can also send LLM-assisted clipping to open models on [Runcrate](https://www.runcrate.ai/inference?utm_source=funclip&utm_medium=directory&utm_campaign=gpu_pricing), an OpenAI-compatible API. Open models are free with your GitHub account. Select a `runcrate/` model in the **LLM Model Name** dropdown (for example `runcrate/deepseek-ai/DeepSeek-V4.1-Flash` or `runcrate/openai/gpt-oss-120b`), paste a Runcrate API key in the **APIKEY** box, and click 'LLM Inference'. FunClip removes the `runcrate/` prefix and sends the transcript and prompts to `https://api.runcrate.ai/v1/chat/completions`. The returned segments work with the existing 'AI Clip' button.
+FunClip can also send LLM-assisted clipping to open models on [Runcrate](https://www.runcrate.ai/inference), an OpenAI-compatible API. Runcrate has a free allowance on some open models, with eligibility, usage and capacity limits described in its [free inference terms](https://www.runcrate.ai/inference/free); usage beyond the allowance is paid. Select a `runcrate/` model in the **LLM Model Name** dropdown (for example `runcrate/deepseek-ai/DeepSeek-V4.1-Flash` or `runcrate/openai/gpt-oss-120b`), paste a Runcrate API key in the **APIKEY** box, and click 'LLM Inference'. FunClip removes the `runcrate/` prefix and sends the transcript and prompts to `https://api.runcrate.ai/v1/chat/completions`. The returned segments work with the existing 'AI Clip' button.
 
 Set `RUNCRATE_API_KEY` (and optionally `RUNCRATE_API_BASE`, which defaults to `https://api.runcrate.ai/v1`) instead of pasting the key into the UI if you prefer environment-based configuration.
 
