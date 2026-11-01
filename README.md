@@ -138,6 +138,12 @@ OrcaRouter exposes one endpoint for all frontier and open-weight models, so you 
 
 Set `ORCAROUTER_API_KEY` (and optionally `ORCAROUTER_API_BASE`, which defaults to `https://api.orcarouter.ai/v1`) instead of pasting the key into the UI if you prefer environment-based configuration. A key is available at https://www.orcarouter.ai.
 
+#### Using Runcrate as your LLM provider (optional)
+
+FunClip can also send LLM-assisted clipping to open models on [Runcrate](https://www.runcrate.ai/inference), an OpenAI-compatible API. Runcrate has a free allowance on some open models, with eligibility, usage and capacity limits described in its [free inference terms](https://www.runcrate.ai/inference/free); usage beyond the allowance is paid. Select a `runcrate/` model in the **LLM Model Name** dropdown (for example `runcrate/deepseek-ai/DeepSeek-V4.1-Flash` or `runcrate/openai/gpt-oss-120b`), paste a Runcrate API key in the **APIKEY** box, and click 'LLM Inference'. FunClip removes the `runcrate/` prefix and sends the transcript and prompts to `https://api.runcrate.ai/v1/chat/completions`. The returned segments work with the existing 'AI Clip' button.
+
+Set `RUNCRATE_API_KEY` (and optionally `RUNCRATE_API_BASE`, which defaults to `https://api.runcrate.ai/v1`) instead of pasting the key into the UI if you prefer environment-based configuration.
+
 #### Using Cheaper Inference as your LLM gateway (optional)
 
 FunClip can also send LLM-assisted clipping through [Cheaper Inference](https://cheaperinference.com), an OpenAI-compatible LLM gateway. One API key gives access to models from several labs. Select any `cheaperinference/` model in the **LLM Model Name** dropdown, paste a Cheaper Inference API key in the **APIKEY** box, and click 'LLM Inference'. FunClip removes the `cheaperinference/` prefix and sends the transcript and prompts to `https://api.cheaperinference.com/v1/chat/completions`. The returned segments work with the existing 'AI Clip' button.
