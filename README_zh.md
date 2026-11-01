@@ -207,11 +207,9 @@ python funclip/videoclipper.py --stage 2 \
 
 FunClip开源项目由FunASR社区维护，欢迎加入社区，交流与讨论，以及合作开发等。
 
-群二维码可能过期；如果无法扫码，请通过 [GitHub Discussions](https://github.com/modelscope/FunClip/discussions) 提问、交流想法或分享社区项目。
+请通过 [GitHub Discussions](https://github.com/modelscope/FunClip/discussions) 提问、交流想法或分享社区项目，无需先加入群聊。
 
-|                              钉钉群                                |                     微信群                      |
-|:-------------------------------------------------------------------:|:-----------------------------------------------------:|
-| <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
+归档图片 `docs/images/dingding.png` 和 `docs/images/wechat.png` 中的群邀请已过期，不是当前有效的入群入口。钉钉图片标注的有效期截止于 2025 年 4 月 22 日；微信图片标注为 7 天有效（7 月 15 日前）。目前尚无经过核验的新群邀请。
 
 ## 通过FunASR了解语音识别相关技术
 

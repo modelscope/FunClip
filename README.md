@@ -182,13 +182,9 @@ python funclip/videoclipper.py --stage 2 \
 
 FunClip was first open-sourced by the FunASR team, and useful PRs are welcome.
 
-You can also scan the following DingTalk group or WeChat group QR code to join the community group for communication.
+For questions, ideas, and community projects, use [GitHub Discussions](https://github.com/modelscope/FunClip/discussions). You do not need to join a chat group to participate.
 
-QR codes can expire. If scanning is unavailable, use [GitHub Discussions](https://github.com/modelscope/FunClip/discussions) for questions, ideas, and community projects.
-
-|                           DingTalk group                            |                     WeChat group                      |
-|:-------------------------------------------------------------------:|:-----------------------------------------------------:|
-| <div align="left"><img src="docs/images/dingding.png" width="250"/> | <img src="docs/images/wechat.png" width="215"/></div> |
+The archived images `docs/images/dingding.png` and `docs/images/wechat.png` are expired invitations, not current joining links. The DingTalk image states an expiry of April 22, 2025; the WeChat image states a seven-day validity ending July 15. No replacement group invitation has been verified here.
 
 ## Ecosystem
 
